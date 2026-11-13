@@ -37,21 +37,45 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
   // Test particles that move under Coulomb force
   const [testParticles, setTestParticles] = useState<TestParticle2D[]>([]);
 
-  // Update canvas size on window resize
+  // Update canvas size dynamically with ResizeObserver
   useEffect(() => {
-    const handleResize = () => {
-      const container = canvasRef.current?.parentElement;
-      if (container) {
-        setDimensions({
-          width: container.clientWidth,
-          height: container.clientHeight
-        });
+    const container = canvasRef.current?.parentElement;
+    if (!container) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({
+            width: Math.round(width),
+            height: Math.round(height)
+          });
+        }
       }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    });
+
+    ro.observe(container);
+    return () => ro.disconnect();
   }, []);
+
+  // Keep charges and sensor within visible canvas bounds when container resizes
+  useEffect(() => {
+    if (dimensions.width <= 50 || dimensions.height <= 50) return;
+
+    setCharges((prev) =>
+      prev.map((c) => ({
+        ...c,
+        x: Math.min(Math.max(30, c.x), dimensions.width - 30),
+        y: Math.min(Math.max(30, c.y), dimensions.height - 30)
+      }))
+    );
+
+    setSensor((prev) => ({
+      ...prev,
+      x: Math.min(Math.max(30, prev.x), dimensions.width - 30),
+      y: Math.min(Math.max(30, prev.y), dimensions.height - 30)
+    }));
+  }, [dimensions.width, dimensions.height, setCharges]);
 
   // Spawn a test particle at sensor position or center
   const spawnTestParticle = (chargeValue: number = 1) => {
@@ -576,7 +600,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       />
 
       {/* Floating Action Overlay for Test Particle */}
-      <div className="absolute bottom-5 left-5 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200">
+      <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
         <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
           <Zap className="w-3.5 h-3.5 text-yellow-400" /> Partícula de prueba:
         </span>
@@ -603,9 +627,9 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       </div>
 
       {/* Instructions pill */}
-      <div className="absolute top-4 left-4 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2 pointer-events-none">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span>Arrastra las cargas o el sensor amarillo para explorar el campo y potencial</span>
+      <div className="absolute top-4 left-4 max-w-[calc(100%-2rem)] bg-slate-900/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none z-10">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+        <span className="truncate">Arrastra las cargas o el sensor amarillo para explorar el campo y potencial</span>
       </div>
     </div>
   );

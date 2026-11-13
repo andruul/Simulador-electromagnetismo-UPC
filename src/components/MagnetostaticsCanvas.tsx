@@ -6,7 +6,15 @@ import {
 } from '../physics/biotsavart';
 import { Compass, Sparkles, Plus } from 'lucide-react';
 
-export const MagnetostaticsCanvas: React.FC = () => {
+interface MagnetostaticsCanvasProps {
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
+}
+
+export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
+  presetRequest,
+  onPresetHandled
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -26,21 +34,44 @@ export const MagnetostaticsCanvas: React.FC = () => {
   const [showVectors, setShowVectors] = useState(true);
   const [showLines, setShowLines] = useState(true);
 
-  // Resize handler
+  // Dynamic ResizeObserver
   useEffect(() => {
-    const handleResize = () => {
-      const container = canvasRef.current?.parentElement;
-      if (container) {
-        setDimensions({
-          width: container.clientWidth,
-          height: container.clientHeight
-        });
+    const container = canvasRef.current?.parentElement;
+    if (!container) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({
+            width: Math.round(width),
+            height: Math.round(height)
+          });
+        }
       }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    });
+
+    ro.observe(container);
+    return () => ro.disconnect();
   }, []);
+
+  // Bounds clamping to keep conductors and compass inside canvas bounds
+  useEffect(() => {
+    if (dimensions.width <= 50 || dimensions.height <= 50) return;
+
+    setWires((prev) =>
+      prev.map((w) => ({
+        ...w,
+        x: Math.min(Math.max(30, w.x), dimensions.width - 30),
+        y: Math.min(Math.max(30, w.y), dimensions.height - 30)
+      }))
+    );
+
+    setCompass((prev) => ({
+      x: Math.min(Math.max(30, prev.x), dimensions.width - 30),
+      y: Math.min(Math.max(30, prev.y), dimensions.height - 30)
+    }));
+  }, [dimensions.width, dimensions.height]);
 
   // Main rendering loop
   useEffect(() => {
@@ -391,6 +422,14 @@ export const MagnetostaticsCanvas: React.FC = () => {
     }
   };
 
+  // Handle presetRequest from parent
+  useEffect(() => {
+    if (presetRequest) {
+      applyPreset(presetRequest);
+      onPresetHandled?.();
+    }
+  }, [presetRequest]);
+
   const addWire = (currentVal: number) => {
     const id = 'w_' + Math.random().toString(36).substring(2, 7);
     const newW: WireCurrent = {
@@ -414,38 +453,38 @@ export const MagnetostaticsCanvas: React.FC = () => {
       />
 
       {/* Preset bar */}
-      <div className="absolute top-4 left-4 flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl">
+      <div className="absolute top-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl z-10">
         <span className="text-xs font-semibold text-slate-400 px-2 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Configuraciones:
         </span>
         <button
           onClick={() => applyPreset('single')}
-          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors cursor-pointer"
         >
           Hilo Simple
         </button>
         <button
           onClick={() => applyPreset('parallel_attraction')}
-          className="px-2.5 py-1 text-xs bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 rounded-lg border border-cyan-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 rounded-lg border border-cyan-600/40 transition-colors cursor-pointer"
         >
           Hilos Paralelos (Atracción)
         </button>
         <button
           onClick={() => applyPreset('parallel_repulsion')}
-          className="px-2.5 py-1 text-xs bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 rounded-lg border border-amber-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 rounded-lg border border-amber-600/40 transition-colors cursor-pointer"
         >
           Hilos Opuestos (Repulsión)
         </button>
         <button
           onClick={() => applyPreset('solenoid')}
-          className="px-2.5 py-1 text-xs bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 rounded-lg border border-indigo-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 rounded-lg border border-indigo-600/40 transition-colors cursor-pointer"
         >
           Solenoide (Bobina)
         </button>
       </div>
 
       {/* Bottom control bar */}
-      <div className="absolute bottom-5 left-5 flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200">
+      <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
         <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
           <Plus className="w-3.5 h-3.5 text-cyan-400" /> Añadir Conductor:
         </span>
@@ -487,9 +526,9 @@ export const MagnetostaticsCanvas: React.FC = () => {
       </div>
 
       {/* Help tooltip */}
-      <div className="absolute bottom-5 right-5 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2 pointer-events-none">
-        <Compass className="w-3.5 h-3.5 text-rose-400" />
-        <span>Arrastra la brújula o los conductores para verificar la Regla de la Mano Derecha</span>
+      <div className="absolute bottom-4 right-4 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none z-10">
+        <Compass className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+        <span className="truncate">Arrastra la brújula o los conductores para verificar la Regla de la Mano Derecha</span>
       </div>
     </div>
   );

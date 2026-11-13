@@ -15,7 +15,8 @@ import {
   RotateCw,
   Compass,
   Lock,
-  Unlock
+  Unlock,
+  X
 } from 'lucide-react';
 
 interface ControlPanelProps {
@@ -30,6 +31,9 @@ interface ControlPanelProps {
   // Lorentz 3D props
   lorentzSettings: Lorentz3DSettings;
   setLorentzSettings: React.Dispatch<React.SetStateAction<Lorentz3DSettings>>;
+  onRequestLorentzPreset?: (preset: string) => void;
+  onRequestMagnetoPreset?: (preset: string) => void;
+  onClose?: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -41,7 +45,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   electroSettings,
   setElectroSettings,
   lorentzSettings,
-  setLorentzSettings
+  setLorentzSettings,
+  onRequestLorentzPreset,
+  onRequestMagnetoPreset,
+  onClose
 }) => {
   const selectedCharge = charges.find((c) => c.id === selectedChargeId);
 
@@ -115,7 +122,24 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   return (
-    <aside className="w-80 h-full bg-slate-950/95 border-l border-slate-800/80 flex flex-col overflow-y-auto select-none p-4 space-y-5 text-xs text-slate-300">
+    <aside className="w-80 h-full bg-slate-950/95 border-l border-slate-800/80 flex flex-col overflow-y-auto select-none p-4 space-y-4 text-xs text-slate-300 flex-shrink-0 transition-all">
+      {/* Panel Top Bar with close/collapse button */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-400">
+        <span className="font-bold text-[11px] uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+          <Layers className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Panel de Parámetros</span>
+        </span>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors cursor-pointer"
+            title="Ocultar panel lateral (maximizar canvas)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* ----------------- MODE: ELECTROSTATICS ----------------- */}
       {mode === 'electrostatics' && (
         <>
@@ -495,6 +519,47 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               className="w-full accent-sky-500 cursor-pointer"
             />
           </div>
+
+          {/* Lorentz Presets library */}
+          {onRequestLorentzPreset && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-400">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Presets Didácticos 3D:
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                <button
+                  onClick={() => onRequestLorentzPreset('helix')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🌀 Espiral / Hélice (B puro)
+                </button>
+                <button
+                  onClick={() => onRequestLorentzPreset('velocity_selector')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  ⚡ Selector de Velocidades (Wien)
+                </button>
+                <button
+                  onClick={() => onRequestLorentzPreset('cyclotron')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🎯 Acelerador Ciclotrón
+                </button>
+                <button
+                  onClick={() => onRequestLorentzPreset('magnetic_bottle')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🧲 Botella Magnética (Espejo)
+                </button>
+                <button
+                  onClick={() => onRequestLorentzPreset('drift')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🌊 Deriva E × B en Plasma
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -524,6 +589,155 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <p className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-amber-500 inline-block text-[8px] text-center text-slate-950 font-bold leading-3">⊗</span>
               <span><strong>Corriente Entrante (−Z):</strong> Campo circula en sentido horario.</span>
+            </p>
+          </div>
+
+          {/* Magnetostatics Presets */}
+          {onRequestMagnetoPreset && (
+            <div className="space-y-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-400">
+                <Sparkles className="w-3.5 h-3.5 text-teal-400" /> Presets de Magnetostática:
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                <button
+                  onClick={() => onRequestMagnetoPreset('single')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🧲 Hilo Conductor Simple
+                </button>
+                <button
+                  onClick={() => onRequestMagnetoPreset('parallel_attraction')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🧲 Hilos Paralelos (Atracción Ampère)
+                </button>
+                <button
+                  onClick={() => onRequestMagnetoPreset('parallel_repulsion')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🧲 Hilos Opuestos (Repulsión)
+                </button>
+                <button
+                  onClick={() => onRequestMagnetoPreset('solenoid')}
+                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
+                >
+                  🧲 Solenoide / Bobina Multihilo
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ----------------- MODE: GAUSS ----------------- */}
+      {mode === 'gauss' && (
+        <>
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-emerald-400 font-bold">
+            <Layers className="w-4 h-4" />
+            <span>LEY DE GAUSS & FLUJO Φ_E</span>
+          </div>
+
+          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
+            <span className="font-semibold text-slate-200">Teorema de Gauss (Divergencia)</span>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              El flujo eléctrico neto a través de cualquier superficie gaussiana cerrada es directamente proporcional a la carga eléctrica neta encerrada.
+            </p>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-[11px]">
+              Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀
+            </div>
+            <div className="text-[10px] text-slate-400 text-center font-mono">
+              ε₀ = 8.854187 × 10⁻¹² F/m
+            </div>
+          </div>
+
+          <div className="space-y-2 text-slate-400 text-[11px]">
+            <p className="flex items-start gap-1.5">
+              <span className="text-emerald-400 font-bold mt-0.5">•</span>
+              <span><strong>Vectores normales n̂ (Amarillos):</strong> Perpendiculares salientes en cada elemento dA.</span>
+            </p>
+            <p className="flex items-start gap-1.5">
+              <span className="text-sky-400 font-bold mt-0.5">•</span>
+              <span><strong>Campo Eléctrico E (Cian):</strong> Calculado vectorialmente por superposición de Coulomb.</span>
+            </p>
+            <p className="flex items-start gap-1.5">
+              <span className="text-rose-400 font-bold mt-0.5">•</span>
+              <span><strong>Cargas externas:</strong> Toda línea de campo que entra debe salir, contribuyendo un flujo neto nulo (Φ = 0).</span>
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* ----------------- MODE: CAPACITOR ----------------- */}
+      {mode === 'capacitor' && (
+        <>
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-amber-400 font-bold">
+            <Zap className="w-4 h-4" />
+            <span>CAPACITANCIA & DIELÉCTRICOS</span>
+          </div>
+
+          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
+            <span className="font-semibold text-slate-200">Condensador de Placas Paralelas</span>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              La capacitancia mide la capacidad de almacenar carga eléctrica y energía en el campo electrostático.
+            </p>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-[11px]">
+              C = κ · ε₀ · A / d
+            </div>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-cyan-300 text-[11px]">
+              Q = C · V &nbsp;|&nbsp; U = ½ C V²
+            </div>
+          </div>
+
+          <div className="space-y-2 text-slate-400 text-[11px]">
+            <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
+              <span className="text-emerald-300 font-bold">1. Conectado a Batería (V = cte):</span>
+              <p className="text-[10px] text-slate-300 mt-1">
+                Al insertar el dieléctrico (κ &gt; 1), la capacitancia C aumenta y la batería suministra más carga (Q = C·V).
+              </p>
+            </div>
+            <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
+              <span className="text-rose-300 font-bold">2. Desconectado (Q = cte):</span>
+              <p className="text-[10px] text-slate-300 mt-1">
+                La carga queda atrapada. Al insertar el dieléctrico, C aumenta, por lo que el voltaje disminuye (V = Q / C).
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ----------------- MODE: FARADAY ----------------- */}
+      {mode === 'faraday' && (
+        <>
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-purple-400 font-bold">
+            <Sparkles className="w-4 h-4" />
+            <span>LEY DE FARADAY & LENZ</span>
+          </div>
+
+          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
+            <span className="font-semibold text-slate-200">Inducción Electromagnética</span>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Un flujo magnético variable en el tiempo engendra una fuerza electromotriz (FEM) inducida en el circuito cerrado.
+            </p>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-[11px]">
+              ε = −N · (dΦ_B / dt)
+            </div>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-yellow-300 text-[11px]">
+              P = I² · R_bombilla
+            </div>
+          </div>
+
+          <div className="space-y-2 text-slate-400 text-[11px]">
+            <p className="flex items-start gap-1.5">
+              <span className="text-purple-400 font-bold mt-0.5">•</span>
+              <span><strong>Signo Negativo (Ley de Lenz):</strong> La corriente inducida crea un campo magnético que se opone a la variación del flujo.</span>
+            </p>
+            <p className="flex items-start gap-1.5">
+              <span className="text-amber-400 font-bold mt-0.5">•</span>
+              <span><strong>Número de espiras N:</strong> Multiplica directamente la FEM inducida generada por la bobina.</span>
+            </p>
+            <p className="flex items-start gap-1.5">
+              <span className="text-sky-400 font-bold mt-0.5">•</span>
+              <span><strong>Galvanómetro & Bombilla:</strong> Muestran la polaridad instantánea de la FEM y la potencia eléctrica disipada.</span>
             </p>
           </div>
         </>

@@ -3,22 +3,27 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Particle3D, Lorentz3DSettings } from '../types';
 import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../physics/lorentz';
-import { RotateCw, Sparkles, Plus, Play, Pause, Compass } from 'lucide-react';
+import { RotateCw, Sparkles, Plus, Play, Pause, Compass, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LorentzViewer3DProps {
   settings: Lorentz3DSettings;
   setSettings: React.Dispatch<React.SetStateAction<Lorentz3DSettings>>;
   isPlaying: boolean;
   setIsPlaying: (playing: boolean) => void;
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
 }
 
 export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   settings,
   setSettings,
   isPlaying,
-  setIsPlaying
+  setIsPlaying,
+  presetRequest,
+  onPresetHandled
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [isHudExpanded, setIsHudExpanded] = useState(true);
 
   // Particles state
   const [particles, setParticles] = useState<Particle3D[]>([
@@ -116,16 +121,18 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     scene.add(fieldGroup);
     fieldGroupRef.current = fieldGroup;
 
-    // Handle Window Resize
-    const handleResize = () => {
-      if (!container || !renderer || !camera) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-    window.addEventListener('resize', handleResize);
+    // Handle Dynamic Container Resize with ResizeObserver
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width: w, height: h } = entry.contentRect;
+        if (w > 0 && h > 0 && renderer && camera) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+      }
+    });
+    ro.observe(container);
 
     // Animation Loop
     let animId: number;
@@ -137,7 +144,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     animate();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      ro.disconnect();
       cancelAnimationFrame(animId);
       controls.dispose();
       renderer.dispose();
@@ -520,6 +527,14 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     }
   };
 
+  // Handle preset request from parent (welcome screen or search modal)
+  useEffect(() => {
+    if (presetRequest) {
+      applyPreset(presetRequest);
+      onPresetHandled?.();
+    }
+  }, [presetRequest]);
+
   const addParticle = (chargeSign: number) => {
     const newId = 'p_' + Math.random().toString(36).substring(2, 7);
     const newP: Particle3D = {
@@ -563,100 +578,116 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Preset bar top-left */}
-      <div className="absolute top-4 left-4 flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl">
+      <div className="absolute top-4 left-4 max-w-[calc(100%-5rem)] md:max-w-xl flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl z-10">
         <span className="text-xs font-semibold text-slate-400 px-2 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Experimentos 3D:
         </span>
         <button
           onClick={() => applyPreset('helix')}
-          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors cursor-pointer"
         >
           Espiral / Hélice (B puro)
         </button>
         <button
           onClick={() => applyPreset('velocity_selector')}
-          className="px-2.5 py-1 text-xs bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 rounded-lg border border-emerald-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 rounded-lg border border-emerald-600/40 transition-colors cursor-pointer"
         >
           Selector de Velocidades (Wien)
         </button>
         <button
           onClick={() => applyPreset('drift')}
-          className="px-2.5 py-1 text-xs bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 rounded-lg border border-purple-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 rounded-lg border border-purple-600/40 transition-colors cursor-pointer"
         >
           Deriva E × B (Cicloide)
         </button>
         <button
           onClick={() => applyPreset('magnetic_bottle')}
-          className="px-2.5 py-1 text-xs bg-sky-950/60 hover:bg-sky-900/80 text-sky-300 rounded-lg border border-sky-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-sky-950/60 hover:bg-sky-900/80 text-sky-300 rounded-lg border border-sky-600/40 transition-colors cursor-pointer"
         >
           Botella Magnética (Espejo)
         </button>
         <button
           onClick={() => applyPreset('cyclotron')}
-          className="px-2.5 py-1 text-xs bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 rounded-lg border border-rose-600/40 transition-colors"
+          className="px-2.5 py-1 text-xs bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 rounded-lg border border-rose-600/40 transition-colors cursor-pointer"
         >
           Ciclotrón
         </button>
       </div>
 
       {/* Telemetry and Physics Parameters HUD (Top Right) */}
-      <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700/70 shadow-2xl text-xs w-72">
-        <div className="flex items-center justify-between border-b border-slate-700/60 pb-2 mb-2">
+      <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/70 shadow-2xl text-xs z-10 transition-all max-w-[calc(100%-2rem)]">
+        <div
+          className="flex items-center justify-between p-2.5 border-b border-slate-700/60 gap-3 cursor-pointer select-none"
+          onClick={() => setIsHudExpanded(!isHudExpanded)}
+        >
           <div className="flex items-center gap-1.5 font-bold text-sky-400">
-            <Compass className="w-4 h-4" /> DINÁMICA DE LORENTZ
+            <Compass className="w-4 h-4" />
+            <span>DINÁMICA DE LORENTZ</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono">Boris Pusher 3D</span>
-        </div>
-
-        <div className="space-y-1.5 font-mono text-[11px] text-slate-300">
-          <div className="flex justify-between">
-            <span className="text-slate-400">Rapidez |v|:</span>
-            <span className="text-emerald-400 font-semibold">{telemetry.speed.toFixed(2)} m/s</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Fuerza Lorentz |F|:</span>
-            <span className="text-yellow-400 font-semibold">{telemetry.force.toFixed(2)} N</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Energía Cinética:</span>
-            <span className="text-sky-300">{telemetry.kineticEnergy.toFixed(2)} J</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Radio de Larmor (r_L):</span>
-            <span className="text-indigo-300">{telemetry.larmorRadius.toFixed(2)} m</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Frecuencia Ciclotrón:</span>
-            <span className="text-purple-300">{telemetry.cyclotronFreq.toFixed(2)} Hz</span>
-          </div>
-          <div className="flex justify-between border-t border-slate-800 pt-1 text-[10px]">
-            <span className="text-slate-500">Posición (x, y, z):</span>
-            <span className="text-slate-400">
-              ({telemetry.pos.x.toFixed(1)}, {telemetry.pos.y.toFixed(1)},{' '}
-              {telemetry.pos.z.toFixed(1)})
-            </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">Boris Pusher 3D</span>
+            <button
+              className="p-0.5 text-slate-400 hover:text-white rounded"
+              title={isHudExpanded ? 'Minimizar HUD' : 'Expandir HUD'}
+            >
+              {isHudExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
           </div>
         </div>
 
-        {/* Vector Legend */}
-        <div className="border-t border-slate-800 mt-2.5 pt-2 grid grid-cols-2 gap-1 text-[10px]">
-          <span className="flex items-center gap-1 text-lime-400">
-            <span className="w-2 h-2 rounded-full bg-lime-400 inline-block" /> Vector v (Velocidad)
-          </span>
-          <span className="flex items-center gap-1 text-yellow-400">
-            <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Vector F (Lorentz)
-          </span>
-          <span className="flex items-center gap-1 text-cyan-400">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" /> Campo B (Magnético)
-          </span>
-          <span className="flex items-center gap-1 text-rose-400">
-            <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" /> Campo E (Eléctrico)
-          </span>
-        </div>
+        {isHudExpanded && (
+          <div className="p-3.5 w-72 max-w-full">
+            <div className="space-y-1.5 font-mono text-[11px] text-slate-300">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Rapidez |v|:</span>
+                <span className="text-emerald-400 font-semibold">{telemetry.speed.toFixed(2)} m/s</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Fuerza Lorentz |F|:</span>
+                <span className="text-yellow-400 font-semibold">{telemetry.force.toFixed(2)} N</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Energía Cinética:</span>
+                <span className="text-sky-300">{telemetry.kineticEnergy.toFixed(2)} J</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Radio de Larmor (r_L):</span>
+                <span className="text-indigo-300">{telemetry.larmorRadius.toFixed(2)} m</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Frecuencia Ciclotrón:</span>
+                <span className="text-purple-300">{telemetry.cyclotronFreq.toFixed(2)} Hz</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-800 pt-1 text-[10px]">
+                <span className="text-slate-500">Posición (x, y, z):</span>
+                <span className="text-slate-400">
+                  ({telemetry.pos.x.toFixed(1)}, {telemetry.pos.y.toFixed(1)},{' '}
+                  {telemetry.pos.z.toFixed(1)})
+                </span>
+              </div>
+            </div>
+
+            {/* Vector Legend */}
+            <div className="border-t border-slate-800 mt-2.5 pt-2 grid grid-cols-2 gap-1 text-[10px]">
+              <span className="flex items-center gap-1 text-lime-400">
+                <span className="w-2 h-2 rounded-full bg-lime-400 inline-block" /> Vector v (Velocidad)
+              </span>
+              <span className="flex items-center gap-1 text-yellow-400">
+                <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Vector F (Lorentz)
+              </span>
+              <span className="flex items-center gap-1 text-cyan-400">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" /> Campo B (Magnético)
+              </span>
+              <span className="flex items-center gap-1 text-rose-400">
+                <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" /> Campo E (Eléctrico)
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom Floating Control Bar */}
-      <div className="absolute bottom-5 left-5 flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200">
+      <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
         <button
           onClick={() => setIsPlaying(!isPlaying)}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${

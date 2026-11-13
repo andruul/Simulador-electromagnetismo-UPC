@@ -1,4 +1,12 @@
-export type SimulationMode = 'electrostatics' | 'lorentz3d' | 'magnetostatics' | 'theory';
+export type SimulationMode =
+  | 'electrostatics'
+  | 'lorentz3d'
+  | 'magnetostatics'
+  | 'theory'
+  | 'gauss'
+  | 'capacitor'
+  | 'faraday'
+  | 'welcome';
 
 export interface Vector2D {
   x: number;
@@ -79,4 +87,100 @@ export interface Lorentz3DSettings {
   timeStep: number;
   trailLength: number;
 }
+
+// ==========================================
+// Gauss's Law & Electric Flux Types
+// ==========================================
+export type GaussianSurfaceShape = 'circle' | 'rectangle';
+
+export interface GaussianSurface {
+  shape: GaussianSurfaceShape;
+  cx: number;
+  cy: number;
+  radius: number; // in meters (scaled for simulation)
+  width: number;
+  height: number;
+}
+
+export interface GaussSurfaceElement {
+  x: number;
+  y: number;
+  nx: number;
+  ny: number;
+  dl: number;
+  dA: number;
+  ex: number;
+  ey: number;
+  fluxDensity: number; // E · n
+}
+
+export interface GaussCalculation {
+  enclosedCharge: number; // in Coulombs
+  theoreticalFlux: number; // Q_enc / ε0 in N·m²/C (or V·m)
+  numericalFlux: number;   // ∮ E · dA in N·m²/C
+  relativeError: number;  // |numerical - theoretical| / theoretical
+  elements: GaussSurfaceElement[];
+}
+
+export interface GaussSettings {
+  surfaceShape: GaussianSurfaceShape;
+  surfaceRadius: number; // meters
+  surfaceWidth: number;  // meters
+  surfaceHeight: number; // meters
+  numElements: number;   // discretization segments
+  showVectorField: boolean;
+  showNormalVectors: boolean;
+  showFluxHeatmap: boolean;
+  showFieldLines: boolean;
+}
+
+// ==========================================
+// Capacitance & Dielectrics Types
+// ==========================================
+export interface DielectricMaterial {
+  id: string;
+  name: string;
+  kappa: number;
+  color: string;
+  description: string;
+}
+
+export interface CapacitorLabState {
+  plateArea: number;           // mm² (e.g. 100 to 400 mm²)
+  plateDistance: number;       // mm (e.g. 2 to 10 mm)
+  dielectricKappa: number;     // κ >= 1.0
+  dielectricInsertion: number; // fraction 0.0 to 1.0 inside the capacitor
+  connectedToBattery: boolean; // true = constant V, false = constant Q
+  batteryVoltage: number;      // Volts (-3.0V to +3.0V)
+  // Calculated physical quantities:
+  capacitance: number;         // Farads (typically in pF)
+  storedCharge: number;        // Coulombs (typically in pC)
+  storedEnergy: number;        // Joules (typically in pJ)
+  electricField: number;       // V/m (inside vacuum and dielectric regions)
+  polarizationCharge: number;  // pC
+}
+
+// ==========================================
+// Faraday's Law & Electromagnetic Induction Types
+// ==========================================
+export interface FaradayLabState {
+  magnetX: number;
+  magnetY: number;
+  magnetStrength: number;     // dipole moment in A·m²
+  isOscillating: boolean;
+  oscillationFreq: number;    // Hz
+  oscillationAmp: number;     // px
+  coilTurns: number;          // N (1, 2, 3, 4)
+  coilRadius: number;         // px or meters
+  coilX: number;
+  coilY: number;
+  // Dynamic quantities:
+  flux: number;               // Weber (Wb) = T·m²
+  dFluxDt: number;            // Wb/s
+  inducedEmf: number;         // Volts (ε = -N dΦ/dt)
+  inducedCurrent: number;     // Amperes
+  bulbBrightness: number;     // normalized [0, 1]
+  galvanometerAngle: number;  // radians or degrees [-45°, +45°]
+}
+
 
