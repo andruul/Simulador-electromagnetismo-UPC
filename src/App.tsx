@@ -18,6 +18,8 @@ import { FaradayInductionCanvas } from './components/FaradayInductionCanvas';
 import { TheoryModal } from './components/TheoryModal';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SearchModal } from './components/SearchModal';
+import { BottomStatusBar } from './components/BottomStatusBar';
+import { generateLabEvidenceReport } from './utils/reportGenerator';
 import type { TopicItem } from './data/topics';
 
 export const App: React.FC = () => {
@@ -66,17 +68,28 @@ export const App: React.FC = () => {
     trailLength: 350
   });
 
-  // Global Ctrl+K / Cmd+K listener
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  // Take screenshot of active canvas
+  const handleTakeScreenshot = useCallback(() => {
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+
+    try {
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `electro-sim-upc-${mode}-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error al capturar la imagen:', err);
+    }
+  }, [mode]);
+
+  // Generate Institutional Lab Evidence Report
+  const handleGenerateReport = useCallback(async () => {
+    await generateLabEvidenceReport(mode, viewMode);
+  }, [mode, viewMode]);
 
   // Apply preset to electrostatics charges
   const applyElectroPreset = useCallback((presetType: string) => {
@@ -208,23 +221,60 @@ export const App: React.FC = () => {
     }
   }, [mode]);
 
-  // Take screenshot of active canvas
-  const handleTakeScreenshot = useCallback(() => {
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
-    if (!canvas) return;
+  // Global Desktop Keyboard Shortcuts ([Space] Play/Pause, [R] Reset, [M] Mode, [F1] Theory, [Ctrl+K] Search)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is currently typing in an input or selector
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
 
-    try {
-      const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `electro-sim-upc-${mode}-${Date.now()}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error('Error al capturar la imagen:', err);
-    }
-  }, [mode]);
+      // Ctrl+K / Cmd+K -> Search
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+        return;
+      }
+
+      // F1 -> Theory Guide
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setIsTheoryOpen((prev) => !prev);
+        return;
+      }
+
+      // Space -> Toggle Simulation Play/Pause
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsPlaying((prev) => !prev);
+        return;
+      }
+
+      // R / r -> Reset Experiment
+      if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        handleReset();
+        return;
+      }
+
+      // M / m -> Toggle Explore / Lab Mode
+      if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setViewMode((prev) => (prev === 'explore' ? 'lab' : 'explore'));
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [handleReset]);
 
   return (
     <div className="w-screen h-screen flex flex-col bg-[#070b14] text-slate-100 overflow-hidden font-sans">
@@ -239,6 +289,7 @@ export const App: React.FC = () => {
         onReset={handleReset}
         onOpenTheory={() => setIsTheoryOpen(true)}
         onTakeScreenshot={handleTakeScreenshot}
+        onGenerateReport={handleGenerateReport}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen((prev) => !prev)}
         isLeftPanelOpen={isLeftPanelOpen}
@@ -348,6 +399,13 @@ export const App: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Bottom Desktop Status Bar (24px fixed native telemetry & shortcuts) */}
+      <BottomStatusBar
+        mode={mode}
+        viewMode={viewMode}
+        isPlaying={isPlaying}
+      />
 
       {/* Global Topic Search Modal */}
       <SearchModal

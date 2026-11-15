@@ -81,8 +81,45 @@ $$\mathcal{E} = -N \frac{d\Phi_B}{dt}, \quad I_{\text{ind}} = \frac{\mathcal{E}}
 
 | Verificación | Herramienta | Resultado |
 |---|---|---|
-| Chequeo de Tipos Estricto | `tsc -b` (TypeScript 5.8 / ES2023) | **0 Errores** |
-| Compilación de Producción | `vite build` | **0 Errores (776 ms)** |
+| Chequeo de Tipos Estricto | `tsc -b` (TypeScript 7 / ES2023) | **0 Errores** |
+| Análisis Estático / Linter | `oxlint src` (25 archivos auditados) | **0 Errores** |
+| Compilación de Producción | `vite build` | **0 Errores (742 ms)** |
 | Rendimiento Gráfico | Canvas 2D + WebGL Three.js | **60 FPS estables** |
-| Empaquetado Nativo | Electron v45.3 | **Listo para distribución** |
+| Empaquetado Nativo Desktop | `electron-builder` (x64) | **Binario compilado con éxito** |
+
+---
+
+## 5. Fase 2: Empaquetado Nativo (.exe) y Herramientas Offline para la UPC
+
+### 5.1. Ejecutable Portable para Salas de Sistemas sin Privilegios de Administrador
+En las salas de cómputo universitarias, los estudiantes y profesores frecuentemente no disponen de permisos de administrador para instalar software en el disco local `C:\Program Files`.
+* **Solución Implementada:** Se configuró un target **`portable`** con `electron-builder`:
+  * Comando: `npm run electron:exe`
+  * Archivo resultante: `release/Simulador_Electromagnetismo_UPC_Portable.exe`
+  * Permite ejecutar la aplicación directamente desde una memoria USB o la carpeta de Descargas sin requerir instalación, sin tocar el Registro de Windows y con ejecución inmediata.
+* **Solución Alternativa:** Target **`nsis`** (`npm run electron:nsis`) para instalación formal en equipos fijos de la universidad con acceso directo en el Escritorio y menú de inicio.
+
+### 5.2. Operatividad 100% Offline (Sin Dependencia de Internet)
+* Se eliminaron todas las dependencias a CDNs externos (Google Fonts, FontAwesome, CDNs de Three.js o Tailwind).
+* La configuración `base: './'` en `vite.config.ts` garantiza que el protocolo `file://` cargue todos los recursos locales sin fallas de ruta absoluta (`/`), previniendo cualquier pantalla en blanco al ejecutar el `.exe`.
+
+### 5.3. Interfaz de Aplicación de Escritorio Integrada con Windows 10/11
+* **Barra de Menús de Chromium Oculta:** `Menu.setApplicationMenu(null)` y `autoHideMenuBar: true` erradican la apariencia de navegador web genérico.
+* **Integración con `titleBarOverlay`:** Los controles nativos de minimizar, maximizar y cerrar se fusionan armoniosamente con la barra superior de 48px con paleta oscura institucional (`#111827`) y acento esmeralda UPC (`#10B981`).
+* **Arrastre de Ventana:** Soporte para `-webkit-app-region: drag` en áreas libres de la barra superior y `-webkit-app-region: no-drag` en componentes interactivos.
+* **Aceleración por Hardware:** Parámetros `--enable-gpu-rasterization` y `--enable-zero-copy` aseguran fluidez constante a 60 FPS en monitores estándar.
+
+### 5.4. Herramientas Especializadas de Laboratorio
+1. **Ficha de Evidencia y Reporte Institucional:**
+   * Botón destacado **"Ficha Evidencia"** en la barra superior.
+   * Compone en tiempo real una tarjeta institucional con el escudo de la UPC, la sala activa, parámetros y lecturas físicas, fecha/hora y código único de comprobación para evitar duplicidad de prácticas.
+   * Genera simultáneamente `Evidencia_UPC_[Sala].png` y `Ficha_Informe_UPC_[Sala].txt` para anexar al reporte de laboratorio.
+2. **Atajos de Teclado Profesionales:**
+   * `[Espacio]`: Play / Pausa del motor físico.
+   * `[R]`: Reinicio de experimento a condiciones iniciales.
+   * `[M]`: Alternar entre *Modo Exploración* y *Modo Medición*.
+   * `[F1]`: Acceso directo al compendio de teoría fácil.
+   * `[Ctrl + K]`: Buscador global instantáneo.
+3. **Barra de Estado Inferior (Status Bar 24px):**
+   * Monitoreo en tiempo real de FPS, estado del motor, régimen pedagógico y versión del software.
 

@@ -8,7 +8,6 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Camera,
   Search,
   PanelRightClose,
   PanelRightOpen,
@@ -20,7 +19,8 @@ import {
   Sparkles,
   LayoutGrid,
   FlaskConical,
-  Eye
+  Eye,
+  FileDown
 } from 'lucide-react';
 import { UpcLogo } from './UpcBadge';
 
@@ -34,6 +34,7 @@ interface TopNavbarProps {
   onReset: () => void;
   onOpenTheory: () => void;
   onTakeScreenshot: () => void;
+  onGenerateReport?: () => void;
   onOpenSearch: () => void;
   onOpenWelcome: () => void;
   isLeftPanelOpen: boolean;
@@ -52,6 +53,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onReset,
   onOpenTheory,
   onTakeScreenshot,
+  onGenerateReport,
   onOpenSearch,
   onOpenWelcome,
   isLeftPanelOpen,
@@ -60,9 +62,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onToggleSidebar
 }) => {
   return (
-    <header className="h-12 bg-[#090d16] border-b border-slate-800/90 px-3 flex items-center justify-between z-30 select-none gap-2 flex-shrink-0">
+    <header className="h-12 bg-[#090d16] border-b border-slate-800/90 pl-3 pr-3 sm:pr-[148px] flex items-center justify-between z-30 select-none gap-2 flex-shrink-0 app-drag-region">
       {/* 1. Brand & Launcher Button */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0 app-no-drag">
         <button
           onClick={onOpenWelcome}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 transition-all cursor-pointer group shadow-sm"
@@ -94,7 +96,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       </div>
 
       {/* 2. Laboratory Room Tabs */}
-      <nav className="flex items-center p-0.5 bg-slate-900/90 rounded-xl border border-slate-800/90 overflow-x-auto max-w-full">
+      <nav className="flex items-center p-0.5 bg-slate-900/90 rounded-xl border border-slate-800/90 overflow-x-auto max-w-full app-no-drag">
         <button
           onClick={() => setMode('electrostatics')}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
@@ -181,7 +183,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       </nav>
 
       {/* 3. View Mode Toggle, Tools & Actions */}
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+      <div className="flex items-center gap-1.5 flex-shrink-0 app-no-drag">
         {/* PROMINENT TOGGLE: MODO EXPLORACIÓN (BÁSICO) vs MODO MEDICIÓN (AVANZADO) */}
         <button
           onClick={onToggleViewMode}
@@ -192,8 +194,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           }`}
           title={
             viewMode === 'explore'
-              ? 'Actualmente en Modo Exploración (Básico). Clic para cambiar a Modo Medición (Avanzado).'
-              : 'Actualmente en Modo Medición (Avanzado con Unidades SI). Clic para cambiar a Modo Exploración.'
+              ? 'Actualmente en Modo Exploración (Básico). Clic o presiona [M] para Modo Medición (Avanzado).'
+              : 'Actualmente en Modo Medición (Avanzado SI). Clic o presiona [M] para Modo Exploración.'
           }
         >
           {viewMode === 'explore' ? (
@@ -229,10 +231,20 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <button
           onClick={onOpenTheory}
           className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors cursor-pointer"
-          title="Teoría Explicada Fácil"
+          title="Teoría Explicada Fácil (F1)"
         >
           <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
           <span className="hidden xl:inline">Teoría Fácil</span>
+        </button>
+
+        {/* Generate Lab Evidence / Report Button */}
+        <button
+          onClick={onGenerateReport || onTakeScreenshot}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-all cursor-pointer"
+          title="Generar Ficha de Evidencia y Reporte de Laboratorio con membrete UPC"
+        >
+          <FileDown className="w-3.5 h-3.5" />
+          <span className="hidden md:inline">Ficha Evidencia</span>
         </button>
 
         {/* Play / Pause */}
@@ -243,7 +255,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
               : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
           }`}
-          title={isPlaying ? 'Pausar simulación' : 'Iniciar simulación'}
+          title={isPlaying ? 'Pausar simulación [Espacio]' : 'Iniciar simulación [Espacio]'}
         >
           {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
         </button>
@@ -252,18 +264,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <button
           onClick={onReset}
           className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-          title="Reiniciar experimento"
+          title="Reiniciar experimento actual [R]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-        </button>
-
-        {/* Screenshot */}
-        <button
-          onClick={onTakeScreenshot}
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer hidden md:block"
-          title="Capturar pantalla del canvas"
-        >
-          <Camera className="w-3.5 h-3.5" />
         </button>
 
         {/* Right Sidebar Toggle */}

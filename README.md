@@ -1,98 +1,140 @@
-# ⚡ Simulador de Electromagnetismo (2D / 3D)
+# 🏛️ Simulador de Electromagnetismo — Universidad Popular del Cesar (UPC)
+### Estación de Laboratorio Virtual de Escritorio (2D / 3D) • Versión 2.0 Desktop Edition
 
-Aplicación de escritorio interactiva de física computacional para simular fenómenos electromagnéticos en tiempo real, construida con **Electron**, **React 19**, **TypeScript**, **Three.js** y **Tailwind CSS**.
+Aplicación nativa de escritorio y estación de laboratorio de física computacional desarrollada para la **Universidad Popular del Cesar (UPC)**, Valledupar, Colombia. Diseñada con un estándar riguroso de ingeniería pedagógica para suplir las carencias de laboratorios físicos mediante simulación interactiva de alta fidelidad, 100% offline y optimizada para equipos de salas de informática universitarias.
+
+Construida con la arquitectura: **Electron + Vite + React 19 + TypeScript + Three.js + Tailwind CSS**.
 
 ---
 
-## 🚀 Inicio Rápido
+## 🚀 Modos de Ejecución y Distribución
 
-### 1. Requisitos Previos
-* **Node.js** v18 o superior
-* **npm**
+### 1. Ejecutable Nativo de Windows (`.exe` Portable — Sin Instalación)
+Ideal para los computadores de las salas de sistemas de la UPC donde los estudiantes o docentes no tienen permisos de Administrador:
+```bash
+npm run electron:exe
+```
+Genera en la carpeta `release/` el ejecutable autónomo:
+`Simulador_Electromagnetismo_UPC_Portable.exe`
+> **Ventaja UPC:** Se puede copiar directamente a una memoria USB y ejecutar con doble clic en cualquier computador con Windows 10 u 11 sin requerir conexión a internet ni instalación previa.
 
-### 2. Ejecutar como Aplicación de Escritorio (Electron)
-Para compilar y abrir la ventana nativa de escritorio:
+### 2. Instalador de Windows (NSIS)
+Para instalar en computadores de laboratorio con acceso directo en el Escritorio:
+```bash
+npm run electron:nsis
+```
+
+### 3. Ejecución en Modo Desarrollo (Escritorio con Electron)
 ```bash
 npm run electron:start
-```
-O para desarrollo con recarga en caliente (Hot Reload):
-```bash
+# o con Hot Module Replacement:
 npm run electron:dev
 ```
 
-### 3. Ejecutar en el Navegador Web (Vite)
-También puedes interactuar directamente desde cualquier navegador web:
+### 4. Modo Web (Navegador)
 ```bash
 npm run dev
 ```
-Luego abre `http://localhost:5173`.
+Abre en `http://localhost:5173`.
 
 ---
 
-## 🔬 Módulos Físicos Implementados
+## 🎓 Enfoque Pedagógico: Divulgación Progresiva
 
-### 1. ⚡ Electrostática 2D Interactiva
-* **Ley de Coulomb y Principio de Superposición**:
-  $$ \vec{E}(\vec{r}) = \sum_i \frac{k_e q_i}{|\vec{r} - \vec{r}_i|^3} (\vec{r} - \vec{r}_i) $$
-* **Líneas de Campo Eléctrico**: Trazado continuo con integración numérica **Runge-Kutta de 4º orden (RK4)** con flechas direccionales dinámicas.
-* **Mapa de Calor de Potencial Escalar $V(\vec{r})$**: Gradiente cromático de potencial eléctrico en tiempo real.
-* **Superficies / Isolíneas Equipotenciales**: Curvas donde $V = \text{constante}$ trazadas ortogonalmente al vector $\vec{E}$ ($\vec{E} = -\nabla V$).
-* **Multímetro / Sonda de Campo**: Mide magnitud $|\vec{E}|$ en $\text{N/C}$, potencial $V$ en $\text{Volts}$ y ángulo $\theta$.
-* **Partículas de Prueba Libres**: Lanzamiento de cargas libres que son aceleradas en tiempo real por el campo con trazado de estela.
-* **Presets Didácticos**: Dipolo, cargas de igual signo, cuadrupolo, condensador de placas paralelas con efecto de borde, carga única aislada.
+El simulador cuenta con un interruptor maestro accesible en la barra superior o mediante la tecla `[M]`:
 
-### 2. 🌀 Dinámica 3D de Partículas & Fuerza de Lorentz
-* **Ecuación de Lorentz**:
-  $$ \vec{F} = q(\vec{E} + \vec{v} \times \vec{B}) $$
-* **Integrador Simpléctico Boris Pusher**:
-  Implementa el algoritmo estándar de física de plasma que conserva exactamente la energía cinética y el radio orbital (Larmor) en campos magnéticos sin derivas numéricas espurias.
-* **Renderizado 3D con Three.js**:
-  * Esferas brillantes con estela de trayectoria continua.
-  * Vectores tridimensionales dinámicos sobre la partícula: $\vec{v}$ (verde), $\vec{F}$ (amarillo), $\vec{B}$ (cian), $\vec{E}$ (rojo).
-  * Control de órbita 3D interactivo con ratón (rotación, zoom y paneo).
-* **Presets y Experimentos Clásicos**:
-  * *Hélice / Giro en Campo Magnético Puro*: Radio de Larmor $r_L = \frac{mv_\perp}{|q|B}$ y frecuencia ciclotrón $f_c = \frac{|q|B}{2\pi m}$.
-  * *Selector de Velocidades (Filtro de Wien)*: $\vec{E} \perp \vec{B}$ donde solo las partículas con $v = E/B$ viajan sin desviarse.
-  * *Deriva $\vec{E} \times \vec{B}$ (Drift Velocity)*: Trayectoria cicloidal en campos cruzados.
-  * *Botella Magnética (Espejo Magnético)*: Reflexión por gradiente de campo magnético (principio de confinamiento Tokamak y Cinturones de Van Allen).
-  * *Ciclotrón*: Aceleración periódica por campo eléctrico alternante resonante.
+### 🔹 Modo Exploración (Básico)
+* **Público objetivo:** Estudiantes de semestres iniciales o primer contacto con la física electromagnética.
+* **Interfaz amigable:** Sustituye números abstractos por indicadores cualitativos claros (*"Capacitancia Alta"*, *"Imán generando voltaje"*, *"Líneas de campo atrayéndose"*).
+* **Guía paso a paso (280px):** Tarjeta con 3 pasos intuitivos:
+  1. *Interactúa:* Qué mover o arrastrar en pantalla.
+  2. *Observa:* Qué fenómeno visual ocurre.
+  3. *Concepto Clave:* El principio físico fundamental en lenguaje sencillo.
+* **Experimentos con 1 Clic (Presets):** Permite cargar configuraciones demostrativas instantáneas sin empezar en blanco.
 
-### 3. 🧲 Magnetostática & Fuentes de Corriente (Biot-Savart)
-* **Ley de Biot-Savart & Ampère**:
-  $$ B = \frac{\mu_0 I}{2\pi r} $$
-* Simulación de conductores rectilíneos con corriente saliente ($\odot$) y entrante ($\otimes$).
-* **Líneas de Campo Magnético Cerradas** ($\nabla \cdot \vec{B} = 0$).
-* **Sonda / Brújula Magnética**: Aguja magnetizada interactiva que se orienta a lo largo del campo magnético local.
-* **Experimentos**: Atracción entre hilos paralelos, repulsión de corrientes opuestas, bobina / solenoide con campo uniforme interior.
-
-### 4. 📖 Guía Teórica y Compendio
-Modal integrado con fórmulas matemáticas, explicaciones conceptuales y aplicaciones de ingeniería de cada fenómeno.
+### 🔬 Modo Medición (Avanzado SI)
+* **Público objetivo:** Estudiantes avanzados de ingeniería y docentes evaluadores.
+* **Instrumentos de laboratorio digital:**
+  * Voltímetros interactivos de dos sondas (roja/negra).
+  * Sensores de campo eléctrico $|\vec{E}|$ en $\text{N/C}$ y $\text{kV/m}$.
+  * Medidores de flujo magnético $\Phi_B$ en $\text{mWb}$ y derivada $d\Phi_B/dt$ en $\text{Wb/s}$.
+  * Cálculo numérico exacto de capacitancia en $\text{pF}$, carga en $\text{pC}$ y energía electrostática en $\text{pJ}$.
+  * Osciloscopios digitales en tiempo real con trazado simultáneo de flujo y fem inducida $\mathcal{E}(t)$.
 
 ---
 
-## 🛠️ Estructura del Código
+## ⚡ Herramientas de Laboratorio de Escritorio
+
+1. **Captura de Evidencia y Reporte Institucional:**
+   * Con un solo clic en **"Ficha Evidencia"**, el software genera automáticamente una captura de alta resolución con **membrete oficial de la Universidad Popular del Cesar**, fecha, hora, parámetros físicos y código de validación.
+   * Descarga simultáneamente un archivo de texto estructurado (`Ficha_Informe_UPC_*.txt`) listo para anexar en informes formales de laboratorio.
+2. **Atajos de Teclado de Escritorio:**
+   * `[Espacio]`: Pausar / Reanudar la simulación en tiempo real.
+   * `[R]`: Reiniciar el experimento actual a sus valores iniciales.
+   * `[M]`: Alternar instantáneamente entre *Modo Exploración* y *Modo Medición*.
+   * `[F1]`: Abrir modal de **Teoría Explicada Fácil** con ejemplos de la vida diaria y formulación matemática.
+   * `[Ctrl + K]`: Abrir **Buscador Rápido** indexado por conceptos curriculares de la UPC.
+3. **Barra de Estado Nativa (Status Bar 24px):**
+   * Informa en tiempo real el estado del motor físico (60 FPS), la sala actual, el régimen activo y la versión del software.
+
+---
+
+## 🔬 Las 6 Salas de Laboratorio Implementadas
+
+| Sala | Tema Curricular UPC | Motor Físico y Numérico | Instrumentación |
+|---|---|---|---|
+| **Sala 1** | Electrostática 2D y Ley de Coulomb | RK4 (Runge-Kutta 4) para líneas de campo, gradiente $\vec{E} = -\nabla V$ | Sonda de campo, multímetro de potencial, partículas de prueba |
+| **Sala 2** | Ley de Gauss & Flujo Eléctrico | Cuadratura de superficie $\oint \vec{E} \cdot d\vec{A} = Q_{\text{enc}}/\varepsilon_0$ | Indicador de flujo en tiempo real, superficies esféricas y prismáticas |
+| **Sala 3** | Capacitancia & Dieléctricos (PhET) | Modelo analítico de placas $C = \kappa \varepsilon_0 A / d$, $U = \frac{1}{2} C V^2$ | Voltímetro flotante 2 sondas, sensor de campo, selector dieléctrico (Teflón, Vidrio, Cerámica) |
+| **Sala 4** | Magnetostática & Biot-Savart | Trazador de campo circular $\vec{B} = \frac{\mu_0 I}{2\pi r}\hat{\theta}$ | Brújula magnética interactiva, conductores paralelos y antiparalelos |
+| **Sala 5** | Dinámica 3D & Fuerza de Lorentz | Integrador Simpléctico **Boris Pusher** en Three.js | Vectores dinámicos $(\vec{v}, \vec{F}, \vec{B}, \vec{E})$, Selector de Wien, Ciclotrón, Botella magnética |
+| **Sala 6** | Inducción de Faraday & Lenz | Integración de flujo variable $\mathcal{E} = -N \frac{d\Phi_B}{dt}$ | Bobina multiespira, galvanómetro analógico, bombilla y osciloscopio digital |
+
+---
+
+## 🛠️ Estructura del Proyecto
 
 ```
 Proyecto Simulador/
 ├── electron/
-│   └── main.cjs             # Ventana y ciclo de vida de Electron
+│   └── main.cjs               # Ventana nativa, aceleración GPU, titleBarOverlay
+├── build/
+│   ├── icon.ico               # Ícono de Windows para el ejecutable .exe
+│   └── icon.png               # Ícono de alta resolución
 ├── src/
 │   ├── components/
-│   │   ├── ElectrostaticsCanvas.tsx   # Canvas 2D interactivo con RK4
-│   │   ├── LorentzViewer3D.tsx        # Viewport 3D Three.js con Boris Pusher
-│   │   ├── MagnetostaticsCanvas.tsx   # Simulación 2D de Biot-Savart
-│   │   ├── ControlPanel.tsx           # Panel de sliders y controles
-│   │   ├── TopNavbar.tsx              # Barra de navegación y herramientas
-│   │   └── TheoryModal.tsx            # Compendio didáctico de teoría
-│   ├── physics/
-│   │   ├── electrostatics.ts          # Cálculo de Coulomb, E, V, RK4
-│   │   ├── lorentz.ts                 # Integrador de Boris y campos 3D
-│   │   └── biotsavart.ts              # Campo B de hilos y espiras
+│   │   ├── TopNavbar.tsx            # Header nativo de 48px con drag region
+│   │   ├── LeftGuidePanel.tsx       # Panel pedagógico de 280px con presets 1-clic
+│   │   ├── ControlPanel.tsx         # Panel de sliders con micro-guías intuitivas
+│   │   ├── BottomStatusBar.tsx      # Barra de estado nativa de 24px
+│   │   ├── WelcomeScreen.tsx        # Launcher de escritorio para las 6 salas
+│   │   ├── TheoryModal.tsx          # Guía con "En palabras simples / Ejemplos cotidianos"
+│   │   ├── SearchModal.tsx          # Buscador universal (Ctrl+K)
+│   │   ├── ElectrostaticsCanvas.tsx # Sala 1
+│   │   ├── GaussFluxCanvas.tsx      # Sala 2
+│   │   ├── CapacitorLabCanvas.tsx   # Sala 3
+│   │   ├── MagnetostaticsCanvas.tsx # Sala 4
+│   │   ├── LorentzViewer3D.tsx      # Sala 5
+│   │   └── FaradayInductionCanvas.tsx # Sala 6
+│   ├── physics/                     # [INTOCABLES] Motores físicos analíticos y numéricos
+│   │   ├── electrostatics.ts
+│   │   ├── gauss.ts
+│   │   ├── capacitance.ts
+│   │   ├── biotsavart.ts
+│   │   ├── lorentz.ts
+│   │   └── faraday.ts
+│   ├── utils/
+│   │   └── reportGenerator.ts       # Generador de ficha y evidencia UPC
 │   ├── types/
-│   │   └── index.ts                   # Tipos TypeScript
-│   ├── App.tsx                        # Componente raíz
-│   ├── main.tsx                       # Entrada de React
-│   └── index.css                      # Estilos y Tailwind
-├── package.json
-└── vite.config.ts
+│   │   └── index.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── package.json                     # Scripts y configuración de electron-builder
+└── vite.config.ts                   # Base './' para soporte 100% offline
 ```
+
+---
+
+## ⚖️ Licencia y Créditos Académicos
+Desarrollado para la **Universidad Popular del Cesar (UPC)**, Facultad de Ingenierías y Tecnologías, Departamento de Física.  
+Valledupar, Cesar, Colombia • Noviembre 2026.

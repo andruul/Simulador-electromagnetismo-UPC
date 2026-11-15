@@ -7,10 +7,43 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "lint": "oxlint src",
     "preview": "vite preview",
     "electron": "electron electron/main.cjs",
     "electron:start": "npm run build && electron electron/main.cjs",
-    "electron:dev": "concurrently -k -s first \"cross-env ELECTRON_DEV=1 vite\" \"wait-on tcp:5173 && cross-env ELECTRON_DEV=1 electron electron/main.cjs\""
+    "electron:dev": "concurrently -k -s first \"cross-env ELECTRON_DEV=1 vite\" \"wait-on tcp:5173 && cross-env ELECTRON_DEV=1 electron electron/main.cjs\"",
+    "electron:pack": "npm run build && electron-builder --dir",
+    "electron:exe": "npm run build && electron-builder --win portable",
+    "electron:nsis": "npm run build && electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "edu.unicesar.simuladorelectromagnetismo",
+    "productName": "Simulador Electromagnetismo UPC",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Simulador Electromagnetismo UPC"
+    },
+    "portable": {
+      "artifactName": "Simulador_Electromagnetismo_UPC_Portable.exe"
+    }
   },
   "dependencies": {
     "lucide-react": "^1.72.0",
@@ -28,6 +61,8 @@
     "concurrently": "^10.0.7",
     "cross-env": "^10.1.0",
     "electron": "^45.3.2",
+    "electron-builder": "^26.18.0",
+    "oxlint": "^1.93.0",
     "tailwindcss": "^4.2.2",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
