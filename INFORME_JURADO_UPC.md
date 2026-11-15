@@ -85,3 +85,4 @@ $$\mathcal{E} = -N \frac{d\Phi_B}{dt}, \quad I_{\text{ind}} = \frac{\mathcal{E}}
 | Compilación de Producción | `vite build` | **0 Errores (776 ms)** |
 | Rendimiento Gráfico | Canvas 2D + WebGL Three.js | **60 FPS estables** |
 | Empaquetado Nativo | Electron v45.3 | **Listo para distribución** |
+
