@@ -6,6 +6,8 @@ export interface TopicItem {
   unitName: string;
   title: string;
   synopsis: string;
+  simpleExplanation?: string;
+  everydayExample?: string;
   formula: string;
   mode: SimulationMode | 'theory';
   presetKey?: string;
@@ -19,6 +21,8 @@ export interface CourseUnit {
   title: string;
   subtitle: string;
   description: string;
+  simpleExplanation?: string;
+  everydayExample?: string;
   keyFormula: string;
   coreConcepts: string[];
   mode: SimulationMode | 'theory';
@@ -39,6 +43,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Interacciones electrostáticas y superposición vectorial',
     description:
       'Estudio analítico y computacional de fuerzas entre cargas puntuales, cálculo del vector campo eléctrico E(r) y mapeo de líneas de fuerza y momentos dipolares.',
+    simpleExplanation:
+      'Las cargas eléctricas se atraen o se repelen a distancia. Cuanto más cerca estén, más fuerte se empujan.',
+    everydayExample:
+      'El globo frotado contra el pelo que levanta papelitos o las pantallas que acumulan polvo por estática.',
     keyFormula: 'F⃗ = (1 / 4πε₀) · (|q₁ · q₂| / r²) · r̂',
     coreConcepts: ['Ley de Coulomb', 'Campo Eléctrico E', 'Principio de Superposición', 'Dipolo y Cuadrupolo'],
     mode: 'electrostatics',
@@ -73,6 +81,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Teorema de la divergencia y superficies equipotenciales',
     description:
       'Cálculo del flujo eléctrico a través de superficies gaussianas cerradas, simetrías electrostáticas y relación ortogonal E = −∇V con superficies equipotenciales.',
+    simpleExplanation:
+      'La cantidad de campo eléctrico que sale de una superficie cerrada solo depende de cuánta carga hay encerrada dentro.',
+    everydayExample:
+      'Una bombilla dentro de una caja cerrada: el flujo de luz que escapa de la caja no cambia si la caja es redonda o cúbica.',
     keyFormula: 'Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀',
     coreConcepts: ['Flujo Eléctrico', 'Superficie Gaussiana', 'Carga Neta Encerrada', 'Superficies Equipotenciales'],
     mode: 'gauss',
@@ -100,6 +112,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Almacenamiento de energía electrostática y polarización',
     description:
       'Configuración de placas conductoras paralelas, distribución de carga superficial σ, campo uniforme interno y efecto de la polarización dieléctrica en la permitividad.',
+    simpleExplanation:
+      'Un condensador es una pequeña batería ultrarrápida que guarda energía y la suelta en una fracción de segundo.',
+    everydayExample:
+      'El flash de una cámara fotográfica, las teclas táctiles capacitivas del celular o el desfibrilador de emergencias.',
     keyFormula: 'C = ε₀ · A / d  |  E = σ / ε₀  |  U = ½ C V²',
     coreConcepts: ['Capacitor de Placas Planas', 'Permitividad ε₀', 'Densidad de Carga σ', 'Energía Almacenada'],
     mode: 'capacitor',
@@ -120,6 +136,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Transporte de carga, densidad de corriente y deriva',
     description:
       'Modelo microscópico del flujo de portadores de carga sometidos a un gradiente de potencial electrostático, relación J = σE y disipación óhmica.',
+    simpleExplanation:
+      'El voltaje empuja a los electrones a través del conductor, y la resistencia del material intenta frenarlos.',
+    everydayExample:
+      'Una manguera de jardín: el voltaje es la presión del grifo, la corriente es el caudal de agua y la resistencia es el grosor del tubo.',
     keyFormula: 'J⃗ = σ · E⃗ = n · q · v⃗_d  |  V = I · R',
     coreConcepts: ['Densidad de Corriente J', 'Velocidad de Arrastre', 'Ley de Ohm Microscópica', 'Partículas de Prueba'],
     mode: 'electrostatics',
@@ -140,6 +160,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Movimiento de partículas en campos electromagnéticos acoplados',
     description:
       'Integración numérica Boris Pusher de la trayectoria de iones en campos E y B 3D. Fenómenos de radio de Larmor, frecuencia de ciclotrón y derivas de plasma.',
+    simpleExplanation:
+      'Los campos magnéticos nunca aumentan la velocidad de una carga, solo doblan su camino en círculos o hélices.',
+    everydayExample:
+      'Las auroras boreales en los polos terrestres o los tubos de rayos catódicos de los televisores antiguos.',
     keyFormula: 'F⃗ = q · (E⃗ + v⃗ × B⃗)  |  r_L = m v_⊥ / (|q| B)',
     coreConcepts: ['Fuerza Magnética F=qv×B', 'Radio de Larmor', 'Filtro de Wien', 'Acelerador Ciclotrón', 'Botella Magnética'],
     mode: 'lorentz3d',
@@ -188,6 +212,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Magnetostática generada por corrientes estacionarias',
     description:
       'Ley de Biot-Savart para corrientes filiformes y Ley circuital de Ampère ∮B·dl = μ₀I_enc. Fuerzas de interacción entre conductores paralelos y solenoides.',
+    simpleExplanation:
+      'Toda corriente eléctrica convierte al cable en un imán con líneas de fuerza que giran a su alrededor.',
+    everydayExample:
+      'Los electroimanes de grúas industriales y los motores eléctricos que hacen girar ventiladores y lavadoras.',
     keyFormula: 'B = (μ₀ · I) / (2π · r)  |  ∮ B⃗ · dl⃗ = μ₀ · I_enc',
     coreConcepts: ['Biot-Savart', 'Ley de Ampère', 'Regla de la Mano Derecha', 'Fuerza entre Conductores', 'Solenoide'],
     mode: 'magnetostatics',
@@ -222,6 +250,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Flujo magnético variable y fuerza electromotriz inducida',
     description:
       'Fundamentos de la inducción electromagnética: una variación temporal del flujo magnético engendra una fuerza electromotriz inducida opuesta a la causa que la produce.',
+    simpleExplanation:
+      'Mover un imán cerca de un cable genera electricidad de inmediato. Si el imán se queda quieto, la corriente se apaga.',
+    everydayExample:
+      'Las turbinas de represas hidroeléctricas, las cocinas de inducción y las tarjetas de transporte con chip sin contacto.',
     keyFormula: 'ε = - dΦ_B / dt = - d/dt ∬ B⃗ · dA⃗',
     coreConcepts: ['Flujo Magnético Φ_B', 'Ley de Faraday', 'Regla de Lenz', 'Corrientes de Eddy (Foucault)'],
     mode: 'faraday',
@@ -249,6 +281,10 @@ export const COURSE_UNITS: CourseUnit[] = [
     subtitle: 'Unificación electromagnética y radiación de ondas',
     description:
       'Las cuatro ecuaciones fundamentales en formulación diferencial e integral: Gauss eléctrico y magnético, Faraday-Maxwell y Ampère-Maxwell con corriente de desplazamiento.',
+    simpleExplanation:
+      'Electricidad y magnetismo son dos caras de una misma moneda. Al juntarse e interactuar en el espacio, forman la luz.',
+    everydayExample:
+      'Las señales de Wi-Fi, la telefonía celular 5G, las ondas de radio y la luz solar que ilumina la Tierra.',
     keyFormula: '∇·E = ρ/ε₀ | ∇·B = 0 | ∇×E = -∂B/∂t | ∇×B = μ₀J + μ₀ε₀∂E/∂t',
     coreConcepts: ['Corriente de Desplazamiento', 'Teorema de Poynting', 'Velocidad de la Luz c', 'Ondas Electromagnéticas'],
     mode: 'theory',
@@ -280,6 +316,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Ley de Coulomb & Interacción Electrostática',
     synopsis:
       'Fuerza fundamental electrostática entre cargas puntuales en reposo en el vacío o medio material. Sigue la ley del inverso del cuadrado de la distancia.',
+    simpleExplanation:
+      'Cargas del mismo signo se repelen; cargas opuestas se atraen. La fuerza cae rápidamente si las separas.',
+    everydayExample:
+      'Frotar un peine contra el cabello seco para levantar pequeños pedacitos de papel.',
     formula: 'F = (1 / 4πε₀) · (|q₁ · q₂| / r²)',
     mode: 'electrostatics',
     presetKey: 'dipole',
@@ -294,6 +334,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Dipolo Eléctrico & Momento Dipolar',
     synopsis:
       'Par de cargas de igual magnitud y signo opuesto (+q, −q) separadas por una distancia fija. Las líneas de campo emergen de la carga positiva y convergen en la negativa.',
+    simpleExplanation:
+      'Una pareja de carga positiva y negativa unidas. Es la estructura que explica cómo funciona el agua y las microondas.',
+    everydayExample:
+      'La molécula de agua (H₂O), cuyos dipolos giran con las ondas del microondas calentando la comida.',
     formula: 'p⃗ = q · d⃗  |  V(r, θ) ≈ (k · p · cos θ) / r²',
     mode: 'electrostatics',
     presetKey: 'dipole',
@@ -308,6 +352,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Repulsión de Cargas Homólogas (+q, +q)',
     synopsis:
       'Distribución de dos cargas del mismo signo. Las líneas de campo divergen lateralmente originando un punto de campo nulo (E = 0) en el punto equidistante intermedio.',
+    simpleExplanation:
+      'Dos cargas iguales empujan en sentidos contrarios, cancelándose en el punto exacto del medio donde el campo vale cero.',
+    everydayExample:
+      'Cuando dos imanes con el mismo polo norte se empujan y sientes un "colchón invisible" en medio.',
     formula: 'E_centro = E₁ - E₂ = 0  (si q₁ = q₂)',
     mode: 'electrostatics',
     presetKey: 'repulsion',
@@ -322,6 +370,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Cuadrupolo Eléctrico Planar',
     synopsis:
       'Configuración de cuatro cargas alternadas con carga neta cero y momento dipolar nulo. Su potencial electrostático decae rápidamente como 1/r³.',
+    simpleExplanation:
+      'Cuatro cargas balanceadas que anulan el campo a larga distancia, usado en trampas iónicas y espectrómetros de masas.',
+    everydayExample:
+      'Trampas de cuadrupolo en aceleradores que confinan iones sin que toquen las paredes.',
     formula: 'V_cuadrupolo(r) ∝ 1 / r³',
     mode: 'electrostatics',
     presetKey: 'quadrupole',
@@ -336,6 +388,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Ley de Gauss & Flujo Eléctrico',
     synopsis:
       'El flujo eléctrico neto a través de una superficie gaussiana cerrada es igual a la carga neta encerrada dividida por la permitividad del vacío ε₀.',
+    simpleExplanation:
+      'Solo las cargas dentro de la burbuja cerrada cuentan para el flujo total. Lo que esté afuera entra y sale sin aportar nada.',
+    everydayExample:
+      'Contar cuántas personas entran a un vagón de tren cerrado comparando las puertas de entrada y salida.',
     formula: 'Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀',
     mode: 'gauss',
     presetKey: 'monopole',
@@ -350,6 +406,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Superficies Equipotenciales & Gradiente de Potencial',
     synopsis:
       'Lugares geométricos donde el potencial V es constante. El vector campo eléctrico E es siempre perpendicular a las equipotenciales (E = −∇V).',
+    simpleExplanation:
+      'Son como las curvas de nivel de un mapa de montaña: caminar por la curva no cuesta trabajo; bajar en perpendicular es donde más rápido caes.',
+    everydayExample:
+      'Curvas de altitud topográficas donde el agua fluye montaña abajo perpendicular a las líneas de igual altura.',
     formula: 'E⃗ = - ∇V  |  W = - q · ΔV = 0  (a lo largo de la curva)',
     mode: 'electrostatics',
     presetKey: 'dipole',
@@ -364,6 +424,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Condensador de Placas Paralelas & Campo Uniforme',
     synopsis:
       'Dos armaduras conductoras planas separadas por un dieléctrico. Entre las placas el campo eléctrico es uniforme: E = σ/ε₀, con capacitancia C = ε₀A/d.',
+    simpleExplanation:
+      'Dos láminas de metal frente a frente que acumulan carga eléctrica como una represa de energía.',
+    everydayExample:
+      'El almacenamiento de energía que alimenta el flash de tu teléfono inteligente.',
     formula: 'C = ε₀ · A / d  |  E = σ / ε₀  |  U = ½ C V²',
     mode: 'capacitor',
     presetKey: 'teflon',
@@ -378,6 +442,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Dieléctricos, Polarización & Permitividad',
     synopsis:
       'Materiales aislantes cuyos dipolos microscópicos se orientan bajo un campo externo, reduciendo el campo neto y multiplicando la capacitancia por la constante κ.',
+    simpleExplanation:
+      'Un aislante colocado entre placas que se polariza internamente permitiendo acumular mucha más carga eléctrica.',
+    everydayExample:
+      'El teflón o la mica dentro de condensadores industriales para evitar chispazos y maximizar potencia.',
     formula: 'C = κ · C₀  |  E = E₀ / κ  |  P⃗ = ε₀ (κ - 1) E⃗',
     mode: 'capacitor',
     presetKey: 'glass',
@@ -392,6 +460,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Fuerza de Lorentz & Dinámica 3D',
     synopsis:
       'Fuerza neta ejercida por campos eléctricos y magnéticos sobre una partícula en movimiento: F = q(E + v × B). La fuerza magnética no realiza trabajo.',
+    simpleExplanation:
+      'La fuerza que desvía a cualquier electrón o ion que viaje en un campo magnético, formando trayectorias curvas.',
+    everydayExample:
+      'El cinturón de radiación de Van Allen que desvía las partículas letales del espacio antes de llegar a nosotros.',
     formula: 'F⃗ = q · (E⃗ + v⃗ × B⃗)  |  r_L = m v_⊥ / (|q| B)',
     mode: 'lorentz3d',
     presetKey: 'helix',
@@ -406,6 +478,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Filtro de Wien (Selector de Velocidades)',
     synopsis:
       'Configuración con campos perpendiculares E y B cruzados. Únicamente las partículas cuya velocidad cumple exactamente v = E/B continúan en trayectoria rectilínea sin desviarse.',
+    simpleExplanation:
+      'Un túnel electromagnético donde solo pasan las partículas con una velocidad perfecta; todas las demás chocan contra los lados.',
+    everydayExample:
+      'La etapa de entrada de un espectrómetro de masas para analizar muestras biológicas o químicas.',
     formula: 'v_crit = E / B  |  qE = q v B  ⇒  F_neta = 0',
     mode: 'lorentz3d',
     presetKey: 'velocity_selector',
@@ -420,6 +496,10 @@ export const TOPICS_DATABASE: TopicItem[] = [
     title: 'Acelerador Ciclotrón de Partículas',
     synopsis:
       'Acelerador circular donde el campo magnético constante dobla la trayectoria en espirales concéntricas con frecuencia independiente del radio orbital: f = qB/(2πm).',
+    simpleExplanation:
+      'Un tiovivo magnético que le da un empujón eléctrico a las partículas cada vez que dan media vuelta hasta que van casi a la velocidad de la luz.',
+    everydayExample:
+      'Los ciclotrones médicos en hospitales que producen isótopos radiactivos para escáneres PET oncológicos.',
     formula: 'f_c = |q| B / (2π · m)  |  ω = q B / m',
     mode: 'lorentz3d',
     presetKey: 'cyclotron',

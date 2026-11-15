@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
+import type { ViewMode } from '../types';
 import {
   DIELECTRIC_MATERIALS,
   computeCapacitorState,
@@ -10,7 +11,17 @@ import {
   Layers
 } from 'lucide-react';
 
-export const CapacitorLabCanvas: React.FC = () => {
+export interface CapacitorLabCanvasProps {
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
+  viewMode?: ViewMode;
+}
+
+export const CapacitorLabCanvas: React.FC<CapacitorLabCanvasProps> = ({
+  presetRequest,
+  onPresetHandled,
+  viewMode = 'explore'
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -107,6 +118,41 @@ export const CapacitorLabCanvas: React.FC = () => {
     batteryVoltage,
     trappedCharge
   ]);
+
+  // Handle 1-click presets from LeftGuidePanel or Search
+  useEffect(() => {
+    if (!presetRequest) return;
+    if (presetRequest === 'vacuum') {
+      setSelectedMaterialId('vacuum');
+      setInsertionFraction(0);
+      setConnectedToBattery(true);
+      setBatteryVoltage(1.5);
+    } else if (presetRequest === 'teflon') {
+      setSelectedMaterialId('teflon');
+      setInsertionFraction(1.0);
+      setConnectedToBattery(true);
+      setBatteryVoltage(1.5);
+    } else if (presetRequest === 'glass') {
+      setSelectedMaterialId('glass');
+      setInsertionFraction(1.0);
+      setConnectedToBattery(true);
+      setBatteryVoltage(2.0);
+    } else if (presetRequest === 'trapped') {
+      setSelectedMaterialId('glass');
+      setInsertionFraction(0.85);
+      const currentPhys = computeCapacitorState({
+        plateAreaMm2,
+        plateDistanceMm,
+        kappa: 5.6,
+        insertionFraction: 0.85,
+        connectedToBattery: true,
+        batteryVoltage: 1.5
+      });
+      setTrappedCharge(currentPhys.storedCharge);
+      setConnectedToBattery(false);
+    }
+    onPresetHandled?.();
+  }, [presetRequest, onPresetHandled, plateAreaMm2, plateDistanceMm]);
 
   // Layout Geometry of the Capacitor in Canvas
   const centerX = dimensions.width / 2;
@@ -722,32 +768,46 @@ export const CapacitorLabCanvas: React.FC = () => {
         </div>
 
         {/* Real-time Values Bar */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div>
-            <span className="text-slate-400">Capacitancia C: </span>
-            <span className="text-cyan-300 font-bold">{physics.capacitancePF.toFixed(2)} pF</span>
+        {viewMode === 'explore' ? (
+          <div className="flex items-center gap-3 text-xs">
+            <span className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-medium">
+              Capacitancia: {physics.capacitancePF > 1.2 ? '⚡ Alta' : physics.capacitancePF > 0.5 ? '🔹 Media' : '🔸 Baja'} ({physics.capacitancePF.toFixed(1)} pF)
+            </span>
+            <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-medium">
+              {connectedToBattery ? '🔋 Batería Activa (V Fijo)' : '🔒 Carga Atrapada (Q Fija)'}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-medium">
+              Dieléctrico: {currentMaterial.name} ({Math.round(insertionFraction * 100)}% dentro)
+            </span>
           </div>
+        ) : (
+          <div className="flex items-center gap-4 text-xs font-mono">
+            <div>
+              <span className="text-slate-400">Capacitancia C: </span>
+              <span className="text-cyan-300 font-bold">{physics.capacitancePF.toFixed(2)} pF</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Carga Q: </span>
-            <span className="text-rose-400 font-bold">{physics.storedChargePC.toFixed(2)} pC</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Carga Q: </span>
+              <span className="text-rose-400 font-bold">{physics.storedChargePC.toFixed(2)} pC</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Voltaje V: </span>
-            <span className="text-amber-400 font-bold">{physics.voltage.toFixed(2)} V</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Voltaje V: </span>
+              <span className="text-amber-400 font-bold">{physics.voltage.toFixed(2)} V</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Energía U: </span>
-            <span className="text-emerald-400 font-bold">{physics.storedEnergyPJ.toFixed(2)} pJ</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Energía U: </span>
+              <span className="text-emerald-400 font-bold">{physics.storedEnergyPJ.toFixed(2)} pJ</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Campo E: </span>
-            <span className="text-purple-300 font-bold">{physics.electricFieldKVm.toFixed(2)} kV/m</span>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Campo E: </span>
+              <span className="text-purple-300 font-bold">{physics.electricFieldKVm.toFixed(2)} kV/m</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Battery & Circuit Control HUD (Top Right) */}

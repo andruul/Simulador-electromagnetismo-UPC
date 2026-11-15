@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { PointCharge, TestParticle2D, Sensor2D, ElectrostaticsSettings } from '../types';
+import type { PointCharge, TestParticle2D, Sensor2D, ElectrostaticsSettings, ViewMode } from '../types';
 import {
   calculateElectricField,
   calculateElectricPotential,
@@ -15,6 +15,7 @@ interface ElectrostaticsCanvasProps {
   setSelectedChargeId: (id: string | null) => void;
   settings: ElectrostaticsSettings;
   isPlaying: boolean;
+  viewMode?: ViewMode;
 }
 
 export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
@@ -23,7 +24,8 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
   selectedChargeId,
   setSelectedChargeId,
   settings,
-  isPlaying
+  isPlaying,
+  viewMode = 'explore'
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -513,16 +515,24 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#38bdf8';
+      ctx.fillStyle = viewMode === 'explore' ? '#10b981' : '#38bdf8';
       ctx.font = 'bold 11px system-ui, sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText('SENSOR DE PRUEBA', boxX + 10, boxY + 16);
+      ctx.fillText(viewMode === 'explore' ? 'SENSOR EXPLORADOR' : 'MULTÍMETRO DIGITAL (SI)', boxX + 10, boxY + 16);
 
       ctx.fillStyle = '#f8fafc';
       ctx.font = '11px monospace';
-      ctx.fillText(`|E|: ${Emag.toFixed(1)} N/C`, boxX + 10, boxY + 32);
-      ctx.fillText(`V:   ${V.toFixed(1)} Volts`, boxX + 10, boxY + 47);
-      ctx.fillText(`θ:   ${angleDeg.toFixed(1)}°`, boxX + 10, boxY + 61);
+      if (viewMode === 'explore') {
+        const fieldLevel = Emag > 120 ? 'Muy Fuerte' : Emag > 40 ? 'Medio' : 'Suave';
+        const voltLevel = V > 60 ? 'Alto (+)' : V < -60 ? 'Bajo (−)' : 'Cero (0V)';
+        ctx.fillText(`Campo: ${fieldLevel} (${Emag.toFixed(0)})`, boxX + 10, boxY + 32);
+        ctx.fillText(`Voltaje: ${voltLevel}`, boxX + 10, boxY + 47);
+        ctx.fillText(`Ángulo: ${angleDeg.toFixed(0)}°`, boxX + 10, boxY + 61);
+      } else {
+        ctx.fillText(`|E|: ${Emag.toFixed(2)} N/C`, boxX + 10, boxY + 32);
+        ctx.fillText(`V:   ${V.toFixed(2)} Volts`, boxX + 10, boxY + 47);
+        ctx.fillText(`θ:   ${angleDeg.toFixed(1)}°`, boxX + 10, boxY + 61);
+      }
 
       ctx.restore();
     }
@@ -533,7 +543,8 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     settings,
     sensor,
     isDraggingSensor,
-    testParticles
+    testParticles,
+    viewMode
   ]);
 
   // Mouse interaction handlers

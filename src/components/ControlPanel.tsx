@@ -1,6 +1,7 @@
 import React from 'react';
 import type {
   SimulationMode,
+  ViewMode,
   PointCharge,
   ElectrostaticsSettings,
   Lorentz3DSettings
@@ -10,17 +11,23 @@ import {
   Minus,
   Trash2,
   Layers,
-  Sparkles,
   Zap,
   RotateCw,
   Compass,
   Lock,
   Unlock,
-  X
+  X,
+  Gauge,
+  Sliders,
+  BatteryCharging,
+  CircleDot,
+  Sparkles,
+  Info
 } from 'lucide-react';
 
 interface ControlPanelProps {
   mode: SimulationMode;
+  viewMode: ViewMode;
   // Electrostatics props
   charges: PointCharge[];
   setCharges: React.Dispatch<React.SetStateAction<PointCharge[]>>;
@@ -38,6 +45,7 @@ interface ControlPanelProps {
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   mode,
+  viewMode,
   charges,
   setCharges,
   selectedChargeId,
@@ -46,8 +54,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   setElectroSettings,
   lorentzSettings,
   setLorentzSettings,
-  onRequestLorentzPreset,
-  onRequestMagnetoPreset,
   onClose
 }) => {
   const selectedCharge = charges.find((c) => c.id === selectedChargeId);
@@ -71,113 +77,83 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     setSelectedChargeId(null);
   };
 
-  // Electrostatics presets
-  const applyElectroPreset = (type: string) => {
-    if (type === 'single') {
-      setCharges([
-        { id: 'c1', x: 400, y: 300, charge: 2, fixed: false }
-      ]);
-    } else if (type === 'dipole') {
-      setCharges([
-        { id: 'c1', x: 320, y: 300, charge: 2, fixed: false },
-        { id: 'c2', x: 480, y: 300, charge: -2, fixed: false }
-      ]);
-    } else if (type === 'repulsion') {
-      setCharges([
-        { id: 'c1', x: 320, y: 300, charge: 2, fixed: false },
-        { id: 'c2', x: 480, y: 300, charge: 2, fixed: false }
-      ]);
-    } else if (type === 'quadrupole') {
-      setCharges([
-        { id: 'c1', x: 340, y: 240, charge: 2, fixed: false },
-        { id: 'c2', x: 460, y: 240, charge: -2, fixed: false },
-        { id: 'c3', x: 340, y: 360, charge: -2, fixed: false },
-        { id: 'c4', x: 460, y: 360, charge: 2, fixed: false }
-      ]);
-    } else if (type === 'capacitor') {
-      // Parallel plate capacitor
-      const plates: PointCharge[] = [];
-      const count = 7;
-      const startX = 260;
-      const step = 45;
-      for (let i = 0; i < count; i++) {
-        plates.push({
-          id: `top_${i}`,
-          x: startX + i * step,
-          y: 200,
-          charge: 1.5,
-          fixed: true
-        });
-        plates.push({
-          id: `bot_${i}`,
-          x: startX + i * step,
-          y: 400,
-          charge: -1.5,
-          fixed: true
-        });
-      }
-      setCharges(plates);
-    }
-    setSelectedChargeId(null);
-  };
-
   return (
-    <aside className="w-80 h-full bg-slate-950/95 border-l border-slate-800/80 flex flex-col overflow-y-auto select-none p-4 space-y-4 text-xs text-slate-300 flex-shrink-0 transition-all">
-      {/* Panel Top Bar with close/collapse button */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-400">
-        <span className="font-bold text-[11px] uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Panel de Parámetros</span>
-        </span>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors cursor-pointer"
-            title="Ocultar panel lateral (maximizar canvas)"
+    <aside className="w-80 h-full bg-[#0d131f] border-l border-slate-800/90 flex flex-col overflow-y-auto select-none p-3.5 space-y-4 text-xs text-slate-300 flex-shrink-0 z-20 shadow-2xl">
+      {/* Panel Top Bar */}
+      <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 text-slate-400">
+        <div className="flex items-center gap-1.5">
+          <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-bold text-[11px] uppercase tracking-wider text-slate-200">
+            CONTROLES DE LABORATORIO
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+              viewMode === 'explore'
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
+                : 'bg-sky-950 text-sky-300 border-sky-500/40'
+            }`}
           >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+            {viewMode === 'explore' ? 'Modo Exploración' : 'Modo Medición'}
+          </span>
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+              title="Ocultar panel lateral"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ----------------- MODE: ELECTROSTATICS ----------------- */}
       {mode === 'electrostatics' && (
-        <>
+        <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-rose-400 font-bold">
+          <div className="flex items-center gap-2 pb-1 text-rose-400 font-bold border-b border-slate-800/60">
             <Zap className="w-4 h-4" />
-            <span>CONFIGURACIÓN DE ELECTROSTÁTICA</span>
+            <span className="text-[11px]">ELECTROSTÁTICA Y CARGAS</span>
           </div>
 
           {/* Charge management */}
-          <div className="space-y-2.5">
-            <label className="text-slate-400 font-semibold block">Añadir Carga Puntual:</label>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-slate-300 font-semibold block text-[11px]">
+              Añadir Carga al Lienzo:
+            </label>
+            <p className="text-[10px] text-slate-400 leading-tight">
+              Coloca partículas cargadas para ver cómo interactúan y modifican el espacio.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 onClick={() => addCharge(2)}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-xl font-medium transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1 py-1.5 px-2 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 rounded-lg font-medium transition-colors cursor-pointer text-xs"
               >
-                <Plus className="w-4 h-4" /> Positiva (+2 µC)
+                <Plus className="w-3.5 h-3.5" /> Positiva (+2 µC)
               </button>
               <button
                 onClick={() => addCharge(-2)}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-xl font-medium transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-1 py-1.5 px-2 bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/40 rounded-lg font-medium transition-colors cursor-pointer text-xs"
               >
-                <Minus className="w-4 h-4" /> Negativa (−2 µC)
+                <Minus className="w-3.5 h-3.5" /> Negativa (−2 µC)
               </button>
             </div>
           </div>
 
           {/* Selected Charge Inspector */}
           {selectedCharge ? (
-            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-3">
+            <div className="p-3 bg-[#111827] rounded-xl border border-slate-800 space-y-2.5 shadow-sm">
               <div className="flex items-center justify-between text-slate-200 font-semibold">
                 <span>Carga Seleccionada</span>
                 <span
-                  className={`font-mono px-1.5 py-0.5 rounded text-[10px] ${
+                  className={`font-mono px-2 py-0.5 rounded text-[10px] font-bold ${
                     selectedCharge.charge > 0
-                      ? 'bg-rose-500/20 text-rose-400'
-                      : 'bg-sky-500/20 text-sky-400'
+                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      : 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                   }`}
                 >
                   {selectedCharge.charge > 0 ? '+' : ''}
@@ -186,9 +162,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
 
               <div>
-                <div className="flex justify-between text-slate-400 mb-1">
-                  <span>Magnitud de Carga (q):</span>
-                  <span className="font-mono text-white">{selectedCharge.charge} µC</span>
+                <div className="flex justify-between text-slate-300 text-[11px] mb-1">
+                  <span>Valor de Carga (q):</span>
+                  <span className="font-mono text-white font-bold">{selectedCharge.charge} µC</span>
                 </div>
                 <input
                   type="range"
@@ -204,9 +180,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   }}
                   className="w-full accent-rose-500 cursor-pointer"
                 />
+                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
+                  Carga eléctrica: Valores positivos repelen a otras positivas y atraen a negativas.
+                </p>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-800">
                 <button
                   onClick={() => {
                     setCharges((prev) =>
@@ -215,19 +194,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       )
                     );
                   }}
-                  className="flex items-center gap-1.5 text-slate-300 hover:text-white cursor-pointer"
+                  className="flex items-center gap-1.5 text-slate-300 hover:text-white cursor-pointer text-[11px]"
                 >
                   {selectedCharge.fixed ? (
                     <Lock className="w-3.5 h-3.5 text-amber-400" />
                   ) : (
                     <Unlock className="w-3.5 h-3.5 text-slate-500" />
                   )}
-                  <span>{selectedCharge.fixed ? 'Fijada' : 'Móvil'}</span>
+                  <span>{selectedCharge.fixed ? 'Fijada en el espacio' : 'Libre para mover'}</span>
                 </button>
 
                 <button
                   onClick={removeSelectedCharge}
-                  className="flex items-center gap-1 text-rose-400 hover:text-rose-300 cursor-pointer"
+                  className="flex items-center gap-1 text-rose-400 hover:text-rose-300 cursor-pointer text-[11px]"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Eliminar</span>
@@ -235,21 +214,24 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-800/60 text-slate-500 text-center italic">
-              Haz clic en cualquier carga para editar su valor o fijarla
+            <div className="p-3 bg-[#111827]/70 rounded-xl border border-slate-800/80 text-slate-400 text-center text-[11px] italic">
+              💡 Haz clic sobre cualquier carga en el lienzo para ajustar su valor o fijarla.
             </div>
           )}
 
           {/* Visual Layers Toggles */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 font-semibold text-slate-300">
-              <Layers className="w-4 h-4 text-sky-400" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 font-semibold text-slate-200 text-[11px]">
+              <Layers className="w-3.5 h-3.5 text-sky-400" />
               <span>Capas de Visualización</span>
             </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-                <span className="text-slate-300">Vectores de Campo Eléctrico (E)</span>
+            <div className="space-y-1.5">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+                <div>
+                  <span className="text-slate-200 block text-[11px]">Vectores de Campo Eléctrico (E)</span>
+                  <span className="text-[10px] text-slate-400">Flechas que indican dirección e intensidad</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={electroSettings.showVectorField}
@@ -260,8 +242,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-                <span className="text-slate-300">Líneas de Campo Continuas (RK4)</span>
+              <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+                <div>
+                  <span className="text-slate-200 block text-[11px]">Líneas de Campo (RK4)</span>
+                  <span className="text-[10px] text-slate-400">Trayectorias continuas desde (+) hacia (−)</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={electroSettings.showFieldLines}
@@ -272,8 +257,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-                <span className="text-slate-300">Mapa de Calor de Potencial (V)</span>
+              <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+                <div>
+                  <span className="text-slate-200 block text-[11px]">Mapa de Calor de Potencial (V)</span>
+                  <span className="text-[10px] text-slate-400">Rojo (voltaje positivo) y Azul (negativo)</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={electroSettings.showPotentialHeatmap}
@@ -284,8 +272,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-                <span className="text-slate-300">Curvas Equipotenciales (Isolíneas)</span>
+              <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+                <div>
+                  <span className="text-slate-200 block text-[11px]">Curvas Equipotenciales</span>
+                  <span className="text-[10px] text-slate-400">Líneas de igual voltaje (perpendiculares a E)</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={electroSettings.showEquipotentialLines}
@@ -302,13 +293,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
 
           {/* Density Sliders */}
-          <div className="space-y-3 p-3 bg-slate-900/40 rounded-xl border border-slate-800/60">
+          <div className="space-y-3 p-3 bg-[#111827] rounded-xl border border-slate-800/80">
             <div>
-              <div className="flex justify-between text-slate-400 mb-1">
-                <span>Líneas por carga:</span>
-                <span className="font-mono text-white">
-                  {electroSettings.fieldLinesPerCharge}
-                </span>
+              <div className="flex justify-between text-slate-300 text-[11px] mb-1">
+                <span>Líneas por cada carga:</span>
+                <span className="font-mono text-emerald-400 font-bold">{electroSettings.fieldLinesPerCharge}</span>
               </div>
               <input
                 type="range"
@@ -322,16 +311,17 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     fieldLinesPerCharge: parseInt(e.target.value)
                   }))
                 }
-                className="w-full accent-rose-500 cursor-pointer"
+                className="w-full accent-emerald-500 cursor-pointer"
               />
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Densidad de líneas: A mayor número, más fino es el mapa de campo.
+              </p>
             </div>
 
             <div>
-              <div className="flex justify-between text-slate-400 mb-1">
-                <span>Densidad de Grilla E:</span>
-                <span className="font-mono text-white">
-                  {electroSettings.vectorGridDensity} px
-                </span>
+              <div className="flex justify-between text-slate-300 text-[11px] mb-1">
+                <span>Espaciado de Grilla de Flechas:</span>
+                <span className="font-mono text-emerald-400 font-bold">{electroSettings.vectorGridDensity} px</span>
               </div>
               <input
                 type="range"
@@ -345,130 +335,83 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     vectorGridDensity: parseInt(e.target.value)
                   }))
                 }
-                className="w-full accent-rose-500 cursor-pointer"
+                className="w-full accent-emerald-500 cursor-pointer"
               />
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Separación entre vectores: A menor valor, grilla más tupida.
+              </p>
             </div>
           </div>
-
-          {/* Presets library */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Presets Didácticos:
-            </div>
-            <div className="grid grid-cols-1 gap-1.5">
-              <button
-                onClick={() => applyElectroPreset('dipole')}
-                className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors"
-              >
-                ⚡ Dipolo Eléctrico (+q, −q)
-              </button>
-              <button
-                onClick={() => applyElectroPreset('repulsion')}
-                className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors"
-              >
-                ⚡ Cargas de Igual Signo (+q, +q)
-              </button>
-              <button
-                onClick={() => applyElectroPreset('quadrupole')}
-                className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors"
-              >
-                ⚡ Cuadrupolo Eléctrico
-              </button>
-              <button
-                onClick={() => applyElectroPreset('capacitor')}
-                className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors"
-              >
-                ⚡ Condensador de Placas Paralelas
-              </button>
-              <button
-                onClick={() => applyElectroPreset('single')}
-                className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors"
-              >
-                ⚡ Carga Única Aislada
-              </button>
-            </div>
-          </div>
-        </>
+        </div>
       )}
 
       {/* ----------------- MODE: LORENTZ 3D ----------------- */}
       {mode === 'lorentz3d' && (
-        <>
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-sky-400 font-bold">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 pb-1 text-sky-400 font-bold border-b border-slate-800/60">
             <RotateCw className="w-4 h-4" />
-            <span>CAMPOS Y PARÁMETROS 3D</span>
+            <span className="text-[11px]">CAMPOS ELÉCTRICO Y MAGNÉTICO 3D</span>
           </div>
 
-          {/* Magnetic Field B control */}
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2.5">
+          {/* Magnetic Field B */}
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="font-semibold text-cyan-400">Campo Magnético B (Tesla)</span>
-              <span className="font-mono text-[11px] text-slate-400">
-                ({lorentzSettings.bField.x.toFixed(1)}, {lorentzSettings.bField.y.toFixed(1)},{' '}
-                {lorentzSettings.bField.z.toFixed(1)})
-              </span>
+              <span className="font-semibold text-cyan-400 text-[11px]">Campo Magnético (B_z)</span>
+              <span className="font-mono text-white font-bold">{lorentzSettings.bField.z.toFixed(1)} Tesla</span>
             </div>
-
-            <div>
-              <div className="flex justify-between text-slate-400 text-[11px]">
-                <span>Componente B_z:</span>
-                <span className="text-white font-mono">{lorentzSettings.bField.z} T</span>
-              </div>
-              <input
-                type="range"
-                min="-5"
-                max="5"
-                step="0.5"
-                value={lorentzSettings.bField.z}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  setLorentzSettings((s) => ({
-                    ...s,
-                    bField: { ...s.bField, z: val }
-                  }));
-                }}
-                className="w-full accent-cyan-500 cursor-pointer"
-              />
-            </div>
+            <input
+              type="range"
+              min="-5"
+              max="5"
+              step="0.5"
+              value={lorentzSettings.bField.z}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                setLorentzSettings((s) => ({
+                  ...s,
+                  bField: { ...s.bField, z: val }
+                }));
+              }}
+              className="w-full accent-cyan-500 cursor-pointer"
+            />
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Campo magnético: Curva la trayectoria de las partículas en órbitas circulares sin alterar su rapidez.
+            </p>
           </div>
 
-          {/* Electric Field E control */}
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2.5">
+          {/* Electric Field E */}
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="font-semibold text-rose-400">Campo Eléctrico E (N/C)</span>
-              <span className="font-mono text-[11px] text-slate-400">
-                ({lorentzSettings.eField.x.toFixed(1)}, {lorentzSettings.eField.y.toFixed(1)},{' '}
-                {lorentzSettings.eField.z.toFixed(1)})
-              </span>
+              <span className="font-semibold text-rose-400 text-[11px]">Campo Eléctrico (E_y)</span>
+              <span className="font-mono text-white font-bold">{lorentzSettings.eField.y.toFixed(1)} N/C</span>
             </div>
-
-            <div>
-              <div className="flex justify-between text-slate-400 text-[11px]">
-                <span>Componente E_y:</span>
-                <span className="text-white font-mono">{lorentzSettings.eField.y} N/C</span>
-              </div>
-              <input
-                type="range"
-                min="-10"
-                max="10"
-                step="1"
-                value={lorentzSettings.eField.y}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  setLorentzSettings((s) => ({
-                    ...s,
-                    eField: { ...s.eField, y: val }
-                  }));
-                }}
-                className="w-full accent-rose-500 cursor-pointer"
-              />
-            </div>
+            <input
+              type="range"
+              min="-10"
+              max="10"
+              step="1"
+              value={lorentzSettings.eField.y}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                setLorentzSettings((s) => ({
+                  ...s,
+                  eField: { ...s.eField, y: val }
+                }));
+              }}
+              className="w-full accent-rose-500 cursor-pointer"
+            />
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Campo eléctrico: Empuja y acelera la partícula en la dirección del eje vertical Y.
+            </p>
           </div>
 
           {/* 3D Toggles */}
-          <div className="space-y-2">
-            <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-              <span className="text-slate-300">Vectores v y F sobre partícula</span>
+          <div className="space-y-1.5">
+            <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <div>
+                <span className="text-slate-200 text-[11px] block">Vectores v y F sobre partícula</span>
+                <span className="text-[10px] text-slate-400">Verde (velocidad) y Amarillo (fuerza)</span>
+              </div>
               <input
                 type="checkbox"
                 checked={lorentzSettings.showVectorsOnParticle}
@@ -482,8 +425,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               />
             </label>
 
-            <label className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:bg-slate-900">
-              <span className="text-slate-300">Visualizar vectores E y B en 3D</span>
+            <label className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <div>
+                <span className="text-slate-200 text-[11px] block">Mostrar flechas de campo 3D</span>
+                <span className="text-[10px] text-slate-400">Matriz tridimensional de vectores B y E</span>
+              </div>
               <input
                 type="checkbox"
                 checked={lorentzSettings.showFieldVectors}
@@ -498,11 +444,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </label>
           </div>
 
-          {/* Simulation Time Step */}
-          <div className="p-3 bg-slate-900/40 rounded-xl border border-slate-800/60 space-y-1">
-            <div className="flex justify-between text-slate-400">
-              <span>Velocidad de Simulación (dt):</span>
-              <span className="font-mono text-white">{lorentzSettings.timeStep}</span>
+          {/* Step size */}
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800/80 space-y-1.5">
+            <div className="flex justify-between text-slate-300 text-[11px]">
+              <span>Paso de Tiempo (dt):</span>
+              <span className="font-mono text-sky-400 font-bold">{lorentzSettings.timeStep}</span>
             </div>
             <input
               type="range"
@@ -518,230 +464,138 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               }
               className="w-full accent-sky-500 cursor-pointer"
             />
-          </div>
-
-          {/* Lorentz Presets library */}
-          {onRequestLorentzPreset && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 font-semibold text-slate-400">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Presets Didácticos 3D:
-              </div>
-              <div className="grid grid-cols-1 gap-1.5">
-                <button
-                  onClick={() => onRequestLorentzPreset('helix')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🌀 Espiral / Hélice (B puro)
-                </button>
-                <button
-                  onClick={() => onRequestLorentzPreset('velocity_selector')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  ⚡ Selector de Velocidades (Wien)
-                </button>
-                <button
-                  onClick={() => onRequestLorentzPreset('cyclotron')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🎯 Acelerador Ciclotrón
-                </button>
-                <button
-                  onClick={() => onRequestLorentzPreset('magnetic_bottle')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🧲 Botella Magnética (Espejo)
-                </button>
-                <button
-                  onClick={() => onRequestLorentzPreset('drift')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🌊 Deriva E × B en Plasma
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ----------------- MODE: MAGNETOSTATICS ----------------- */}
-      {mode === 'magnetostatics' && (
-        <>
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-teal-400 font-bold">
-            <Compass className="w-4 h-4" />
-            <span>MAGNETOSTÁTICA & AMPÈRE</span>
-          </div>
-
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
-            <span className="font-semibold text-slate-200">Ley de Ampère / Biot-Savart</span>
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              El campo magnético circula en torno a las corrientes eléctricas de acuerdo con la regla de la mano derecha.
-            </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-teal-300 text-[11px]">
-              B = (μ₀ · I) / (2π · r)
-            </div>
-          </div>
-
-          <div className="space-y-2 text-slate-400 text-[11px]">
-            <p className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-cyan-500 inline-block text-[8px] text-center text-slate-950 font-bold leading-3">⊙</span>
-              <span><strong>Corriente Saliente (+Z):</strong> Campo circula en sentido antihorario.</span>
-            </p>
-            <p className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-amber-500 inline-block text-[8px] text-center text-slate-950 font-bold leading-3">⊗</span>
-              <span><strong>Corriente Entrante (−Z):</strong> Campo circula en sentido horario.</span>
+            <p className="text-[10px] text-slate-400">
+              Velocidad de simulación del integrador Boris Pusher.
             </p>
           </div>
-
-          {/* Magnetostatics Presets */}
-          {onRequestMagnetoPreset && (
-            <div className="space-y-2 pt-2 border-t border-slate-800">
-              <div className="flex items-center gap-1.5 font-semibold text-slate-400">
-                <Sparkles className="w-3.5 h-3.5 text-teal-400" /> Presets de Magnetostática:
-              </div>
-              <div className="grid grid-cols-1 gap-1.5">
-                <button
-                  onClick={() => onRequestMagnetoPreset('single')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🧲 Hilo Conductor Simple
-                </button>
-                <button
-                  onClick={() => onRequestMagnetoPreset('parallel_attraction')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🧲 Hilos Paralelos (Atracción Ampère)
-                </button>
-                <button
-                  onClick={() => onRequestMagnetoPreset('parallel_repulsion')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🧲 Hilos Opuestos (Repulsión)
-                </button>
-                <button
-                  onClick={() => onRequestMagnetoPreset('solenoid')}
-                  className="py-1.5 px-3 bg-slate-900 hover:bg-slate-850 text-slate-300 rounded-lg text-left border border-slate-800 transition-colors cursor-pointer"
-                >
-                  🧲 Solenoide / Bobina Multihilo
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {/* ----------------- MODE: GAUSS ----------------- */}
       {mode === 'gauss' && (
-        <>
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-emerald-400 font-bold">
-            <Layers className="w-4 h-4" />
-            <span>LEY DE GAUSS & FLUJO Φ_E</span>
+        <div className="space-y-3.5">
+          <div className="flex items-center gap-2 pb-1 text-emerald-400 font-bold border-b border-slate-800/60">
+            <CircleDot className="w-4 h-4" />
+            <span className="text-[11px]">SUPERFICIE GAUSSIANA & FLUJO</span>
           </div>
 
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
-            <span className="font-semibold text-slate-200">Teorema de Gauss (Divergencia)</span>
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              El flujo eléctrico neto a través de cualquier superficie gaussiana cerrada es directamente proporcional a la carga eléctrica neta encerrada.
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800/80 space-y-2">
+            <span className="font-semibold text-emerald-300 text-[11px] flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-emerald-400" /> Principio Fundamental
+            </span>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              El flujo eléctrico neto que atraviesa cualquier superficie cerrada es proporcional únicamente a la carga neta encerrada:
             </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-[11px]">
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-xs border border-slate-800">
               Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀
             </div>
-            <div className="text-[10px] text-slate-400 text-center font-mono">
-              ε₀ = 8.854187 × 10⁻¹² F/m
-            </div>
-          </div>
-
-          <div className="space-y-2 text-slate-400 text-[11px]">
-            <p className="flex items-start gap-1.5">
-              <span className="text-emerald-400 font-bold mt-0.5">•</span>
-              <span><strong>Vectores normales n̂ (Amarillos):</strong> Perpendiculares salientes en cada elemento dA.</span>
-            </p>
-            <p className="flex items-start gap-1.5">
-              <span className="text-sky-400 font-bold mt-0.5">•</span>
-              <span><strong>Campo Eléctrico E (Cian):</strong> Calculado vectorialmente por superposición de Coulomb.</span>
-            </p>
-            <p className="flex items-start gap-1.5">
-              <span className="text-rose-400 font-bold mt-0.5">•</span>
-              <span><strong>Cargas externas:</strong> Toda línea de campo que entra debe salir, contribuyendo un flujo neto nulo (Φ = 0).</span>
+            <p className="text-[10px] text-slate-400">
+              Usa los controles de la barra inferior o la guía izquierda para cambiar de forma y probar casos canónicos.
             </p>
           </div>
-        </>
+        </div>
       )}
 
       {/* ----------------- MODE: CAPACITOR ----------------- */}
       {mode === 'capacitor' && (
-        <>
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-amber-400 font-bold">
-            <Zap className="w-4 h-4" />
-            <span>CAPACITANCIA & DIELÉCTRICOS</span>
+        <div className="space-y-3.5">
+          <div className="flex items-center gap-2 pb-1 text-amber-400 font-bold border-b border-slate-800/60">
+            <BatteryCharging className="w-4 h-4" />
+            <span className="text-[11px]">PARÁMETROS DEL CONDENSADOR</span>
           </div>
 
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
-            <span className="font-semibold text-slate-200">Condensador de Placas Paralelas</span>
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              La capacitancia mide la capacidad de almacenar carga eléctrica y energía en el campo electrostático.
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800/80 space-y-2">
+            <span className="font-semibold text-amber-300 text-[11px] flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-amber-400" /> Física de Placas Paralelas
+            </span>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              La capacitancia mide cuánta carga almacena el dispositivo por cada voltio aplicado:
             </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-[11px]">
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-xs border border-slate-800">
               C = κ · ε₀ · A / d
             </div>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-cyan-300 text-[11px]">
-              Q = C · V &nbsp;|&nbsp; U = ½ C V²
-            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              Prueba a cambiar el material del dieléctrico y arrastrar las sondas del voltímetro digital dentro del lienzo para medir el potencial.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ----------------- MODE: MAGNETOSTATICS ----------------- */}
+      {mode === 'magnetostatics' && (
+        <div className="space-y-3.5">
+          <div className="flex items-center gap-2 pb-1 text-teal-400 font-bold border-b border-slate-800/60">
+            <Compass className="w-4 h-4" />
+            <span className="text-[11px]">CAMPOS MAGNÉTICOS & CORRIENTES</span>
           </div>
 
-          <div className="space-y-2 text-slate-400 text-[11px]">
-            <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
-              <span className="text-emerald-300 font-bold">1. Conectado a Batería (V = cte):</span>
-              <p className="text-[10px] text-slate-300 mt-1">
-                Al insertar el dieléctrico (κ &gt; 1), la capacitancia C aumenta y la batería suministra más carga (Q = C·V).
-              </p>
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800/80 space-y-2">
+            <span className="font-semibold text-teal-300 text-[11px] flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-teal-400" /> Ley de Biot-Savart & Ampère
+            </span>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Toda corriente eléctrica genera un campo magnético a su alrededor formando anillos concéntricos:
+            </p>
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-teal-300 text-xs border border-slate-800">
+              B = (μ₀ · I) / (2π · r)
             </div>
-            <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
-              <span className="text-rose-300 font-bold">2. Desconectado (Q = cte):</span>
-              <p className="text-[10px] text-slate-300 mt-1">
-                La carga queda atrapada. Al insertar el dieléctrico, C aumenta, por lo que el voltaje disminuye (V = Q / C).
-              </p>
+            <div className="space-y-1 text-[10px] text-slate-400 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-cyan-900 border border-cyan-500 text-cyan-300 flex items-center justify-center font-bold">
+                  ⊙
+                </span>
+                <span>Corriente Saliente (+Z): Giro antihorario</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-amber-900 border border-amber-500 text-amber-300 flex items-center justify-center font-bold">
+                  ⊗
+                </span>
+                <span>Corriente Entrante (−Z): Giro horario</span>
+              </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* ----------------- MODE: FARADAY ----------------- */}
       {mode === 'faraday' && (
-        <>
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-purple-400 font-bold">
+        <div className="space-y-3.5">
+          <div className="flex items-center gap-2 pb-1 text-purple-400 font-bold border-b border-slate-800/60">
             <Sparkles className="w-4 h-4" />
-            <span>LEY DE FARADAY & LENZ</span>
+            <span className="text-[11px]">INDUCCIÓN Y LEY DE LENZ</span>
           </div>
 
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
-            <span className="font-semibold text-slate-200">Inducción Electromagnética</span>
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              Un flujo magnético variable en el tiempo engendra una fuerza electromotriz (FEM) inducida en el circuito cerrado.
+          <div className="p-3 bg-[#111827] rounded-xl border border-slate-800/80 space-y-2">
+            <span className="font-semibold text-purple-300 text-[11px] flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-purple-400" /> Ley de Faraday-Lenz
+            </span>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              La fuerza electromotriz (voltaje inducido) se genera únicamente al existir una variación temporal del flujo magnético:
             </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-[11px]">
+            <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-xs border border-slate-800">
               ε = −N · (dΦ_B / dt)
             </div>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-yellow-300 text-[11px]">
-              P = I² · R_bombilla
-            </div>
-          </div>
-
-          <div className="space-y-2 text-slate-400 text-[11px]">
-            <p className="flex items-start gap-1.5">
-              <span className="text-purple-400 font-bold mt-0.5">•</span>
-              <span><strong>Signo Negativo (Ley de Lenz):</strong> La corriente inducida crea un campo magnético que se opone a la variación del flujo.</span>
-            </p>
-            <p className="flex items-start gap-1.5">
-              <span className="text-amber-400 font-bold mt-0.5">•</span>
-              <span><strong>Número de espiras N:</strong> Multiplica directamente la FEM inducida generada por la bobina.</span>
-            </p>
-            <p className="flex items-start gap-1.5">
-              <span className="text-sky-400 font-bold mt-0.5">•</span>
-              <span><strong>Galvanómetro & Bombilla:</strong> Muestran la polaridad instantánea de la FEM y la potencia eléctrica disipada.</span>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              El signo negativo (Lenz) refleja la resistencia natural al cambio: la corriente inducida crea un campo magnético que se opone al movimiento del imán.
             </p>
           </div>
-        </>
+        </div>
       )}
+
+      {/* View Mode Contextual Card */}
+      <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-2">
+        <div className="flex items-center gap-2">
+          <Gauge className="w-4 h-4 text-emerald-400" />
+          <span className="font-bold text-[11px] text-slate-200">
+            {viewMode === 'explore' ? 'Modo Exploración Activo' : 'Modo Medición Científica'}
+          </span>
+        </div>
+        <p className="text-[10px] text-slate-400 leading-relaxed">
+          {viewMode === 'explore'
+            ? 'Los instrumentos priorizan la comprensión visual e intuitiva con indicadores cualitativos y colores claros.'
+            : 'Los instrumentos despliegan datos con exactitud analítica y unidades del Sistema Internacional (SI) para reportes de laboratorio.'}
+        </p>
+      </div>
     </aside>
   );
 };

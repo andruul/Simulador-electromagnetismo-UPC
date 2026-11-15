@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { WireCurrent, Vector2D } from '../types';
+import type { WireCurrent, Vector2D, ViewMode } from '../types';
 import {
   calculateMagneticField2D,
   traceMagneticLine
@@ -9,11 +9,13 @@ import { Compass, Sparkles, Plus } from 'lucide-react';
 interface MagnetostaticsCanvasProps {
   presetRequest?: string | null;
   onPresetHandled?: () => void;
+  viewMode?: ViewMode;
 }
 
 export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
   presetRequest,
-  onPresetHandled
+  onPresetHandled,
+  viewMode = 'explore'
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -322,16 +324,22 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = viewMode === 'explore' ? '#10b981' : '#38bdf8';
     ctx.font = 'bold 11px system-ui, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('BRÚJULA DE PRUEBA', tagX + 8, tagY + 16);
+    ctx.fillText(viewMode === 'explore' ? 'BRÚJULA DE EXPLORACIÓN' : 'MAGNETÓMETRO (SI)', tagX + 8, tagY + 16);
 
     ctx.fillStyle = '#f8fafc';
     ctx.font = '11px monospace';
-    ctx.fillText(`|B|: ${(B_mag * 10).toFixed(1)} µT`, tagX + 8, tagY + 32);
-    ctx.fillText(`θ:   ${((needleAngle * 180) / Math.PI).toFixed(1)}°`, tagX + 8, tagY + 45);
-  }, [dimensions, wires, selectedWireId, compass, isDraggingCompass, showVectors, showLines]);
+    if (viewMode === 'explore') {
+      const magLevel = B_mag * 10 > 25 ? 'Intenso 🧲' : B_mag * 10 > 8 ? 'Moderado' : 'Débil';
+      ctx.fillText(`Intensidad: ${magLevel}`, tagX + 8, tagY + 32);
+      ctx.fillText(`Giro: ${((needleAngle * 180) / Math.PI).toFixed(0)}°`, tagX + 8, tagY + 45);
+    } else {
+      ctx.fillText(`|B|: ${(B_mag * 10).toFixed(2)} µT`, tagX + 8, tagY + 32);
+      ctx.fillText(`θ:   ${((needleAngle * 180) / Math.PI).toFixed(1)}°`, tagX + 8, tagY + 45);
+    }
+  }, [dimensions, wires, selectedWireId, compass, isDraggingCompass, showVectors, showLines, viewMode]);
 
   // Mouse handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -428,7 +436,7 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
       applyPreset(presetRequest);
       onPresetHandled?.();
     }
-  }, [presetRequest]);
+  }, [presetRequest, onPresetHandled]);
 
   const addWire = (currentVal: number) => {
     const id = 'w_' + Math.random().toString(36).substring(2, 7);

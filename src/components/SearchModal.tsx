@@ -284,6 +284,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
                   <p className="text-xs text-slate-400 leading-relaxed">{topic.synopsis}</p>
 
+                  {topic.simpleExplanation && (
+                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200/90 flex items-start gap-1.5">
+                      <span className="font-semibold text-emerald-400 shrink-0">💡 En simple:</span>
+                      <span className="text-slate-300">{topic.simpleExplanation}</span>
+                    </div>
+                  )}
+
                   {topic.formula && (
                     <div className="p-2 rounded-lg bg-slate-950/70 border border-slate-800/80 font-mono text-[11px] text-emerald-300/90 flex items-center justify-between overflow-x-auto">
                       <span>{topic.formula}</span>

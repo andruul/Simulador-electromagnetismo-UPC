@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import type { GaussianSurface, GaussSettings } from '../types';
+import type { GaussianSurface, GaussSettings, ViewMode } from '../types';
 import {
   computeGaussLaw,
   calculateElectricField2D,
@@ -14,7 +14,17 @@ import {
   Sparkles
 } from 'lucide-react';
 
-export const GaussFluxCanvas: React.FC = () => {
+interface GaussFluxCanvasProps {
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
+  viewMode?: ViewMode;
+}
+
+export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
+  presetRequest,
+  onPresetHandled,
+  viewMode = 'explore'
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -226,6 +236,17 @@ export const GaussFluxCanvas: React.FC = () => {
       setSurface((prev) => ({ ...prev, cx: 0, cy: 0, shape: 'rectangle', width: 2.2, height: 2.2 }));
     }
   };
+
+  // Handle external preset requests from LeftGuidePanel or Search
+  useEffect(() => {
+    if (presetRequest) {
+      if (presetRequest === 'monopole') loadPreset('monopole');
+      else if (presetRequest === 'dipole') loadPreset('dipole_inside');
+      else if (presetRequest === 'external') loadPreset('dipole_outside');
+      else if (presetRequest === 'mixed') loadPreset('quadrupole');
+      onPresetHandled?.();
+    }
+  }, [presetRequest, onPresetHandled]);
 
   // ==========================================
   // High Performance Canvas Rendering
@@ -562,32 +583,49 @@ export const GaussFluxCanvas: React.FC = () => {
         </div>
 
         {/* Real-time Verification Gauge */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div>
-            <span className="text-slate-400">Q_enc: </span>
-            <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
-              {qEncNano} nC
-            </span>
+        {viewMode === 'explore' ? (
+          <div className="flex items-center gap-3 text-xs">
+            <div>
+              <span className="text-slate-400">Carga Encerrada: </span>
+              <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                {parseFloat(qEncNano) > 0 ? 'Positiva (+ Flujo sale)' : parseFloat(qEncNano) < 0 ? 'Negativa (− Flujo entra)' : 'Nula (Flujo neto = 0)'}
+              </span>
+            </div>
+            <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
+              <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
+              <span className="text-[11px] font-bold text-emerald-400">
+                {isVerified ? 'Ley de Gauss Comprobada' : 'Verificando...'}
+              </span>
+            </div>
           </div>
+        ) : (
+          <div className="flex items-center gap-4 text-xs font-mono">
+            <div>
+              <span className="text-slate-400">Q_enc: </span>
+              <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                {qEncNano} nC
+              </span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Φ_teórico: </span>
-            <span className="text-indigo-300 font-bold">{theoFluxSci} N·m²/C</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Φ_teórico: </span>
+              <span className="text-indigo-300 font-bold">{theoFluxSci} N·m²/C</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Φ_numérico: </span>
-            <span className="text-emerald-400 font-bold">{numFluxSci} N·m²/C</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Φ_numérico: </span>
+              <span className="text-emerald-400 font-bold">{numFluxSci} N·m²/C</span>
+            </div>
 
-          {/* Verification Badge */}
-          <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
-            <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
-            <span className={`text-[11px] font-bold ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
-              {isVerified ? 'VERIFICADO (Error ' + errorPercent + '%)' : 'Error: ' + errorPercent + '%'}
-            </span>
+            {/* Verification Badge */}
+            <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
+              <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
+              <span className={`text-[11px] font-bold ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {isVerified ? 'VERIFICADO (Error ' + errorPercent + '%)' : 'Error: ' + errorPercent + '%'}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Surface & Physics Controls HUD (Top Right) */}

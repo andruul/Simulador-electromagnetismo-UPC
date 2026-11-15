@@ -8,6 +8,8 @@ export type SimulationMode =
   | 'faraday'
   | 'welcome';
 
+export type ViewMode = 'explore' | 'lab';
+
 export interface Vector2D {
   x: number;
   y: number;

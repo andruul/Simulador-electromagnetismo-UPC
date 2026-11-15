@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import type { Vector2D } from '../types';
+import type { Vector2D, ViewMode } from '../types';
 import {
   calculateCoilFlux,
   computeFaradayInduction,
@@ -15,7 +15,17 @@ import {
   Info
 } from 'lucide-react';
 
-export const FaradayInductionCanvas: React.FC = () => {
+export interface FaradayInductionCanvasProps {
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
+  viewMode?: ViewMode;
+}
+
+export const FaradayInductionCanvas: React.FC<FaradayInductionCanvasProps> = ({
+  presetRequest,
+  onPresetHandled,
+  viewMode = 'explore'
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -108,6 +118,33 @@ export const FaradayInductionCanvas: React.FC = () => {
       angle: m.angle + Math.PI
     }));
   };
+
+  // Handle 1-click presets from LeftGuidePanel or Search
+  useEffect(() => {
+    if (!presetRequest) return;
+    if (presetRequest === 'oscillate') {
+      setIsOscillating(true);
+    } else if (presetRequest === 'fast_in') {
+      setIsOscillating(false);
+      setMagnet((m) => ({
+        ...m,
+        x: 0.06,
+        y: 0,
+        angle: 0
+      }));
+    } else if (presetRequest === 'slow_pass') {
+      setIsOscillating(false);
+      setMagnet((m) => ({
+        ...m,
+        x: -0.22,
+        y: 0,
+        angle: 0
+      }));
+    } else if (presetRequest === 'flip_poles') {
+      flipPoles();
+    }
+    onPresetHandled?.();
+  }, [presetRequest, onPresetHandled]);
 
   // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -742,34 +779,52 @@ export const FaradayInductionCanvas: React.FC = () => {
         </div>
 
         {/* Real-time Values Bar */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div>
-            <span className="text-slate-400">Flujo Φ_B: </span>
-            <span className="text-sky-400 font-bold">{(instantValues.flux * 1000).toFixed(2)} mWb</span>
-          </div>
-
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">dΦ_B/dt: </span>
-            <span className="text-indigo-300 font-bold">{instantValues.dFluxDt.toFixed(3)} Wb/s</span>
-          </div>
-
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">FEM Inducida ε: </span>
-            <span className={`font-bold ${Math.abs(instantValues.emf) > 0.05 ? 'text-rose-400' : 'text-slate-300'}`}>
-              {instantValues.emf.toFixed(3)} V
+        {viewMode === 'explore' ? (
+          <div className="flex items-center gap-3 text-xs">
+            <span className={`px-2 py-0.5 rounded border font-medium ${
+              Math.abs(instantValues.emf) > 0.05
+                ? 'bg-rose-950/80 border-rose-500/40 text-rose-300 animate-pulse'
+                : 'bg-slate-950/80 border-slate-700 text-slate-400'
+            }`}>
+              Inducción: {Math.abs(instantValues.emf) > 0.05 ? '⚡ ¡Generando Voltaje!' : 'Imán en reposo (FEM = 0)'}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-medium">
+              Bombilla: {instantValues.bulbPower > 0.002 ? '💡 Encendida Brillante' : instantValues.bulbPower > 0.0002 ? '✨ Tenue' : 'Apagada'}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-purple-950/80 border border-purple-500/40 text-purple-300 font-medium">
+              Espiras: N = {coilTurns}
             </span>
           </div>
+        ) : (
+          <div className="flex items-center gap-4 text-xs font-mono">
+            <div>
+              <span className="text-slate-400">Flujo Φ_B: </span>
+              <span className="text-sky-400 font-bold">{(instantValues.flux * 1000).toFixed(2)} mWb</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Corriente I: </span>
-            <span className="text-emerald-400 font-bold">{(instantValues.current * 1000).toFixed(1)} mA</span>
-          </div>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">dΦ_B/dt: </span>
+              <span className="text-indigo-300 font-bold">{instantValues.dFluxDt.toFixed(3)} Wb/s</span>
+            </div>
 
-          <div className="border-l border-slate-800 pl-3">
-            <span className="text-slate-400">Potencia P: </span>
-            <span className="text-amber-400 font-bold">{(instantValues.bulbPower * 1000).toFixed(1)} mW</span>
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">FEM Inducida ε: </span>
+              <span className={`font-bold ${Math.abs(instantValues.emf) > 0.05 ? 'text-rose-400' : 'text-slate-300'}`}>
+                {instantValues.emf.toFixed(3)} V
+              </span>
+            </div>
+
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Corriente I: </span>
+              <span className="text-emerald-400 font-bold">{(instantValues.current * 1000).toFixed(1)} mA</span>
+            </div>
+
+            <div className="border-l border-slate-800 pl-3">
+              <span className="text-slate-400">Potencia P: </span>
+              <span className="text-amber-400 font-bold">{(instantValues.bulbPower * 1000).toFixed(1)} mW</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Magnet & Animation Controls (Top Right) */}

@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import type {
   SimulationMode,
+  ViewMode,
   PointCharge,
   ElectrostaticsSettings,
   Lorentz3DSettings
 } from './types';
 import { TopNavbar } from './components/TopNavbar';
+import { LeftGuidePanel } from './components/LeftGuidePanel';
 import { ControlPanel } from './components/ControlPanel';
 import { ElectrostaticsCanvas } from './components/ElectrostaticsCanvas';
 import { LorentzViewer3D } from './components/LorentzViewer3D';
@@ -20,15 +22,20 @@ import type { TopicItem } from './data/topics';
 
 export const App: React.FC = () => {
   const [mode, setMode] = useState<SimulationMode>('electrostatics');
+  const [viewMode, setViewMode] = useState<ViewMode>('explore');
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isTheoryOpen, setIsTheoryOpen] = useState<boolean>(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(true); // Institutional portal opens first
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(true); // Institutional launcher opens first
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
-  // Preset communication requests
+  // Preset communication requests for each laboratory room
   const [lorentzPresetRequest, setLorentzPresetRequest] = useState<string | null>(null);
   const [magnetoPresetRequest, setMagnetoPresetRequest] = useState<string | null>(null);
+  const [gaussPresetRequest, setGaussPresetRequest] = useState<string | null>(null);
+  const [capacitorPresetRequest, setCapacitorPresetRequest] = useState<string | null>(null);
+  const [faradayPresetRequest, setFaradayPresetRequest] = useState<string | null>(null);
 
   // Electrostatics state
   const [charges, setCharges] = useState<PointCharge[]>([
@@ -137,10 +144,33 @@ export const App: React.FC = () => {
         setLorentzPresetRequest(presetKey);
       } else if (targetMode === 'magnetostatics' && presetKey) {
         setMagnetoPresetRequest(presetKey);
+      } else if (targetMode === 'gauss' && presetKey) {
+        setGaussPresetRequest(presetKey);
+      } else if (targetMode === 'capacitor' && presetKey) {
+        setCapacitorPresetRequest(presetKey);
+      } else if (targetMode === 'faraday' && presetKey) {
+        setFaradayPresetRequest(presetKey);
       }
     },
     [applyElectroPreset]
   );
+
+  // Apply preset directly from LeftGuidePanel
+  const handleApplyPreset = useCallback((presetKey: string) => {
+    if (mode === 'electrostatics') {
+      applyElectroPreset(presetKey);
+    } else if (mode === 'lorentz3d') {
+      setLorentzPresetRequest(presetKey);
+    } else if (mode === 'magnetostatics') {
+      setMagnetoPresetRequest(presetKey);
+    } else if (mode === 'gauss') {
+      setGaussPresetRequest(presetKey);
+    } else if (mode === 'capacitor') {
+      setCapacitorPresetRequest(presetKey);
+    } else if (mode === 'faraday') {
+      setFaradayPresetRequest(presetKey);
+    }
+  }, [mode, applyElectroPreset]);
 
   // Switch mode directly from navbar
   const handleSelectMode = useCallback((newMode: SimulationMode) => {
@@ -169,6 +199,12 @@ export const App: React.FC = () => {
       setLorentzPresetRequest('helix');
     } else if (mode === 'magnetostatics') {
       setMagnetoPresetRequest('parallel_attraction');
+    } else if (mode === 'gauss') {
+      setGaussPresetRequest('monopole');
+    } else if (mode === 'capacitor') {
+      setCapacitorPresetRequest('vacuum');
+    } else if (mode === 'faraday') {
+      setFaradayPresetRequest('oscillate');
     }
   }, [mode]);
 
@@ -192,10 +228,12 @@ export const App: React.FC = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col bg-[#070b14] text-slate-100 overflow-hidden font-sans">
-      {/* Top Navigation */}
+      {/* Top Application Header Bar */}
       <TopNavbar
         mode={mode}
         setMode={handleSelectMode}
+        viewMode={viewMode}
+        onToggleViewMode={() => setViewMode((prev) => (prev === 'explore' ? 'lab' : 'explore'))}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
         onReset={handleReset}
@@ -203,11 +241,13 @@ export const App: React.FC = () => {
         onTakeScreenshot={handleTakeScreenshot}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen((prev) => !prev)}
+        isLeftPanelOpen={isLeftPanelOpen}
+        onToggleLeftPanel={() => setIsLeftPanelOpen((prev) => !prev)}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
 
-      {/* Main Workspace Layout */}
+      {/* Main Workspace Layout (Fixed 4-block desktop arrangement) */}
       <div className="flex-1 flex overflow-hidden relative">
         {isWelcomeOpen ? (
           <WelcomeScreen
@@ -218,7 +258,17 @@ export const App: React.FC = () => {
           />
         ) : (
           <>
-            {/* Active Simulation Viewport */}
+            {/* Left Pedagogical Guide & 1-Click Presets Panel (280px) */}
+            <LeftGuidePanel
+              mode={mode}
+              viewMode={viewMode}
+              isOpen={isLeftPanelOpen}
+              onToggle={() => setIsLeftPanelOpen((prev) => !prev)}
+              onApplyPreset={handleApplyPreset}
+              onOpenTheory={() => setIsTheoryOpen(true)}
+            />
+
+            {/* Center Interactive Simulation Viewport */}
             <main className="flex-1 h-full relative overflow-hidden bg-[#090d16]">
               {mode === 'electrostatics' && (
                 <ElectrostaticsCanvas
@@ -228,6 +278,7 @@ export const App: React.FC = () => {
                   setSelectedChargeId={setSelectedChargeId}
                   settings={electroSettings}
                   isPlaying={isPlaying}
+                  viewMode={viewMode}
                 />
               )}
 
@@ -239,6 +290,7 @@ export const App: React.FC = () => {
                   setIsPlaying={setIsPlaying}
                   presetRequest={lorentzPresetRequest}
                   onPresetHandled={() => setLorentzPresetRequest(null)}
+                  viewMode={viewMode}
                 />
               )}
 
@@ -246,20 +298,40 @@ export const App: React.FC = () => {
                 <MagnetostaticsCanvas
                   presetRequest={magnetoPresetRequest}
                   onPresetHandled={() => setMagnetoPresetRequest(null)}
+                  viewMode={viewMode}
                 />
               )}
 
-              {mode === 'gauss' && <GaussFluxCanvas />}
+              {mode === 'gauss' && (
+                <GaussFluxCanvas
+                  presetRequest={gaussPresetRequest}
+                  onPresetHandled={() => setGaussPresetRequest(null)}
+                  viewMode={viewMode}
+                />
+              )}
 
-              {mode === 'capacitor' && <CapacitorLabCanvas />}
+              {mode === 'capacitor' && (
+                <CapacitorLabCanvas
+                  presetRequest={capacitorPresetRequest}
+                  onPresetHandled={() => setCapacitorPresetRequest(null)}
+                  viewMode={viewMode}
+                />
+              )}
 
-              {mode === 'faraday' && <FaradayInductionCanvas />}
+              {mode === 'faraday' && (
+                <FaradayInductionCanvas
+                  presetRequest={faradayPresetRequest}
+                  onPresetHandled={() => setFaradayPresetRequest(null)}
+                  viewMode={viewMode}
+                />
+              )}
             </main>
 
-            {/* Side Control Inspector */}
+            {/* Right Side Control Inspector (320px) */}
             {isSidebarOpen && (
               <ControlPanel
                 mode={mode}
+                viewMode={viewMode}
                 charges={charges}
                 setCharges={setCharges}
                 selectedChargeId={selectedChargeId}
