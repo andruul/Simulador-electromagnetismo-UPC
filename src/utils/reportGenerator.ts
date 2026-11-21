@@ -52,6 +52,9 @@ const ROOM_NAMES: Record<SimulationMode, { title: string; unit: string; formula:
   }
 };
 
+/** Outcome of an export operation; `message` is safe to show to the student. */
+export type ExportResult = { ok: true } | { ok: false; message: string };
+
 /**
  * Captures the current simulation canvas and composites an institutional
  * lab evidence card with UPC branding, timestamp, and metadata.
@@ -59,11 +62,13 @@ const ROOM_NAMES: Record<SimulationMode, { title: string; unit: string; formula:
 export async function generateLabEvidenceReport(
   mode: SimulationMode,
   viewMode: ViewMode
-): Promise<boolean> {
+): Promise<ExportResult> {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
   if (!canvas) {
-    console.error('No canvas found for report generation');
-    return false;
+    return {
+      ok: false,
+      message: 'No hay ningún laboratorio visible para capturar. Entre a una sala e inténtelo de nuevo.'
+    };
   }
 
   const roomInfo = ROOM_NAMES[mode] || ROOM_NAMES.electrostatics;
@@ -89,7 +94,9 @@ export async function generateLabEvidenceReport(
   compCanvas.width = compW;
   compCanvas.height = compH;
   const ctx = compCanvas.getContext('2d');
-  if (!ctx) return false;
+  if (!ctx) {
+    return { ok: false, message: 'Este equipo no permite generar la imagen de evidencia.' };
+  }
 
   // Background
   ctx.fillStyle = '#0B0F17';
@@ -172,9 +179,8 @@ export async function generateLabEvidenceReport(
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  } catch (err) {
-    console.error('Error al exportar la imagen de evidencia:', err);
-    return false;
+  } catch {
+    return { ok: false, message: 'No se pudo exportar la imagen de evidencia (PNG).' };
   }
 
   // Generate accompanying text report slip for student
@@ -213,9 +219,35 @@ NOTAS Y OBSERVACIONES DEL EXPERIMENTO:
     textLink.click();
     document.body.removeChild(textLink);
     URL.revokeObjectURL(textUrl);
-  } catch (err) {
-    console.error('Error al exportar la ficha de texto:', err);
+  } catch {
+    return {
+      ok: false,
+      message: 'La imagen se guardó, pero no se pudo exportar la ficha de texto (.txt).'
+    };
   }
 
-  return true;
+  return { ok: true };
+}
+
+/**
+ * Downloads the active simulation canvas as a plain PNG screenshot.
+ */
+export function captureCanvasScreenshot(mode: SimulationMode): ExportResult {
+  const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
+  if (!canvas) {
+    return { ok: false, message: 'No hay ningún laboratorio visible para capturar.' };
+  }
+
+  try {
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `electro-sim-upc-${mode}-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return { ok: true };
+  } catch {
+    return { ok: false, message: 'No se pudo guardar la captura de pantalla.' };
+  }
 }

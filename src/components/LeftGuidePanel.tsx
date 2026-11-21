@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { SimulationMode, ViewMode } from '../types';
 import {
   Compass,
@@ -14,8 +14,11 @@ import {
   FlaskConical,
   HelpCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronsUpDown,
+  BookOpen
 } from 'lucide-react';
+import { CollapsibleSection } from './CollapsibleSection';
 
 interface LeftGuidePanelProps {
   mode: SimulationMode;
@@ -161,6 +164,19 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
 }) => {
   const content = GUIDE_DATA[mode] || GUIDE_DATA['electrostatics'];
 
+  // Collapsible section states (prevents visual clutter and cognitive overload)
+  const [openHowItWorks, setOpenHowItWorks] = useState<boolean>(true);
+  const [openObjectives, setOpenObjectives] = useState<boolean>(false); // Collapsed by default for clean view
+  const [openPresets, setOpenPresets] = useState<boolean>(true);
+
+  const allOpen = openHowItWorks && openObjectives && openPresets;
+  const toggleAll = () => {
+    const nextState = !allOpen;
+    setOpenHowItWorks(nextState);
+    setOpenObjectives(nextState);
+    setOpenPresets(nextState);
+  };
+
   if (!isOpen) {
     return (
       <div className="h-full bg-slate-950 border-r border-slate-800/80 flex flex-col items-center py-3 px-1 z-20 flex-shrink-0">
@@ -183,43 +199,55 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
     <aside className="w-72 h-full bg-[#0d131f] border-r border-slate-800/90 flex flex-col select-none flex-shrink-0 z-20 shadow-xl overflow-hidden text-slate-200">
       {/* Panel Header */}
       <div className="h-11 px-3 border-b border-slate-800/80 bg-slate-950/70 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="p-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex-shrink-0">
             {content.icon}
           </div>
-          <div>
-            <h2 className="text-xs font-bold text-white tracking-wide leading-tight">
+          <div className="min-w-0">
+            <h2 className="text-xs font-bold text-white tracking-wide leading-tight truncate">
               GUÍA DEL EXPERIMENTO
             </h2>
-            <p className="text-[10px] text-emerald-400 font-medium leading-none">
+            <p className="text-[10px] text-emerald-400 font-medium leading-none truncate">
               {content.roomName}
             </p>
           </div>
         </div>
 
-        <button
-          onClick={onToggle}
-          className="p-1 text-slate-400 hover:text-white hover:bg-slate-850 rounded transition-colors cursor-pointer"
-          title="Colapsar panel de guía"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Quick toggle all sections button */}
+          <button
+            onClick={toggleAll}
+            className="p-1 text-slate-400 hover:text-emerald-300 hover:bg-slate-850 rounded transition-colors cursor-pointer"
+            title={allOpen ? 'Contraer todas las secciones' : 'Expandir todas las secciones'}
+          >
+            <ChevronsUpDown className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={onToggle}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-850 rounded transition-colors cursor-pointer"
+            title="Colapsar panel de guía"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3.5 text-xs">
-        {/* Step-by-Step Pedagogical Card: ¿Cómo funciona? */}
-        <div className="bg-[#111827] rounded-xl border border-slate-800/90 p-3 space-y-2.5 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
-            <span className="font-bold text-slate-200 text-[11px] flex items-center gap-1.5">
-              <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
-              <span>¿Cómo usar este laboratorio?</span>
-            </span>
+      {/* Scrollable Content with Collapsible Sections */}
+      <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 text-xs custom-scrollbar">
+        {/* 1. Step-by-Step Pedagogical Card: ¿Cómo funciona? */}
+        <CollapsibleSection
+          title="¿Cómo funciona?"
+          subtitle="3 pasos: interactúa, observa y aprende"
+          icon={<HelpCircle className="w-3.5 h-3.5 text-sky-400" />}
+          badge={
             <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono">
               3 Pasos
             </span>
-          </div>
-
+          }
+          isOpen={openHowItWorks}
+          onToggle={() => setOpenHowItWorks((prev) => !prev)}
+        >
           {/* Step 1: Interact */}
           <div className="flex gap-2 items-start">
             <div className="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
@@ -264,55 +292,70 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
               </p>
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
 
-        {/* Mode-Specific Objective / Challenge Card */}
-        {viewMode === 'explore' ? (
-          <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 space-y-1">
-            <span className="font-bold text-[11px] text-emerald-300 flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-emerald-400" /> Reto de Exploración:
-            </span>
+        {/* 2. Mode-Specific Objective / Challenge Card */}
+        <CollapsibleSection
+          title={viewMode === 'explore' ? 'Reto de Exploración' : 'Objetivo de Medición'}
+          subtitle={viewMode === 'explore' ? 'Prueba este experimento' : content.formula}
+          icon={
+            viewMode === 'explore' ? (
+              <Target className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <FlaskConical className="w-3.5 h-3.5 text-sky-400" />
+            )
+          }
+          badge={
+            viewMode === 'explore' ? (
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                Misión
+              </span>
+            ) : (
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950 text-sky-400 border border-sky-500/30 font-mono">
+                SI Exacto
+              </span>
+            )
+          }
+          isOpen={openObjectives}
+          onToggle={() => setOpenObjectives((prev) => !prev)}
+        >
+          {viewMode === 'explore' ? (
             <p className="text-[11px] text-slate-300 leading-snug">
               {content.exploreChallenge}
             </p>
-          </div>
-        ) : (
-          <div className="bg-sky-950/30 border border-sky-500/30 rounded-xl p-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[11px] text-sky-300 flex items-center gap-1.5">
-                <FlaskConical className="w-3.5 h-3.5 text-sky-400" /> Objetivo de Medición:
-              </span>
-              <span className="text-[9px] font-mono text-sky-400 bg-sky-950 px-1 py-0.2 rounded border border-sky-800">
-                SI Exacto
-              </span>
+          ) : (
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-slate-300 leading-snug">
+                {content.labObjective}
+              </p>
+              <div className="p-1.5 bg-slate-900/90 rounded border border-slate-800 font-mono text-center text-sky-300 text-[11px]">
+                {content.formula}
+              </div>
             </div>
-            <p className="text-[11px] text-slate-300 leading-snug">
-              {content.labObjective}
-            </p>
-            <div className="p-1.5 bg-slate-900/90 rounded border border-slate-800 font-mono text-center text-sky-300 text-[11px]">
-              {content.formula}
-            </div>
-          </div>
-        )}
+          )}
+        </CollapsibleSection>
 
-        {/* 1-Click Presets: "Experimentos con 1 Clic" */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-300 text-[11px] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Experimentos con 1 Clic</span>
+        {/* 3. 1-Click Presets: "Experimentos con 1 Clic" */}
+        <CollapsibleSection
+          title="Experimentos con 1 Clic"
+          subtitle="Cargar escenarios clásicos"
+          icon={<Sparkles className="w-3.5 h-3.5 text-amber-400" />}
+          badge={
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-amber-400 font-mono border border-slate-700/60">
+              {content.presets.length} Presets
             </span>
-            <span className="text-[9px] text-slate-500">Cargar rápido</span>
-          </div>
-
-          <div className="space-y-1.5">
+          }
+          isOpen={openPresets}
+          onToggle={() => setOpenPresets((prev) => !prev)}
+        >
+          <div className="space-y-1.5 pt-0.5">
             {content.presets.map((p) => (
               <button
                 key={p.key}
                 onClick={() => onApplyPreset(p.key)}
-                className="w-full text-left p-2 rounded-lg bg-[#111827] hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer group flex items-start gap-2 shadow-sm"
+                className="w-full text-left p-2 rounded-lg bg-[#0e1422] hover:bg-slate-800/90 border border-slate-800/80 hover:border-emerald-500/40 transition-all cursor-pointer group flex items-start gap-2 shadow-sm"
               >
-                <span className="text-base leading-none p-1 bg-slate-900 rounded group-hover:scale-110 transition-transform">
+                <span className="text-base leading-none p-1 bg-slate-900 rounded group-hover:scale-110 transition-transform flex-shrink-0">
                   {p.icon}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -326,17 +369,19 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </CollapsibleSection>
 
         {/* Quick Theory Callout */}
         <button
           onClick={onOpenTheory}
-          className="w-full py-2 px-3 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          className="w-full py-2 px-3 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer mt-1"
         >
-          <Lightbulb className="w-3.5 h-3.5 text-indigo-400" />
-          <span>¿Quieres la explicación completa? Ver Teoría</span>
+          <BookOpen className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+          <span className="truncate">¿Explicación completa? Ver Teoría</span>
         </button>
       </div>
     </aside>
   );
 };
+
+export default LeftGuidePanel;

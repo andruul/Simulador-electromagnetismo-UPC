@@ -86,6 +86,9 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = ({
         <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-semibold">M</span>
         <span>Modo</span>
         <span className="text-slate-700">•</span>
+        <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-400 font-semibold">Z</span>
+        <span className="text-emerald-300">Enfoque</span>
+        <span className="text-slate-700">•</span>
         <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-semibold">F1 / Ctrl+K</span>
         <span>Guía & Búsqueda</span>
       </div>

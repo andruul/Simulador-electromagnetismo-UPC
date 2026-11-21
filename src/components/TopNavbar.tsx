@@ -20,7 +20,9 @@ import {
   LayoutGrid,
   FlaskConical,
   Eye,
-  FileDown
+  FileDown,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { UpcLogo } from './UpcBadge';
 
@@ -41,6 +43,8 @@ interface TopNavbarProps {
   onToggleLeftPanel: () => void;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
+  isZenMode?: boolean;
+  onToggleZenMode?: () => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
@@ -59,7 +63,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   isLeftPanelOpen,
   onToggleLeftPanel,
   isSidebarOpen,
-  onToggleSidebar
+  onToggleSidebar,
+  isZenMode = false,
+  onToggleZenMode
 }) => {
   return (
     <header className="h-12 bg-[#090d16] border-b border-slate-800/90 pl-3 pr-3 sm:pr-[148px] flex items-center justify-between z-30 select-none gap-2 flex-shrink-0 app-drag-region">
@@ -285,6 +291,29 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             <PanelRightOpen className="w-3.5 h-3.5" />
           )}
         </button>
+
+        {/* Master Zen / Clean Canvas Focus Mode */}
+        {onToggleZenMode && (
+          <button
+            onClick={onToggleZenMode}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              isZenMode
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30'
+                : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800 hover:bg-slate-850'
+            }`}
+            title={
+              isZenMode
+                ? 'Restaurar paneles laterales [Z]'
+                : 'Lienzo Limpio / Modo Enfoque: Ocultar paneles para máxima amplitud [Z]'
+            }
+          >
+            {isZenMode ? (
+              <Minimize2 className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Maximize2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+        )}
       </div>
     </header>
   );

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { usePresetRequest } from '../hooks/usePresetRequest';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Particle3D, Lorentz3DSettings, ViewMode } from '../types';
@@ -15,6 +16,37 @@ interface LorentzViewer3DProps {
   viewMode?: ViewMode;
 }
 
+/**
+ * Writes a particle trail into a line geometry.
+ *
+ * BufferGeometry.setFromPoints cannot grow an existing position buffer: once the trail
+ * got longer than its first upload, three.js truncated it and logged "Buffer size too
+ * small" every frame. Here the buffer is allocated once for the maximum trail length and
+ * only the draw range changes.
+ */
+function updateTrailGeometry(
+  geometry: THREE.BufferGeometry,
+  trail: Particle3D['trail'],
+  maxPoints: number
+): void {
+  const capacity = Math.max(2, maxPoints, trail.length);
+  let attribute = geometry.getAttribute('position') as THREE.BufferAttribute | undefined;
+  if (!attribute || attribute.count < capacity) {
+    attribute = new THREE.BufferAttribute(new Float32Array(capacity * 3), 3);
+    attribute.setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute('position', attribute);
+  }
+
+  const array = attribute.array as Float32Array;
+  for (let i = 0; i < trail.length; i++) {
+    array[i * 3] = trail[i].x;
+    array[i * 3 + 1] = trail[i].y;
+    array[i * 3 + 2] = trail[i].z;
+  }
+  geometry.setDrawRange(0, trail.length);
+  attribute.needsUpdate = true;
+}
+
 export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   settings,
   setSettings,
@@ -25,7 +57,8 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   viewMode = 'explore'
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const [isHudExpanded, setIsHudExpanded] = useState(true);
+  const [isHudExpanded, setIsHudExpanded] = useState(false); // Collapsed by default for clean view
+  const [isBottomOpen, setIsBottomOpen] = useState(true);
 
   // Particles state
   const [particles, setParticles] = useState<Particle3D[]>([
@@ -157,6 +190,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   }, []);
 
   // Update Field Arrows visualization when settings change
+  const { bField, eField, showFieldVectors } = settings;
   useEffect(() => {
     const fieldGroup = fieldGroupRef.current;
     if (!fieldGroup) return;
@@ -166,10 +200,9 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       fieldGroup.remove(fieldGroup.children[0]);
     }
 
-    if (!settings.showFieldVectors) return;
+    if (!showFieldVectors) return;
 
     // Create a 3D grid of field arrows
-    const { bField, eField } = settings;
     const bMag = vectorLength(bField);
     const eMag = vectorLength(eField);
 
@@ -212,7 +245,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         }
       }
     }
-  }, [settings.bField, settings.eField, settings.showFieldVectors, settings.fieldConfiguration]);
+  }, [bField, eField, showFieldVectors]);
 
   // Physics simulation step
   useEffect(() => {
@@ -301,6 +334,8 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
           opacity: 0.75
         });
         const trailLine = new THREE.Line(trailGeom, trailMat);
+        // The trail grows every frame, so a bounding sphere computed once would go stale
+        trailLine.frustumCulled = false;
         scene.add(trailLine);
 
         // Velocity Arrow (Lime)
@@ -333,8 +368,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       items.mesh.position.set(p.position.x, p.position.y, p.position.z);
 
       // Update trail geometry
-      const points = p.trail.map((pt) => new THREE.Vector3(pt.x, pt.y, pt.z));
-      items.trailLine.geometry.setFromPoints(points);
+      updateTrailGeometry(items.trailLine.geometry, p.trail, p.maxTrailLength);
 
       // Update vectors on particle
       if (settings.showVectorsOnParticle) {
@@ -409,133 +443,113 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     });
   }, [particles, settings.showVectorsOnParticle, settings]);
 
-  // Presets
-  const applyPreset = (presetName: string) => {
+  // Presets: pure description of the settings patch and the initial particles
+  const buildPreset = (
+    presetName: string
+  ): { settings: Partial<Lorentz3DSettings>; particles: Particle3D[] } | null => {
+    const particle = (
+      id: string,
+      position: Particle3D['position'],
+      velocity: Particle3D['velocity'],
+      color: string,
+      maxTrailLength: number
+    ): Particle3D => ({
+      id,
+      position,
+      velocity,
+      charge: 1.0,
+      mass: 1.0,
+      color,
+      trail: [],
+      maxTrailLength
+    });
+
     if (presetName === 'helix') {
-      setSettings((s) => ({
-        ...s,
-        fieldConfiguration: 'uniform',
-        bField: { x: 0, y: 0, z: 2.0 },
-        eField: { x: 0, y: 0, z: 0 }
-      }));
-      setParticles([
-        {
-          id: 'p1',
-          position: { x: 0, y: 0, z: -6 },
-          velocity: { x: 3.0, y: 0, z: 1.2 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#38bdf8',
-          trail: [],
-          maxTrailLength: 400
-        }
-      ]);
-    } else if (presetName === 'velocity_selector') {
-      setSettings((s) => ({
-        ...s,
-        fieldConfiguration: 'velocity_selector',
-        eField: { x: 0, y: 6.0, z: 0 },
-        bField: { x: 0, y: 0, z: 2.0 }
-      }));
-      setParticles([
-        {
-          id: 'p_exact',
-          position: { x: -8, y: 0, z: 0 },
-          velocity: { x: 3.0, y: 0, z: 0 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#10b981',
-          trail: [],
-          maxTrailLength: 300
+      return {
+        settings: {
+          fieldConfiguration: 'uniform',
+          bField: { x: 0, y: 0, z: 2.0 },
+          eField: { x: 0, y: 0, z: 0 }
         },
-        {
-          id: 'p_slow',
-          position: { x: -8, y: -0.2, z: 0 },
-          velocity: { x: 1.8, y: 0, z: 0 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#f43f5e',
-          trail: [],
-          maxTrailLength: 300
-        },
-        {
-          id: 'p_fast',
-          position: { x: -8, y: 0.2, z: 0 },
-          velocity: { x: 4.5, y: 0, z: 0 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#facc15',
-          trail: [],
-          maxTrailLength: 300
-        }
-      ]);
-    } else if (presetName === 'drift') {
-      setSettings((s) => ({
-        ...s,
-        fieldConfiguration: 'drift',
-        eField: { x: 0, y: 3.5, z: 0 },
-        bField: { x: 0, y: 0, z: 2.5 }
-      }));
-      setParticles([
-        {
-          id: 'p1',
-          position: { x: -6, y: 0, z: 0 },
-          velocity: { x: 0, y: 2.0, z: 0 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#a855f7',
-          trail: [],
-          maxTrailLength: 450
-        }
-      ]);
-    } else if (presetName === 'magnetic_bottle') {
-      setSettings((s) => ({
-        ...s,
-        fieldConfiguration: 'magnetic_bottle',
-        eField: { x: 0, y: 0, z: 0 },
-        bField: { x: 0, y: 0, z: 2.0 }
-      }));
-      setParticles([
-        {
-          id: 'p1',
-          position: { x: 1.2, y: 0, z: 0 },
-          velocity: { x: 0, y: 3.2, z: 1.2 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#38bdf8',
-          trail: [],
-          maxTrailLength: 500
-        }
-      ]);
-    } else if (presetName === 'cyclotron') {
-      setSettings((s) => ({
-        ...s,
-        fieldConfiguration: 'cyclotron',
-        eField: { x: 0, y: 0, z: 0 },
-        bField: { x: 0, y: 0, z: 2.5 }
-      }));
-      setParticles([
-        {
-          id: 'p1',
-          position: { x: 0.1, y: 0, z: 0 },
-          velocity: { x: 0, y: 0.5, z: 0 },
-          charge: 1.0,
-          mass: 1.0,
-          color: '#f43f5e',
-          trail: [],
-          maxTrailLength: 600
-        }
-      ]);
+        particles: [
+          particle('p1', { x: 0, y: 0, z: -6 }, { x: 3.0, y: 0, z: 1.2 }, '#38bdf8', 400)
+        ]
+      };
     }
+    if (presetName === 'velocity_selector') {
+      return {
+        settings: {
+          fieldConfiguration: 'velocity_selector',
+          eField: { x: 0, y: 6.0, z: 0 },
+          bField: { x: 0, y: 0, z: 2.0 }
+        },
+        particles: [
+          particle('p_exact', { x: -8, y: 0, z: 0 }, { x: 3.0, y: 0, z: 0 }, '#10b981', 300),
+          particle('p_slow', { x: -8, y: -0.2, z: 0 }, { x: 1.8, y: 0, z: 0 }, '#f43f5e', 300),
+          particle('p_fast', { x: -8, y: 0.2, z: 0 }, { x: 4.5, y: 0, z: 0 }, '#facc15', 300)
+        ]
+      };
+    }
+    if (presetName === 'drift') {
+      return {
+        settings: {
+          fieldConfiguration: 'drift',
+          eField: { x: 0, y: 3.5, z: 0 },
+          bField: { x: 0, y: 0, z: 2.5 }
+        },
+        particles: [particle('p1', { x: -6, y: 0, z: 0 }, { x: 0, y: 2.0, z: 0 }, '#a855f7', 450)]
+      };
+    }
+    if (presetName === 'magnetic_bottle') {
+      return {
+        settings: {
+          fieldConfiguration: 'magnetic_bottle',
+          eField: { x: 0, y: 0, z: 0 },
+          bField: { x: 0, y: 0, z: 2.0 }
+        },
+        particles: [
+          particle('p1', { x: 1.2, y: 0, z: 0 }, { x: 0, y: 3.2, z: 1.2 }, '#38bdf8', 500)
+        ]
+      };
+    }
+    if (presetName === 'cyclotron') {
+      return {
+        settings: {
+          fieldConfiguration: 'cyclotron',
+          eField: { x: 0, y: 0, z: 0 },
+          bField: { x: 0, y: 0, z: 2.5 }
+        },
+        particles: [
+          particle('p1', { x: 0.1, y: 0, z: 0 }, { x: 0, y: 0.5, z: 0 }, '#f43f5e', 600)
+        ]
+      };
+    }
+    return null;
   };
 
-  // Handle preset request from parent (welcome screen or search modal)
-  useEffect(() => {
-    if (presetRequest) {
-      applyPreset(presetRequest);
-      onPresetHandled?.();
+  // One-click preset buttons (event handlers may update both states directly)
+  const applyPreset = (presetName: string) => {
+    const built = buildPreset(presetName);
+    if (!built) return;
+    setSettings((s) => ({ ...s, ...built.settings }));
+    setParticles(built.particles);
+  };
+
+  // Handle preset request from parent (welcome screen or search modal).
+  // Particles are this component's own state (applied while rendering); the shared
+  // settings belong to the parent and are updated once the preset is committed.
+  usePresetRequest(
+    presetRequest,
+    onPresetHandled,
+    (preset) => {
+      const built = buildPreset(preset);
+      if (built) setParticles(built.particles);
+    },
+    (preset) => {
+      const built = buildPreset(preset);
+      if (built) setSettings((s) => ({ ...s, ...built.settings }));
     }
-  }, [presetRequest]);
+  );
 
   const addParticle = (chargeSign: number) => {
     const newId = 'p_' + Math.random().toString(36).substring(2, 7);
@@ -717,39 +731,59 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         )}
       </div>
 
-      {/* Bottom Floating Control Bar */}
-      <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-            isPlaying ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-          }`}
-        >
-          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          {isPlaying ? 'Pausar' : 'Reanudar'}
-        </button>
+      {/* Bottom Floating Control Bar (Collapsible) */}
+      {isBottomOpen ? (
+        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+              isPlaying ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+            }`}
+          >
+            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            {isPlaying ? 'Pausar' : 'Reanudar'}
+          </button>
 
-        <button
-          onClick={() => addParticle(1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" /> Añadir Positiva (+q)
-        </button>
+          <button
+            onClick={() => addParticle(1)}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> +q
+          </button>
 
-        <button
-          onClick={() => addParticle(-1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" /> Añadir Negativa (−q)
-        </button>
+          <button
+            onClick={() => addParticle(-1)}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> −q
+          </button>
 
+          <button
+            onClick={clearParticles}
+            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+          >
+            Reiniciar
+          </button>
+
+          <button
+            onClick={() => setIsBottomOpen(false)}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            title="Minimizar barra de controles"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
         <button
-          onClick={clearParticles}
-          className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+          onClick={() => setIsBottomOpen(true)}
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-sky-300 hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Abrir controles de partículas"
         >
-          Reiniciar
+          <Plus className="w-3.5 h-3.5 text-sky-400" />
+          <span>Partículas & Simulación</span>
+          <ChevronUp className="w-3 h-3 text-slate-400" />
         </button>
-      </div>
+      )}
 
       {/* Orbit Tip */}
       <div className="absolute bottom-5 right-5 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2 pointer-events-none">

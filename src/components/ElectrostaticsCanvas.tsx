@@ -6,7 +6,7 @@ import {
   traceFieldLine,
   traceEquipotentialLine
 } from '../physics/electrostatics';
-import { Plus, Minus, Zap } from 'lucide-react';
+import { Plus, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ElectrostaticsCanvasProps {
   charges: PointCharge[];
@@ -38,6 +38,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
 
   // Test particles that move under Coulomb force
   const [testParticles, setTestParticles] = useState<TestParticle2D[]>([]);
+  const [isParticleBarOpen, setIsParticleBarOpen] = useState(true);
 
   // Update canvas size dynamically with ResizeObserver
   useEffect(() => {
@@ -60,7 +61,23 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Keep charges and sensor within visible canvas bounds when container resizes
+  // Keep the sensor within visible canvas bounds when the container resizes
+  // (adjusted while rendering, not inside an effect)
+  const [sensorClampedFor, setSensorClampedFor] = useState({ width: 0, height: 0 });
+  if (
+    dimensions.width > 50 &&
+    dimensions.height > 50 &&
+    (sensorClampedFor.width !== dimensions.width || sensorClampedFor.height !== dimensions.height)
+  ) {
+    setSensorClampedFor({ width: dimensions.width, height: dimensions.height });
+    setSensor((prev) => ({
+      ...prev,
+      x: Math.min(Math.max(30, prev.x), dimensions.width - 30),
+      y: Math.min(Math.max(30, prev.y), dimensions.height - 30)
+    }));
+  }
+
+  // Keep charges (owned by the parent) within visible canvas bounds as well
   useEffect(() => {
     if (dimensions.width <= 50 || dimensions.height <= 50) return;
 
@@ -71,12 +88,6 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
         y: Math.min(Math.max(30, c.y), dimensions.height - 30)
       }))
     );
-
-    setSensor((prev) => ({
-      ...prev,
-      x: Math.min(Math.max(30, prev.x), dimensions.width - 30),
-      y: Math.min(Math.max(30, prev.y), dimensions.height - 30)
-    }));
   }, [dimensions.width, dimensions.height, setCharges]);
 
   // Spawn a test particle at sensor position or center
@@ -610,32 +621,52 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
         className="w-full h-full cursor-crosshair block"
       />
 
-      {/* Floating Action Overlay for Test Particle */}
-      <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
-        <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
-          <Zap className="w-3.5 h-3.5 text-yellow-400" /> Partícula de prueba:
-        </span>
-        <button
-          onClick={() => spawnTestParticle(1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" /> Positiva (+1)
-        </button>
-        <button
-          onClick={() => spawnTestParticle(-1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
-        >
-          <Minus className="w-3.5 h-3.5" /> Negativa (−1)
-        </button>
-        {testParticles.length > 0 && (
+      {/* Floating Action Overlay for Test Particle (Collapsible) */}
+      {isParticleBarOpen ? (
+        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
+          <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 text-yellow-400" /> Partícula de prueba:
+          </span>
           <button
-            onClick={clearTestParticles}
-            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+            onClick={() => spawnTestParticle(1)}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
           >
-            Limpiar ({testParticles.length})
+            <Plus className="w-3.5 h-3.5" /> Positiva (+1)
           </button>
-        )}
-      </div>
+          <button
+            onClick={() => spawnTestParticle(-1)}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
+          >
+            <Minus className="w-3.5 h-3.5" /> Negativa (−1)
+          </button>
+          {testParticles.length > 0 && (
+            <button
+              onClick={clearTestParticles}
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+            >
+              Limpiar ({testParticles.length})
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsParticleBarOpen(false)}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            title="Minimizar barra de partículas"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsParticleBarOpen(true)}
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-yellow-300 hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Abrir controles de partícula de prueba"
+        >
+          <Zap className="w-3.5 h-3.5 text-yellow-400" />
+          <span>Partícula de prueba</span>
+          <ChevronUp className="w-3 h-3 text-slate-400" />
+        </button>
+      )}
 
       {/* Instructions pill */}
       <div className="absolute top-4 left-4 max-w-[calc(100%-2rem)] bg-slate-900/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none z-10">

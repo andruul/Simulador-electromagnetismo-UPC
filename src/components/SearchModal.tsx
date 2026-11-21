@@ -33,19 +33,37 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  // Focus input when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 50);
-      setSelectedIndex(0);
-    } else {
+  // Reset the search state whenever the modal opens or closes. This adjusts state
+  // while rendering (React-recommended pattern) instead of inside an effect.
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    setSelectedIndex(0);
+    if (!isOpen) {
       setQuery('');
       setSelectedCategory('all');
     }
+  }
+
+  // Focus input when modal opens (side effect on the DOM only; no state updates)
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 50);
+    return () => clearTimeout(timer);
   }, [isOpen]);
+
+  // Changing the filters always returns the highlighted row to the top of the list
+  const changeQuery = (value: string) => {
+    setQuery(value);
+    setSelectedIndex(0);
+  };
+  const changeCategory = (category: string) => {
+    setSelectedCategory(category);
+    setSelectedIndex(0);
+  };
 
   // Global Ctrl+K / Cmd+K and Esc listener
   useEffect(() => {
@@ -84,11 +102,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       return matchTitle || matchSynopsis || matchFormula || matchUnit || matchTags;
     });
   }, [query, selectedCategory]);
-
-  // Reset selected index when search changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [filteredTopics.length]);
 
   // Handle arrow key navigation in list
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -178,13 +191,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => changeQuery(e.target.value)}
             placeholder="Buscar por concepto: Coulomb, Gauss, Capacitor, Lorentz, Wien, Ciclotrón..."
             className="w-full bg-transparent border-0 outline-none text-white placeholder-slate-500 text-sm md:text-base font-sans"
           />
           {query ? (
             <button
-              onClick={() => setQuery('')}
+              onClick={() => changeQuery('')}
               className="p-1 text-slate-400 hover:text-white rounded-md cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
@@ -212,7 +225,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           ].map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => changeCategory(cat.id)}
               className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer text-xs font-medium whitespace-nowrap ${
                 selectedCategory === cat.id
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'

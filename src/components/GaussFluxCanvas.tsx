@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import { usePresetRequest } from '../hooks/usePresetRequest';
 import type { GaussianSurface, GaussSettings, ViewMode } from '../types';
 import {
   computeGaussLaw,
@@ -11,7 +12,9 @@ import {
   Trash2,
   CheckCircle2,
   Sliders,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface GaussFluxCanvasProps {
@@ -68,6 +71,11 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [surfaceDragStart, setSurfaceDragStart] = useState({ cx: 0, cy: 0 });
 
+  // Collapsible overlay states (clean canvas view)
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(true);
+  const [isControlsOpen, setIsControlsOpen] = useState(true);
+  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+
   // Update canvas dimensions dynamically with ResizeObserver
   useEffect(() => {
     const container = containerRef.current;
@@ -86,8 +94,25 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Sync surface with settings
-  useEffect(() => {
+  // Sync surface with settings (adjusted while rendering, not inside an effect)
+  const [syncedSurfaceSettings, setSyncedSurfaceSettings] = useState({
+    shape: settings.surfaceShape,
+    radius: settings.surfaceRadius,
+    width: settings.surfaceWidth,
+    height: settings.surfaceHeight
+  });
+  if (
+    syncedSurfaceSettings.shape !== settings.surfaceShape ||
+    syncedSurfaceSettings.radius !== settings.surfaceRadius ||
+    syncedSurfaceSettings.width !== settings.surfaceWidth ||
+    syncedSurfaceSettings.height !== settings.surfaceHeight
+  ) {
+    setSyncedSurfaceSettings({
+      shape: settings.surfaceShape,
+      radius: settings.surfaceRadius,
+      width: settings.surfaceWidth,
+      height: settings.surfaceHeight
+    });
     setSurface((prev) => ({
       ...prev,
       shape: settings.surfaceShape,
@@ -95,7 +120,7 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
       width: settings.surfaceWidth,
       height: settings.surfaceHeight
     }));
-  }, [settings.surfaceShape, settings.surfaceRadius, settings.surfaceWidth, settings.surfaceHeight]);
+  }
 
   // Coordinate transforms (meters <-> canvas pixels)
   const originX = dimensions.width / 2;
@@ -238,15 +263,12 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   };
 
   // Handle external preset requests from LeftGuidePanel or Search
-  useEffect(() => {
-    if (presetRequest) {
-      if (presetRequest === 'monopole') loadPreset('monopole');
-      else if (presetRequest === 'dipole') loadPreset('dipole_inside');
-      else if (presetRequest === 'external') loadPreset('dipole_outside');
-      else if (presetRequest === 'mixed') loadPreset('quadrupole');
-      onPresetHandled?.();
-    }
-  }, [presetRequest, onPresetHandled]);
+  usePresetRequest(presetRequest, onPresetHandled, (preset) => {
+    if (preset === 'monopole') loadPreset('monopole');
+    else if (preset === 'dipole') loadPreset('dipole_inside');
+    else if (preset === 'external') loadPreset('dipole_outside');
+    else if (preset === 'mixed') loadPreset('quadrupole');
+  });
 
   // ==========================================
   // High Performance Canvas Rendering
@@ -568,161 +590,220 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
 
   return (
     <div ref={containerRef} className="w-full h-full relative flex flex-col bg-slate-950 select-none overflow-hidden">
-      {/* Top Scientific Formula HUD */}
-      <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl">
-        <div className="flex items-center gap-2 border-r border-slate-700/80 pr-4">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
-            Φ
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white tracking-wide">LEY DE GAUSS</div>
-            <div className="text-[11px] font-mono text-emerald-400">
-              Φ_E = ∮ E · dA = Q_enc / ε₀
+      {/* Top Scientific Formula & Verification HUD (Collapsible) */}
+      {isTelemetryOpen ? (
+        <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl">
+          <div className="flex items-center gap-2 border-r border-slate-700/80 pr-4">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+              Φ
             </div>
-          </div>
-        </div>
-
-        {/* Real-time Verification Gauge */}
-        {viewMode === 'explore' ? (
-          <div className="flex items-center gap-3 text-xs">
             <div>
-              <span className="text-slate-400">Carga Encerrada: </span>
-              <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
-                {parseFloat(qEncNano) > 0 ? 'Positiva (+ Flujo sale)' : parseFloat(qEncNano) < 0 ? 'Negativa (− Flujo entra)' : 'Nula (Flujo neto = 0)'}
-              </span>
-            </div>
-            <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
-              <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
-              <span className="text-[11px] font-bold text-emerald-400">
-                {isVerified ? 'Ley de Gauss Comprobada' : 'Verificando...'}
-              </span>
+              <div className="text-xs font-bold text-white tracking-wide">LEY DE GAUSS</div>
+              <div className="text-[11px] font-mono text-emerald-400">
+                Φ_E = ∮ E · dA = Q_enc / ε₀
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <div>
-              <span className="text-slate-400">Q_enc: </span>
-              <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
-                {qEncNano} nC
-              </span>
-            </div>
 
-            <div className="border-l border-slate-800 pl-3">
-              <span className="text-slate-400">Φ_teórico: </span>
-              <span className="text-indigo-300 font-bold">{theoFluxSci} N·m²/C</span>
+          {/* Real-time Verification Gauge */}
+          {viewMode === 'explore' ? (
+            <div className="flex items-center gap-3 text-xs">
+              <div>
+                <span className="text-slate-400">Carga Encerrada: </span>
+                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                  {parseFloat(qEncNano) > 0 ? 'Positiva (+ Flujo sale)' : parseFloat(qEncNano) < 0 ? 'Negativa (− Flujo entra)' : 'Nula (Flujo neto = 0)'}
+                </span>
+              </div>
+              <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
+                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
+                <span className="text-[11px] font-bold text-emerald-400">
+                  {isVerified ? 'Ley de Gauss Comprobada' : 'Verificando...'}
+                </span>
+              </div>
             </div>
+          ) : (
+            <div className="flex items-center gap-4 text-xs font-mono">
+              <div>
+                <span className="text-slate-400">Q_enc: </span>
+                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                  {qEncNano} nC
+                </span>
+              </div>
 
-            <div className="border-l border-slate-800 pl-3">
-              <span className="text-slate-400">Φ_numérico: </span>
-              <span className="text-emerald-400 font-bold">{numFluxSci} N·m²/C</span>
+              <div className="border-l border-slate-800 pl-3">
+                <span className="text-slate-400">Φ_teórico: </span>
+                <span className="text-indigo-300 font-bold">{theoFluxSci} N·m²/C</span>
+              </div>
+
+              <div className="border-l border-slate-800 pl-3">
+                <span className="text-slate-400">Φ_numérico: </span>
+                <span className="text-emerald-400 font-bold">{numFluxSci} N·m²/C</span>
+              </div>
+
+              {/* Verification Badge */}
+              <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
+                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
+                <span className={`text-[11px] font-bold ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {isVerified ? 'VERIFICADO (Error ' + errorPercent + '%)' : 'Error: ' + errorPercent + '%'}
+                </span>
+              </div>
             </div>
+          )}
 
-            {/* Verification Badge */}
-            <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
-              <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
-              <span className={`text-[11px] font-bold ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {isVerified ? 'VERIFICADO (Error ' + errorPercent + '%)' : 'Error: ' + errorPercent + '%'}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Surface & Physics Controls HUD (Top Right) */}
-      <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/70 shadow-2xl">
-        {/* Surface Shape Switcher */}
-        <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-medium">
           <button
-            onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'circle' }))}
-            className={`px-3 py-1 rounded cursor-pointer transition-all ${
-              settings.surfaceShape === 'circle'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            onClick={() => setIsTelemetryOpen(false)}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            title="Minimizar panel de telemetría"
           >
-            Esfera / Círculo
-          </button>
-          <button
-            onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'rectangle' }))}
-            className={`px-3 py-1 rounded cursor-pointer transition-all ${
-              settings.surfaceShape === 'rectangle'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Caja / Cubo
+            <ChevronUp className="w-3.5 h-3.5" />
           </button>
         </div>
+      ) : (
+        <button
+          onClick={() => setIsTelemetryOpen(true)}
+          className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Expandir telemetría de Ley de Gauss"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="font-bold text-emerald-400">Ley de Gauss:</span>
+          <span className="font-mono text-slate-300 font-semibold">{qEncNano} nC</span>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+        </button>
+      )}
 
-        {/* Size Slider */}
-        <div className="flex items-center gap-2 px-2 text-xs text-slate-300">
-          <Sliders className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-[11px]">Radio / L:</span>
-          <input
-            type="range"
-            min="0.5"
-            max="2.5"
-            step="0.1"
-            value={settings.surfaceShape === 'circle' ? settings.surfaceRadius : settings.surfaceWidth}
-            onChange={(e) => {
-              const val = parseFloat(e.target.value);
-              setSettings((s) => ({
-                ...s,
-                surfaceRadius: val,
-                surfaceWidth: val,
-                surfaceHeight: val * 0.8
-              }));
-            }}
-            className="w-20 accent-emerald-500 cursor-pointer"
-          />
+      {/* Surface & Physics Controls HUD (Top Right - Collapsible) */}
+      {isControlsOpen ? (
+        <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/70 shadow-2xl">
+          {/* Surface Shape Switcher */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-medium">
+            <button
+              onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'circle' }))}
+              className={`px-3 py-1 rounded cursor-pointer transition-all ${
+                settings.surfaceShape === 'circle'
+                  ? 'bg-emerald-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Esfera
+            </button>
+            <button
+              onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'rectangle' }))}
+              className={`px-3 py-1 rounded cursor-pointer transition-all ${
+                settings.surfaceShape === 'rectangle'
+                  ? 'bg-emerald-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Caja
+            </button>
+          </div>
+
+          {/* Size Slider */}
+          <div className="flex items-center gap-1.5 px-1.5 text-xs text-slate-300">
+            <Sliders className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-[11px]">Radio:</span>
+            <input
+              type="range"
+              min="0.5"
+              max="2.5"
+              step="0.1"
+              value={settings.surfaceShape === 'circle' ? settings.surfaceRadius : settings.surfaceWidth}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                setSettings((s) => ({
+                  ...s,
+                  surfaceRadius: val,
+                  surfaceWidth: val,
+                  surfaceHeight: val * 0.8
+                }));
+              }}
+              className="w-16 accent-emerald-500 cursor-pointer"
+            />
+          </div>
+
+          {/* Add Charges */}
+          <button
+            onClick={() => addCharge(1)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 text-xs font-semibold cursor-pointer"
+            title="Añadir Carga Positiva"
+          >
+            <Plus className="w-3.5 h-3.5" /> +q
+          </button>
+          <button
+            onClick={() => addCharge(-1)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 text-xs font-semibold cursor-pointer"
+            title="Añadir Carga Negativa"
+          >
+            <Minus className="w-3.5 h-3.5" /> -q
+          </button>
+
+          <button
+            onClick={() => setIsControlsOpen(false)}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+            title="Minimizar controles de superficie"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
         </div>
+      ) : (
+        <button
+          onClick={() => setIsControlsOpen(true)}
+          className="absolute top-3 right-4 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Expandir controles de superficie"
+        >
+          <span>⚙️ Superficie</span>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+        </button>
+      )}
 
-        {/* Add Charges */}
+      {/* Preset Academic Scenarios (Bottom Left - Collapsible) */}
+      {isPresetsOpen ? (
+        <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/70 shadow-2xl">
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span className="text-xs text-slate-400 font-medium">Ejercicios UPC:</span>
+          <button
+            onClick={() => loadPreset('monopole')}
+            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
+          >
+            Carga Puntual
+          </button>
+          <button
+            onClick={() => loadPreset('dipole_inside')}
+            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
+          >
+            Dipolo Interno (Φ=0)
+          </button>
+          <button
+            onClick={() => loadPreset('dipole_outside')}
+            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
+          >
+            Cargas Externas (Φ=0)
+          </button>
+          <button
+            onClick={() => loadPreset('quadrupole')}
+            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
+          >
+            Mixta
+          </button>
+          <button
+            onClick={() => setIsPresetsOpen(false)}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+            title="Minimizar ejercicios"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
         <button
-          onClick={() => addCharge(1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 text-xs font-semibold cursor-pointer"
-          title="Añadir Carga Positiva"
+          onClick={() => setIsPresetsOpen(true)}
+          className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Ver ejercicios canónicos de Gauss"
         >
-          <Plus className="w-3.5 h-3.5" /> +q
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>Ejercicios UPC</span>
+          <ChevronUp className="w-3 h-3 text-slate-400" />
         </button>
-        <button
-          onClick={() => addCharge(-1)}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 text-xs font-semibold cursor-pointer"
-          title="Añadir Carga Negativa"
-        >
-          <Minus className="w-3.5 h-3.5" /> -q
-        </button>
-      </div>
-
-      {/* Preset Academic Scenarios (Bottom Left) */}
-      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/70 shadow-2xl">
-        <Sparkles className="w-4 h-4 text-amber-400" />
-        <span className="text-xs text-slate-400 font-medium">Ejercicios UPC:</span>
-        <button
-          onClick={() => loadPreset('monopole')}
-          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-        >
-          Carga Puntual
-        </button>
-        <button
-          onClick={() => loadPreset('dipole_inside')}
-          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-        >
-          Dipolo Interno (Φ=0)
-        </button>
-        <button
-          onClick={() => loadPreset('dipole_outside')}
-          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-        >
-          Cargas Externas (Φ=0)
-        </button>
-        <button
-          onClick={() => loadPreset('quadrupole')}
-          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-        >
-          Configuración Mixta
-        </button>
-      </div>
+      )}
 
       {/* Selected Charge Inspector (Bottom Right) */}
       {selectedCharge && (
