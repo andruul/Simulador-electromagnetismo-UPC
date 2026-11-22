@@ -85,12 +85,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   return (
-    <aside className="w-80 h-full bg-[#0d131f] border-l border-slate-800/90 flex flex-col overflow-y-auto select-none p-3 space-y-3 text-xs text-slate-300 flex-shrink-0 z-20 shadow-2xl custom-scrollbar">
+    <aside className="w-80 h-full bg-[#F5F0E8] border-l border-[#E0D8CF] flex flex-col overflow-y-auto select-none p-3 space-y-3 text-xs text-[#4A4540] flex-shrink-0 z-20 shadow-lg custom-scrollbar">
       {/* Panel Top Bar */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 text-slate-400 flex-shrink-0">
+      <div className="flex items-center justify-between pb-2 border-b border-[#E0D8CF] text-[#6B6560] flex-shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Sliders className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-          <span className="font-bold text-[11px] uppercase tracking-wider text-slate-200 truncate">
+          <Sliders className="w-3.5 h-3.5 text-[#5B9E8A] flex-shrink-0" />
+          <span className="font-bold text-[11px] uppercase tracking-wider text-[#2D2A26] truncate">
             CONTROLES
           </span>
         </div>
@@ -99,7 +99,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           {/* Master collapse/expand toggle */}
           <button
             onClick={toggleAll}
-            className="p-1 text-slate-400 hover:text-emerald-300 hover:bg-slate-850 rounded transition-colors cursor-pointer"
+            className="p-1 text-[#6B6560] hover:text-[#5B9E8A] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer"
             title={allOpen ? 'Contraer todo' : 'Expandir todo'}
           >
             <ChevronsUpDown className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-0.5"
+              className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer ml-0.5"
               title="Ocultar panel lateral"
             >
               <X className="w-4 h-4" />
@@ -124,9 +124,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Añadir & Configurar Cargas"
             subtitle={`${charges.length} cargas en el lienzo`}
-            icon={<Zap className="w-3.5 h-3.5 text-rose-400" />}
+            icon={<Zap className="w-3.5 h-3.5 text-rose-500" />}
             badge={
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-rose-300 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-100 text-rose-600 font-mono border border-rose-200">
                 {charges.length} q
               </span>
             }
@@ -137,13 +137,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => addCharge(2)}
-                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 rounded-lg font-medium transition-colors cursor-pointer text-[11px]"
+                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300/60 rounded-lg font-medium transition-colors cursor-pointer text-[11px]"
                 >
                   <Plus className="w-3 h-3" /> +2 µC
                 </button>
                 <button
                   onClick={() => addCharge(-2)}
-                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/40 rounded-lg font-medium transition-colors cursor-pointer text-[11px]"
+                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300/60 rounded-lg font-medium transition-colors cursor-pointer text-[11px]"
                 >
                   <Minus className="w-3 h-3" /> −2 µC
                 </button>
@@ -151,14 +151,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
               {/* Selected Charge Inspector */}
               {selectedCharge ? (
-                <div className="p-2.5 bg-[#0e1422] rounded-lg border border-slate-800 space-y-2 mt-1">
-                  <div className="flex items-center justify-between text-slate-200 font-semibold text-[11px]">
+                <div className="p-2.5 bg-white rounded-lg border border-[#D5CEC6] space-y-2 mt-1 shadow-sm">
+                  <div className="flex items-center justify-between text-[#2D2A26] font-semibold text-[11px]">
                     <span>Carga Seleccionada</span>
                     <span
                       className={`font-mono px-1.5 py-0.2 rounded text-[10px] font-bold ${
                         selectedCharge.charge > 0
-                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                          : 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
+                          ? 'bg-rose-100 text-rose-600 border border-rose-300/60'
+                          : 'bg-sky-100 text-sky-600 border border-sky-300/60'
                       }`}
                     >
                       {selectedCharge.charge > 0 ? '+' : ''}
@@ -167,9 +167,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-slate-300 text-[10px] mb-1">
+                    <div className="flex justify-between text-[#4A4540] text-[10px] mb-1">
                       <span>Valor de Carga (q):</span>
-                      <span className="font-mono text-white font-bold">{selectedCharge.charge} µC</span>
+                      <span className="font-mono text-[#2D2A26] font-bold">{selectedCharge.charge} µC</span>
                     </div>
                     <input
                       type="range"
@@ -187,7 +187,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+                  <div className="flex items-center justify-between pt-1 border-t border-[#E0D8CF]">
                     <button
                       onClick={() => {
                         setCharges((prev) =>
@@ -196,19 +196,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           )
                         );
                       }}
-                      className="flex items-center gap-1 text-slate-300 hover:text-white cursor-pointer text-[10px]"
+                      className="flex items-center gap-1 text-[#4A4540] hover:text-[#2D2A26] cursor-pointer text-[10px]"
                     >
                       {selectedCharge.fixed ? (
-                        <Lock className="w-3 h-3 text-amber-400" />
+                        <Lock className="w-3 h-3 text-amber-600" />
                       ) : (
-                        <Unlock className="w-3 h-3 text-slate-500" />
+                        <Unlock className="w-3 h-3 text-[#6B6560]" />
                       )}
                       <span>{selectedCharge.fixed ? 'Fijada' : 'Libre'}</span>
                     </button>
 
                     <button
                       onClick={removeSelectedCharge}
-                      className="flex items-center gap-1 text-rose-400 hover:text-rose-300 cursor-pointer text-[10px]"
+                      className="flex items-center gap-1 text-rose-600 hover:text-rose-700 cursor-pointer text-[10px]"
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Eliminar</span>
@@ -216,7 +216,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="p-2 bg-[#0e1422] rounded-lg border border-slate-800/80 text-slate-400 text-center text-[10px] italic">
+                <div className="p-2 bg-[#EDE8DF] rounded-lg border border-[#D5CEC6] text-[#6B6560] text-center text-[10px] italic">
                   💡 Haz clic en una carga del lienzo para ajustarla.
                 </div>
               )}
@@ -227,9 +227,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Capas de Visualización"
             subtitle="Vectores, líneas y equipotenciales"
-            icon={<Layers className="w-3.5 h-3.5 text-sky-400" />}
+            icon={<Layers className="w-3.5 h-3.5 text-sky-500" />}
             badge={
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-sky-400 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 text-sky-600 font-mono border border-sky-200">
                 {Number(electroSettings.showVectorField) +
                   Number(electroSettings.showFieldLines) +
                   Number(electroSettings.showPotentialHeatmap) +
@@ -241,10 +241,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             onToggle={() => setOpenSection2((prev) => !prev)}
           >
             <div className="space-y-1.5 pt-0.5">
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 block text-[11px]">Vectores de Campo (E)</span>
-                  <span className="text-[10px] text-slate-400">Flechas con dirección e intensidad</span>
+                  <span className="text-[#2D2A26] block text-[11px]">Vectores de Campo (E)</span>
+                  <span className="text-[10px] text-[#6B6560]">Flechas con dirección e intensidad</span>
                 </div>
                 <input
                   type="checkbox"
@@ -256,10 +256,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 block text-[11px]">Líneas de Campo (RK4)</span>
-                  <span className="text-[10px] text-slate-400">Trayectorias continuas (+) a (−)</span>
+                  <span className="text-[#2D2A26] block text-[11px]">Líneas de Campo (RK4)</span>
+                  <span className="text-[10px] text-[#6B6560]">Trayectorias continuas (+) a (−)</span>
                 </div>
                 <input
                   type="checkbox"
@@ -271,10 +271,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 block text-[11px]">Mapa de Potencial (V)</span>
-                  <span className="text-[10px] text-slate-400">Rojo (+) y Azul (−)</span>
+                  <span className="text-[#2D2A26] block text-[11px]">Mapa de Potencial (V)</span>
+                  <span className="text-[10px] text-[#6B6560]">Rojo (+) y Azul (−)</span>
                 </div>
                 <input
                   type="checkbox"
@@ -286,10 +286,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 block text-[11px]">Curvas Equipotenciales</span>
-                  <span className="text-[10px] text-slate-400">Líneas de igual voltaje</span>
+                  <span className="text-[#2D2A26] block text-[11px]">Curvas Equipotenciales</span>
+                  <span className="text-[10px] text-[#6B6560]">Líneas de igual voltaje</span>
                 </div>
                 <input
                   type="checkbox"
@@ -310,9 +310,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Ajustes Avanzados de Densidad"
             subtitle="Resolución de campo y grilla"
-            icon={<Settings2 className="w-3.5 h-3.5 text-amber-400" />}
+            icon={<Settings2 className="w-3.5 h-3.5 text-amber-500" />}
             badge={
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#EDE8DF] text-[#6B6560] font-mono border border-[#D5CEC6]">
                 Fino
               </span>
             }
@@ -321,9 +321,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <div className="space-y-3 pt-0.5">
               <div>
-                <div className="flex justify-between text-slate-300 text-[10px] mb-1">
+                <div className="flex justify-between text-[#4A4540] text-[10px] mb-1">
                   <span>Líneas por carga:</span>
-                  <span className="font-mono text-emerald-400 font-bold">
+                  <span className="font-mono text-[#5B9E8A] font-bold">
                     {electroSettings.fieldLinesPerCharge}
                   </span>
                 </div>
@@ -344,9 +344,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
 
               <div>
-                <div className="flex justify-between text-slate-300 text-[10px] mb-1">
+                <div className="flex justify-between text-[#4A4540] text-[10px] mb-1">
                   <span>Espaciado de Grilla:</span>
-                  <span className="font-mono text-emerald-400 font-bold">
+                  <span className="font-mono text-[#5B9E8A] font-bold">
                     {electroSettings.vectorGridDensity} px
                   </span>
                 </div>
@@ -377,9 +377,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Intensidad de Campos E y B"
             subtitle={`Bz: ${lorentzSettings.bField.z.toFixed(1)}T | Ey: ${lorentzSettings.eField.y.toFixed(1)}N/C`}
-            icon={<RotateCw className="w-3.5 h-3.5 text-sky-400" />}
+            icon={<RotateCw className="w-3.5 h-3.5 text-sky-500" />}
             badge={
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-cyan-300 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 text-sky-700 font-mono border border-sky-200">
                 {lorentzSettings.bField.z.toFixed(1)} T
               </span>
             }
@@ -390,8 +390,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {/* Magnetic Field B */}
               <div>
                 <div className="flex justify-between items-center text-[10px] mb-1">
-                  <span className="font-semibold text-cyan-400">Campo Magnético (B_z)</span>
-                  <span className="font-mono text-white font-bold">
+                  <span className="font-semibold text-sky-600">Campo Magnético (B_z)</span>
+                  <span className="font-mono text-[#2D2A26] font-bold">
                     {lorentzSettings.bField.z.toFixed(1)} T
                   </span>
                 </div>
@@ -415,8 +415,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {/* Electric Field E */}
               <div>
                 <div className="flex justify-between items-center text-[10px] mb-1">
-                  <span className="font-semibold text-rose-400">Campo Eléctrico (E_y)</span>
-                  <span className="font-mono text-white font-bold">
+                  <span className="font-semibold text-rose-600">Campo Eléctrico (E_y)</span>
+                  <span className="font-mono text-[#2D2A26] font-bold">
                     {lorentzSettings.eField.y.toFixed(1)} N/C
                   </span>
                 </div>
@@ -443,9 +443,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Capas y Vectores 3D"
             subtitle="Fuerza, velocidad y grilla"
-            icon={<Layers className="w-3.5 h-3.5 text-cyan-400" />}
+            icon={<Layers className="w-3.5 h-3.5 text-sky-500" />}
             badge={
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-cyan-400 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 text-sky-600 font-mono border border-sky-200">
                 3D
               </span>
             }
@@ -453,10 +453,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             onToggle={() => setOpenSection2((prev) => !prev)}
           >
             <div className="space-y-1.5 pt-0.5">
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 text-[11px] block">Vectores v y F</span>
-                  <span className="text-[10px] text-slate-400">Verde (v) y Amarillo (F)</span>
+                  <span className="text-[#2D2A26] text-[11px] block">Vectores v y F</span>
+                  <span className="text-[10px] text-[#6B6560]">Verde (v) y Amarillo (F)</span>
                 </div>
                 <input
                   type="checkbox"
@@ -471,10 +471,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2 rounded-lg bg-[#0e1422] border border-slate-800/80 cursor-pointer hover:bg-slate-800/60">
+              <label className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#D5CEC6] cursor-pointer hover:bg-[#EDE8DF]">
                 <div>
-                  <span className="text-slate-200 text-[11px] block">Flechas de campo 3D</span>
-                  <span className="text-[10px] text-slate-400">Matriz tridimensional</span>
+                  <span className="text-[#2D2A26] text-[11px] block">Flechas de campo 3D</span>
+                  <span className="text-[10px] text-[#6B6560]">Matriz tridimensional</span>
                 </div>
                 <input
                   type="checkbox"
@@ -495,14 +495,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <CollapsibleSection
             title="Precisión Boris Pusher"
             subtitle={`Paso temporal dt: ${lorentzSettings.timeStep}`}
-            icon={<Settings2 className="w-3.5 h-3.5 text-amber-400" />}
+            icon={<Settings2 className="w-3.5 h-3.5 text-amber-500" />}
             isOpen={openSection3}
             onToggle={() => setOpenSection3((prev) => !prev)}
           >
             <div className="pt-0.5 space-y-1">
-              <div className="flex justify-between text-slate-300 text-[10px]">
+              <div className="flex justify-between text-[#4A4540] text-[10px]">
                 <span>Paso de Tiempo (dt):</span>
-                <span className="font-mono text-sky-400 font-bold">{lorentzSettings.timeStep}</span>
+                <span className="font-mono text-sky-600 font-bold">{lorentzSettings.timeStep}</span>
               </div>
               <input
                 type="range"

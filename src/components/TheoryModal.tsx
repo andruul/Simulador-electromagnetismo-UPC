@@ -21,33 +21,33 @@ export const TheoryModal: React.FC<TheoryModalProps> = ({ isOpen, onClose }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-[#D5CEC6] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[#2D2A26]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E0D8CF] bg-[#F5F0E8]">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+            <div className="p-2 bg-[#5B9E8A]/10 rounded-xl border border-[#5B9E8A]/20 text-[#5B9E8A]">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className="text-lg font-bold text-[#2D2A26] tracking-wide">
                 Teoría Explicada Fácil • Física de Electromagnetismo UPC
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#6B6560]">
                 Intuición cotidiana, conceptos clave y formulación matemática rigurosa
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-[#EDE8DF] text-[#6B6560] hover:text-[#2D2A26] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm bg-[#FAFAF7]">
           {/* Section 1: Electrostática */}
           <div className="bg-slate-950/50 p-5 rounded-xl border border-slate-800/80 space-y-3">
             <div className="flex items-center gap-2 text-rose-400 font-bold text-base">

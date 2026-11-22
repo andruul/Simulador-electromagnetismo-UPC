@@ -45,21 +45,21 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return (
       <div
         role="alert"
-        className="w-full h-full flex items-center justify-center bg-[#090d16] p-6"
+        className="w-full h-full flex items-center justify-center bg-[#F0EBE2] p-6"
       >
-        <div className="max-w-md text-center bg-slate-900/80 border border-rose-500/30 rounded-xl p-6">
-          <h2 className="text-lg font-bold text-rose-300 mb-2">
+        <div className="max-w-md text-center bg-white/80 backdrop-blur-md border border-rose-400/30 rounded-xl p-6 shadow-lg">
+          <h2 className="text-lg font-bold text-rose-600 mb-2">
             No se pudo mostrar {this.props.label ?? 'esta sección'}
           </h2>
-          <p className="text-sm text-slate-300 mb-4">
+          <p className="text-sm text-[#4A4540] mb-4">
             Ocurrió un error inesperado. Sus demás salas siguen funcionando. Puede reintentar o
             elegir otra sala desde la barra superior.
           </p>
-          <p className="text-xs text-slate-500 font-mono mb-4 break-words">{error.message}</p>
+          <p className="text-xs text-[#6B6560] font-mono mb-4 break-words">{error.message}</p>
           <button
             type="button"
             onClick={this.handleRetry}
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold"
+            className="px-4 py-2 rounded-lg bg-[#5B9E8A] hover:bg-[#4A8A77] text-white text-sm font-semibold"
           >
             Reintentar
           </button>

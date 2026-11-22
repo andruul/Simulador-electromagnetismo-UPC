@@ -190,16 +190,16 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
 
   if (!isOpen) {
     return (
-      <div className="h-full bg-slate-950 border-r border-slate-800/80 flex flex-col items-center py-3 px-1 z-20 flex-shrink-0">
+      <div className="h-full bg-[#F0EBE2] border-r border-[#E0D8CF] flex flex-col items-center py-3 px-1 z-20 flex-shrink-0">
         <button
           onClick={onToggle}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-slate-800 hover:border-emerald-500/40 transition-all cursor-pointer group shadow-md"
+          className="p-2 rounded-lg bg-white hover:bg-[#EDE8DF] text-[#5B9E8A] border border-[#D5CEC6] hover:border-[#5B9E8A]/50 transition-all cursor-pointer group shadow-sm"
           title="Abrir Guía y Experimentos Rápidos"
         >
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest [writing-mode:vertical-lr] rotate-180 mt-6 flex items-center gap-1.5">
-          <Lightbulb className="w-3 h-3 text-emerald-400 rotate-90" />
+        <span className="text-[10px] font-bold text-[#A89E94] uppercase tracking-widest [writing-mode:vertical-lr] rotate-180 mt-6 flex items-center gap-1.5">
+          <Lightbulb className="w-3 h-3 text-[#5B9E8A] rotate-90" />
           <span>Guía & Experimentos</span>
         </span>
       </div>
@@ -207,18 +207,18 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
   }
 
   return (
-    <aside className="w-72 h-full bg-[#0d131f] border-r border-slate-800/90 flex flex-col select-none flex-shrink-0 z-20 shadow-xl overflow-hidden text-slate-200">
+    <aside className="w-72 h-full bg-[#F5F0E8] border-r border-[#E0D8CF] flex flex-col select-none flex-shrink-0 z-20 shadow-md overflow-hidden text-[#2D2A26]">
       {/* Panel Header */}
-      <div className="h-11 px-3 border-b border-slate-800/80 bg-slate-950/70 flex items-center justify-between flex-shrink-0">
+      <div className="h-11 px-3 border-b border-[#E0D8CF] bg-white/70 backdrop-blur-sm flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex-shrink-0">
+          <div className="p-1 rounded bg-[#5B9E8A]/10 border border-[#5B9E8A]/30 text-[#5B9E8A] flex-shrink-0">
             {content.icon}
           </div>
           <div className="min-w-0">
-            <h2 className="text-xs font-bold text-white tracking-wide leading-tight truncate">
+            <h2 className="text-xs font-bold text-[#2D2A26] tracking-wide leading-tight truncate">
               GUÍA DEL EXPERIMENTO
             </h2>
-            <p className="text-[10px] text-emerald-400 font-medium leading-none truncate">
+            <p className="text-[10px] text-[#5B9E8A] font-medium leading-none truncate">
               {content.roomName}
             </p>
           </div>
@@ -227,7 +227,7 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={onToggle}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-850 rounded transition-colors cursor-pointer"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer"
             title="Colapsar panel de guía"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -237,15 +237,15 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
 
       {/* Quick Dimension Mode Switcher for Sala 2 */}
       {mode === 'gauss' && (
-        <div className="px-3 py-1.5 bg-slate-950/80 border-b border-slate-800/80 flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] text-slate-400 font-medium">Modo:</span>
-          <div className="flex-1 flex items-center bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[10px]">
+        <div className="px-3 py-1.5 bg-white/50 border-b border-[#E0D8CF] flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-[10px] text-[#6B6560] font-medium">Modo:</span>
+          <div className="flex-1 flex items-center bg-[#EDE8DF] p-0.5 rounded-lg border border-[#D5CEC6] text-[10px]">
             <button
               onClick={() => onGaussDimChange?.('2d')}
               className={`flex-1 py-1 rounded text-center font-semibold cursor-pointer transition-all ${
                 gaussDimMode !== '3d'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-[#5B9E8A] text-white shadow-md'
+                  : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#E0D8CF]'
               }`}
             >
               Plano 2D
@@ -254,8 +254,8 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
               onClick={() => onGaussDimChange?.('3d')}
               className={`flex-1 py-1 rounded text-center font-semibold cursor-pointer transition-all ${
                 gaussDimMode === '3d'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-gradient-to-r from-[#5B9E8A] to-teal-500 text-white shadow-md'
+                  : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#E0D8CF]'
               }`}
             >
               Espacio 3D
@@ -270,21 +270,21 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
         <CollapsibleSection
           title="¿Cómo funciona?"
           subtitle="3 pasos: interactúa, observa y aprende"
-          icon={<HelpCircle className="w-3.5 h-3.5 text-sky-400" />}
+          icon={<HelpCircle className="w-3.5 h-3.5 text-sky-500" />}
           badge={undefined}
           isOpen={openHowItWorks}
           onToggle={() => setOpenHowItWorks((prev) => !prev)}
         >
           {/* Step 1: Interact */}
           <div className="flex gap-2 items-start">
-            <div className="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-[#5B9E8A]/15 border border-[#5B9E8A]/40 text-[#5B9E8A] flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
               1
             </div>
             <div>
-              <span className="font-semibold text-emerald-300 text-[11px] flex items-center gap-1">
+              <span className="font-semibold text-[#3D7A69] text-[11px] flex items-center gap-1">
                 <Hand className="w-3 h-3" /> Interactúa
               </span>
-              <p className="text-slate-400 text-[11px] leading-snug mt-0.5">
+              <p className="text-[#6B6560] text-[11px] leading-snug mt-0.5">
                 {content.interact}
               </p>
             </div>
@@ -292,14 +292,14 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
 
           {/* Step 2: Observe */}
           <div className="flex gap-2 items-start">
-            <div className="w-5 h-5 rounded-full bg-sky-500/15 border border-sky-500/40 text-sky-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-sky-100 border border-sky-300/60 text-sky-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
               2
             </div>
             <div>
-              <span className="font-semibold text-sky-300 text-[11px] flex items-center gap-1">
+              <span className="font-semibold text-sky-600 text-[11px] flex items-center gap-1">
                 <Eye className="w-3 h-3" /> Observa
               </span>
-              <p className="text-slate-400 text-[11px] leading-snug mt-0.5">
+              <p className="text-[#6B6560] text-[11px] leading-snug mt-0.5">
                 {content.observe}
               </p>
             </div>
@@ -307,14 +307,14 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
 
           {/* Step 3: Key Concept */}
           <div className="flex gap-2 items-start">
-            <div className="w-5 h-5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-amber-100 border border-amber-300/60 text-amber-600 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
               3
             </div>
             <div>
-              <span className="font-semibold text-amber-300 text-[11px] flex items-center gap-1">
+              <span className="font-semibold text-amber-600 text-[11px] flex items-center gap-1">
                 <Lightbulb className="w-3 h-3" /> Concepto Clave
               </span>
-              <p className="text-slate-300 text-[11px] leading-snug mt-0.5 font-medium">
+              <p className="text-[#4A4540] text-[11px] leading-snug mt-0.5 font-medium">
                 {content.keyConcept}
               </p>
             </div>
@@ -327,18 +327,18 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
           subtitle={viewMode === 'explore' ? 'Prueba este experimento' : content.formula}
           icon={
             viewMode === 'explore' ? (
-              <Target className="w-3.5 h-3.5 text-emerald-400" />
+              <Target className="w-3.5 h-3.5 text-[#5B9E8A]" />
             ) : (
-              <FlaskConical className="w-3.5 h-3.5 text-sky-400" />
+              <FlaskConical className="w-3.5 h-3.5 text-sky-500" />
             )
           }
           badge={
             viewMode === 'explore' ? (
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#5B9E8A]/15 text-[#3D7A69] border border-[#5B9E8A]/30">
                 Misión
               </span>
             ) : (
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950 text-sky-400 border border-sky-500/30 font-mono">
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 text-sky-700 border border-sky-300/50 font-mono">
                 SI Exacto
               </span>
             )
@@ -347,15 +347,15 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
           onToggle={() => setOpenObjectives((prev) => !prev)}
         >
           {viewMode === 'explore' ? (
-            <p className="text-[11px] text-slate-300 leading-snug">
+            <p className="text-[11px] text-[#4A4540] leading-snug">
               {content.exploreChallenge}
             </p>
           ) : (
             <div className="space-y-1.5">
-              <p className="text-[11px] text-slate-300 leading-snug">
+              <p className="text-[11px] text-[#4A4540] leading-snug">
                 {content.labObjective}
               </p>
-              <div className="p-1.5 bg-slate-900/90 rounded border border-slate-800 font-mono text-center text-sky-300 text-[11px]">
+              <div className="p-1.5 bg-[#EDE8DF] rounded border border-[#D5CEC6] font-mono text-center text-sky-700 text-[11px]">
                 {content.formula}
               </div>
             </div>
@@ -366,9 +366,9 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
         <CollapsibleSection
           title="Experimentos con 1 Clic"
           subtitle="Cargar escenarios clásicos"
-          icon={<Sparkles className="w-3.5 h-3.5 text-amber-400" />}
+          icon={<Sparkles className="w-3.5 h-3.5 text-amber-500" />}
           badge={
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-amber-400 font-mono border border-slate-700/60">
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#EDE8DF] text-amber-600 font-mono border border-[#D5CEC6]">
               {content.presets.length} Presets
             </span>
           }
@@ -380,16 +380,16 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
               <button
                 key={p.key}
                 onClick={() => onApplyPreset(p.key)}
-                className="w-full text-left p-2 rounded-lg bg-[#0e1422] hover:bg-slate-800/90 border border-slate-800/80 hover:border-emerald-500/40 transition-all cursor-pointer group flex items-start gap-2 shadow-sm"
+                className="w-full text-left p-2 rounded-lg bg-white hover:bg-[#EDE8DF] border border-[#D5CEC6] hover:border-[#5B9E8A]/40 transition-all cursor-pointer group flex items-start gap-2 shadow-sm"
               >
-                <span className="text-base leading-none p-1 bg-slate-900 rounded group-hover:scale-110 transition-transform flex-shrink-0">
+                <span className="text-base leading-none p-1 bg-[#EDE8DF] rounded group-hover:scale-110 transition-transform flex-shrink-0">
                   {p.icon}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-200 group-hover:text-emerald-300 text-[11px] truncate">
+                  <div className="font-semibold text-[#2D2A26] group-hover:text-[#3D7A69] text-[11px] truncate">
                     {p.label}
                   </div>
-                  <div className="text-[10px] text-slate-400 leading-tight truncate">
+                  <div className="text-[10px] text-[#6B6560] leading-tight truncate">
                     {p.desc}
                   </div>
                 </div>

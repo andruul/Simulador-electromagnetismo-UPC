@@ -196,23 +196,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-[#0b0f17] text-slate-100 flex flex-col p-4 md:p-6 overflow-hidden select-none">
+    <div className="w-full h-full bg-[#F5F0E8] text-[#2D2A26] flex flex-col p-4 md:p-6 overflow-hidden select-none">
       {/* Header compact desktop launcher bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-slate-800/80 gap-3 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-[#E0D8CF] gap-3 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-900 border border-emerald-500/40 rounded-xl shadow-lg shadow-emerald-950/40">
+          <div className="p-2 bg-white border border-[#5B9E8A]/40 rounded-xl shadow-md">
             <UpcLogo className="w-8 h-8 md:w-10 md:h-10" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base md:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-base md:text-lg font-bold tracking-tight text-[#2D2A26] flex items-center gap-2">
                 UNIVERSIDAD POPULAR DEL CESAR
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#5B9E8A]/15 text-[#3D7A69] border border-[#5B9E8A]/40 font-semibold font-mono">
                   FIT • Física
                 </span>
               </h1>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#6B6560]">
               Estación de Laboratorios Virtuales de Electromagnetismo • Elige una sala para iniciar
             </p>
           </div>
@@ -222,17 +222,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-medium text-slate-300 hover:text-white transition-colors cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-[#EDE8DF] border border-[#D5CEC6] text-xs font-medium text-[#4A4540] hover:text-[#2D2A26] transition-colors cursor-pointer shadow-sm"
           >
-            <Search className="w-3.5 h-3.5 text-emerald-400" />
+            <Search className="w-3.5 h-3.5 text-[#5B9E8A]" />
             <span>Buscar tema (Ctrl+K)</span>
           </button>
 
           <button
             onClick={onOpenTheory}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-950/50 hover:bg-indigo-900/70 border border-indigo-500/40 text-xs font-medium text-indigo-300 transition-colors cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-100/70 hover:bg-indigo-100 border border-indigo-300/50 text-xs font-medium text-indigo-700 transition-colors cursor-pointer shadow-sm"
           >
-            <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
             <span>Teoría Explicada Fácil</span>
           </button>
         </div>
@@ -244,7 +244,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <div
             key={room.mode}
             onClick={() => onLaunchPractice(room.mode, room.presetKey)}
-            className={`group flex flex-col justify-between bg-[#111827] ${room.colorScheme.bgHover} rounded-xl border ${room.colorScheme.border} p-4 transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5`}
+            className={`group flex flex-col justify-between bg-white ${room.colorScheme.bgHover} rounded-xl border ${room.colorScheme.border} p-4 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5`}
           >
             {/* Card Top */}
             <div className="space-y-2.5">
@@ -256,30 +256,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     {getRoomIcon(room.mode)}
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                    <span className="text-[10px] font-bold text-[#A89E94] tracking-wider uppercase">
                       SALA 0{room.roomNumber}
                     </span>
-                    <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors leading-tight">
+                    <h3 className={`text-sm font-bold ${room.colorScheme.accent} group-hover:opacity-80 transition-opacity leading-tight`}>
                       {room.title}
                     </h3>
                   </div>
                 </div>
 
-                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700/80 text-slate-300">
+                <span className="text-[9px] font-medium px-2 py-0.5 rounded-full bg-[#EDE8DF] border border-[#D5CEC6] text-[#6B6560]">
                   {room.badge}
                 </span>
               </div>
 
               {/* Subtitle / summary */}
-              <p className="text-[11px] text-slate-400 font-medium leading-snug">
+              <p className="text-[11px] text-[#6B6560] font-medium leading-snug">
                 {room.subtitle}
               </p>
 
               {/* What will you learn / observe */}
-              <ul className="space-y-1 text-[11px] text-slate-300">
+              <ul className="space-y-1 text-[11px] text-[#4A4540]">
                 {room.bullets.map((b, idx) => (
                   <li key={idx} className="flex items-start gap-1.5 leading-snug">
-                    <span className="text-emerald-400 mt-0.5">•</span>
+                    <span className={`${room.colorScheme.accent} mt-0.5`}>•</span>
                     <span>{b}</span>
                   </li>
                 ))}
@@ -287,8 +287,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </div>
 
             {/* Card Bottom: Formula & Enter Button */}
-            <div className="pt-3 border-t border-slate-800/80 mt-3 flex items-center justify-between gap-2">
-              <div className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-1 rounded border border-slate-800/80 truncate max-w-[170px]">
+            <div className="pt-3 border-t border-[#E0D8CF] mt-3 flex items-center justify-between gap-2">
+              <div className="font-mono text-[10px] text-[#6B6560] bg-[#EDE8DF] px-2 py-1 rounded border border-[#D5CEC6] truncate max-w-[170px]">
                 {room.formula}
               </div>
 
@@ -308,17 +308,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       </div>
 
       {/* Desktop footer info bar */}
-      <div className="h-9 px-3 border-t border-slate-800/80 bg-slate-950/60 rounded-lg flex items-center justify-between text-[11px] text-slate-400 flex-shrink-0">
+      <div className="h-9 px-3 border-t border-[#E0D8CF] bg-white/60 rounded-lg flex items-center justify-between text-[11px] text-[#6B6560] flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Atom className="w-3.5 h-3.5 text-emerald-400" />
+          <Atom className="w-3.5 h-3.5 text-[#5B9E8A]" />
           <span>Simulador Pedagógico de Física II • Universidad Popular del Cesar</span>
         </div>
-        <div className="flex items-center gap-3 text-slate-500">
-          <span>Atajo global: <kbd className="px-1 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">Ctrl + K</kbd></span>
+        <div className="flex items-center gap-3 text-[#A89E94]">
+          <span>Atajo global: <kbd className="px-1 py-0.2 rounded bg-[#EDE8DF] border border-[#D5CEC6] text-[#6B6560] font-mono">Ctrl + K</kbd></span>
           <span>•</span>
           <button
             onClick={onStartSimulation}
-            className="text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2 cursor-pointer"
+            className="text-[#5B9E8A] hover:text-[#3D7A69] font-medium underline underline-offset-2 cursor-pointer"
           >
             Continuar simulación activa
           </button>

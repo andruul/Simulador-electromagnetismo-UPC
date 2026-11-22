@@ -12,13 +12,13 @@ export const NoticeToast: React.FC<NoticeToastProps> = ({ message, onDismiss }) 
   return (
     <div
       role="alert"
-      className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 max-w-lg flex items-start gap-3 rounded-lg border border-rose-500/40 bg-slate-900/95 px-4 py-3 text-sm text-rose-200 shadow-xl"
+      className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 max-w-lg flex items-start gap-3 rounded-lg border border-rose-400/40 bg-white/95 backdrop-blur-md px-4 py-3 text-sm text-rose-700 shadow-xl"
     >
       <span className="flex-1">{message}</span>
       <button
         type="button"
         onClick={onDismiss}
-        className="text-slate-400 hover:text-white"
+        className="text-[#6B6560] hover:text-[#2D2A26]"
         aria-label="Cerrar aviso"
       >
         ✕

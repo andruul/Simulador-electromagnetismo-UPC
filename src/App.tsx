@@ -151,7 +151,7 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-[#070b14] text-slate-100 overflow-hidden font-sans">
+    <div className="w-screen h-screen flex flex-col bg-[#F5F0E8] text-[#2D2A26] overflow-hidden font-sans">
       {/* Top Application Header Bar */}
       <TopNavbar
         mode={mode}
@@ -195,7 +195,7 @@ export const App: React.FC = () => {
             />
 
             {/* Center Interactive Simulation Viewport */}
-            <main className="flex-1 h-full relative overflow-hidden bg-[#090d16]">
+            <main className="flex-1 h-full relative overflow-hidden bg-[#EDE8DF]">
               <ErrorBoundary label="este laboratorio" resetKey={mode}>
                 <RoomViewport
                   mode={mode}
