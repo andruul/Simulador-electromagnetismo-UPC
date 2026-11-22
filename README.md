@@ -1,9 +1,13 @@
 # 🏛️ Simulador de Electromagnetismo — Universidad Popular del Cesar (UPC)
-### Estación de Laboratorio Virtual de Escritorio (2D / 3D) • Versión 2.0 Desktop Edition
+### Estación de Laboratorio Virtual (2D / 3D) • Versión 2.0 Desktop & Web Edition
 
-Aplicación nativa de escritorio y estación de laboratorio de física computacional desarrollada para la **Universidad Popular del Cesar (UPC)**, Valledupar, Colombia. Diseñada con un estándar riguroso de ingeniería pedagógica para suplir las carencias de laboratorios físicos mediante simulación interactiva de alta fidelidad, 100% offline y optimizada para equipos de salas de informática universitarias.
+[![Web en Vivo](https://img.shields.io/badge/Web%20en%20Vivo-Vercel%20Production-emerald?style=for-the-badge&logo=vercel)](https://simulador-electromagnetismo-upc.vercel.app)
+[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20Portable%20%7C%20Web-blue?style=for-the-badge)](https://simulador-electromagnetismo-upc.vercel.app)
+[![Pruebas de Física](https://img.shields.io/badge/F%C3%ADsica-104%2F104%20Tests%20Passing-success?style=for-the-badge)](https://github.com/andruul/Simulador-electromagnetismo-UPC)
 
-Construida con la arquitectura: **Electron + Vite + React 19 + TypeScript + Three.js + Tailwind CSS**.
+Aplicación nativa de escritorio y estación web de física computacional desarrollada para la **Universidad Popular del Cesar (UPC)**, Valledupar, Colombia. Diseñada con un estándar riguroso de ingeniería pedagógica para enriquecer los laboratorios de Física II mediante simulación interactiva de alta fidelidad, paleta clara pastel de descanso visual, 100% offline en su ejecutable y optimizada para equipos de salas de informática universitarias.
+
+🌐 **Probar versión Web directamente:** [https://simulador-electromagnetismo-upc.vercel.app](https://simulador-electromagnetismo-upc.vercel.app)
 
 ---
 
@@ -11,12 +15,13 @@ Construida con la arquitectura: **Electron + Vite + React 19 + TypeScript + Thre
 
 ### 1. Ejecutable Nativo de Windows (`.exe` Portable — Sin Instalación)
 Ideal para los computadores de las salas de sistemas de la UPC donde los estudiantes o docentes no tienen permisos de Administrador:
+- **Archivo generado:** `release/Simulador_Electromagnetismo_UPC_Portable.exe` (112.9 MB)
+- **Cómo compilarlo:**
 ```bash
 npm run electron:exe
 ```
-Genera en la carpeta `release/` el ejecutable autónomo:
-`Simulador_Electromagnetismo_UPC_Portable.exe`
 > **Ventaja UPC:** Se puede copiar directamente a una memoria USB y ejecutar con doble clic en cualquier computador con Windows 10 u 11 sin requerir conexión a internet ni instalación previa.
+> *(Nota: En GitHub, los archivos ejecutables mayores a 100 MB se distribuyen en la sección [Releases](https://github.com/andruul/Simulador-electromagnetismo-UPC/releases) para permitir descargas directas sin saturar el código fuente).*
 
 ### 2. Instalador de Windows (NSIS)
 Para instalar en computadores de laboratorio con acceso directo en el Escritorio:
