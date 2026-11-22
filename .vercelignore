@@ -1,0 +1,28 @@
+# Build and desktop release artifacts
+release
+release/**
+build
+build/**
+electron
+electron/**
+*.zip
+*.exe
+*.msi
+*.dmg
+*.AppImage
+simulador-upc.zip
+
+# Dev and local tooling
+.agents
+.vitest
+.vscode
+.git
+node_modules
+dist
+dist-ssr
+
+# Logs and environment
+logs
+*.log
+.env*
+!.env.example
