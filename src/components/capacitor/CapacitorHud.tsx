@@ -25,28 +25,28 @@ export const CapacitorHud: React.FC<CapacitorHudProps> = ({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
         title="Expandir telemetría de capacitancia"
       >
-        <span className="w-2 h-2 rounded-full bg-cyan-400" />
-        <span className="font-bold text-cyan-400">Capacitor:</span>
-        <span className="font-mono text-slate-200 font-semibold">{physics.capacitancePF.toFixed(2)} pF</span>
-        <span className="text-slate-500">•</span>
-        <span className="font-mono text-amber-300">{physics.voltage.toFixed(1)} V</span>
-        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+        <span className="w-2 h-2 rounded-full bg-cyan-500" />
+        <span className="font-bold text-cyan-700">Capacitor:</span>
+        <span className="font-mono text-[#2D2A26] font-semibold">{physics.capacitancePF.toFixed(2)} pF</span>
+        <span className="text-[#A89E94]">•</span>
+        <span className="font-mono text-amber-700 font-semibold">{physics.voltage.toFixed(1)} V</span>
+        <ChevronDown className="w-3.5 h-3.5 text-[#6B6560]" />
       </button>
     );
   }
 
   return (
-    <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl max-w-[calc(100%-12rem)]">
-      <div className="flex items-center gap-2 border-r border-slate-700/80 pr-4">
-        <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold">
+    <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[#D5CEC6] shadow-md max-w-[calc(100%-12rem)]">
+      <div className="flex items-center gap-2 border-r border-[#E0D8CF] pr-4">
+        <div className="w-7 h-7 rounded-lg bg-cyan-100 border border-cyan-300/60 flex items-center justify-center text-cyan-700 font-bold">
           C
         </div>
         <div>
-          <div className="text-xs font-bold text-white tracking-wide">LABORATORIO DE CAPACITANCIA</div>
-          <div className="text-[11px] font-mono text-cyan-400">
+          <div className="text-xs font-bold text-[#2D2A26] tracking-wide">LABORATORIO DE CAPACITANCIA</div>
+          <div className="text-[11px] font-mono text-cyan-700 font-medium">
             C = κ ε₀ A / d &nbsp;|&nbsp; Q = C·V &nbsp;|&nbsp; U = ½ C·V²
           </div>
         </div>
@@ -54,33 +54,33 @@ export const CapacitorHud: React.FC<CapacitorHudProps> = ({
 
       {viewMode === 'explore' ? (
         <div className="flex items-center gap-3 text-xs">
-          <span className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-medium">
+          <span className="px-2 py-0.5 rounded bg-cyan-100 border border-cyan-300 text-cyan-800 font-medium">
             Capacitancia:{' '}
             {physics.capacitancePF > 1.2 ? '⚡ Alta' : physics.capacitancePF > 0.5 ? '🔹 Media' : '🔸 Baja'} (
             {physics.capacitancePF.toFixed(1)} pF)
           </span>
-          <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-medium">
+          <span className="px-2 py-0.5 rounded bg-[#5B9E8A]/15 border border-[#5B9E8A]/30 text-[#3D7A69] font-medium">
             {connectedToBattery ? '🔋 Batería Activa' : '🔒 Carga Atrapada'}
           </span>
-          <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-medium">
+          <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300/60 text-amber-800 font-medium">
             {material.name} ({Math.round(insertionFraction * 100)}%)
           </span>
         </div>
       ) : (
         <div className="flex items-center gap-4 text-xs font-mono">
-          <Reading first label="Capacitancia C:" valueClass="text-cyan-300">
+          <Reading first label="Capacitancia C:" valueClass="text-cyan-700">
             {physics.capacitancePF.toFixed(2)} pF
           </Reading>
-          <Reading label="Carga Q:" valueClass="text-rose-400">
+          <Reading label="Carga Q:" valueClass="text-rose-600">
             {physics.storedChargePC.toFixed(2)} pC
           </Reading>
-          <Reading label="Voltaje V:" valueClass="text-amber-400">
+          <Reading label="Voltaje V:" valueClass="text-amber-700">
             {physics.voltage.toFixed(2)} V
           </Reading>
-          <Reading label="Energía U:" valueClass="text-emerald-400">
+          <Reading label="Energía U:" valueClass="text-[#3D7A69]">
             {physics.storedEnergyPJ.toFixed(2)} pJ
           </Reading>
-          <Reading label="Campo E:" valueClass="text-purple-300">
+          <Reading label="Campo E:" valueClass="text-purple-700">
             {physics.electricFieldKVm.toFixed(2)} kV/m
           </Reading>
         </div>
@@ -88,7 +88,7 @@ export const CapacitorHud: React.FC<CapacitorHudProps> = ({
 
       <button
         onClick={() => setIsIsOpenFalse(setIsOpen)}
-        className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-auto"
+        className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer ml-auto"
         title="Minimizar telemetría"
       >
         <ChevronUp className="w-3.5 h-3.5" />
@@ -105,8 +105,8 @@ const Reading: React.FC<{
   children: React.ReactNode;
   first?: boolean;
 }> = ({ label, valueClass, children, first = false }) => (
-  <div className={first ? undefined : 'border-l border-slate-800 pl-3'}>
-    <span className="text-slate-400">{label} </span>
+  <div className={first ? undefined : 'border-l border-[#E0D8CF] pl-3'}>
+    <span className="text-[#6B6560]">{label} </span>
     <span className={`${valueClass} font-bold`}>{children}</span>
   </div>
 );

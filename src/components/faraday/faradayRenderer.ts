@@ -85,12 +85,12 @@ function layoutCoil(vp: Viewport, coil: InductionCoil): CoilLayout {
 
 function drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 80, w / 2, h / 2, Math.max(w, h));
-  bgGrad.addColorStop(0, '#0c1222');
-  bgGrad.addColorStop(1, '#05070f');
+  bgGrad.addColorStop(0, '#FAF7F2');
+  bgGrad.addColorStop(1, '#EFE9DF');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
   ctx.lineWidth = 1;
   for (let x = 0; x < w; x += 40) {
     ctx.beginPath();

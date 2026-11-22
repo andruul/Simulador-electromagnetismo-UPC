@@ -306,13 +306,13 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
 
     // Background gradient
     const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 50, w / 2, h / 2, Math.max(w, h));
-    bgGrad.addColorStop(0, '#0c1222');
-    bgGrad.addColorStop(1, '#060913');
+    bgGrad.addColorStop(0, '#FAF7F2');
+    bgGrad.addColorStop(1, '#EFE9DF');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
 
     // Coordinate grid (Meters grid)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
     ctx.lineWidth = 1;
     const gridSpacing = PIXELS_PER_METER * 0.5; // 0.5 meter steps
 
@@ -611,7 +611,7 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   // 3D Volumetric View Mode with Non-Uniform Electric Fields
   if (dimMode === '3d') {
     return (
-      <div ref={containerRef} className="w-full h-full relative flex flex-col bg-slate-950 select-none overflow-hidden">
+      <div ref={containerRef} className="w-full h-full relative flex flex-col bg-[#FAF7F2] select-none overflow-hidden">
         {/* 3D Volumetric Gauss & Non-uniform fields */}
         <Gauss3DViewer
           viewMode={viewMode}
@@ -623,18 +623,18 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full relative flex flex-col bg-slate-950 select-none overflow-hidden">
+    <div ref={containerRef} className="w-full h-full relative flex flex-col bg-[#FAF7F2] select-none overflow-hidden">
 
       {/* Top Scientific Formula & Verification HUD (Collapsible) */}
       {isTelemetryOpen ? (
-        <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl">
-          <div className="flex items-center gap-2 border-r border-slate-700/80 pr-4">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+        <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[#D5CEC6] shadow-md">
+          <div className="flex items-center gap-2 border-r border-[#E0D8CF] pr-4">
+            <div className="w-7 h-7 rounded-lg bg-[#5B9E8A]/15 border border-[#5B9E8A]/30 flex items-center justify-center text-[#3D7A69] font-bold">
               Φ
             </div>
             <div>
-              <div className="text-xs font-bold text-white tracking-wide">LEY DE GAUSS</div>
-              <div className="text-[11px] font-mono text-emerald-400">
+              <div className="text-xs font-bold text-[#2D2A26] tracking-wide">LEY DE GAUSS</div>
+              <div className="text-[11px] font-mono text-[#3D7A69] font-medium">
                 Φ_E = ∮ E · dA = Q_enc / ε₀
               </div>
             </div>
@@ -644,14 +644,14 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
           {viewMode === 'explore' ? (
             <div className="flex items-center gap-3 text-xs">
               <div>
-                <span className="text-slate-400">Carga Encerrada: </span>
-                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                <span className="text-[#6B6560]">Carga Encerrada: </span>
+                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-600' : parseFloat(qEncNano) < 0 ? 'text-sky-600' : 'text-[#4A4540]'}`}>
                   {parseFloat(qEncNano) > 0 ? 'Positiva (+ Flujo sale)' : parseFloat(qEncNano) < 0 ? 'Negativa (− Flujo entra)' : 'Nula (Flujo neto = 0)'}
                 </span>
               </div>
-              <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
-                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
-                <span className="text-[11px] font-bold text-emerald-400">
+              <div className="border-l border-[#E0D8CF] pl-3 flex items-center gap-1.5">
+                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-[#5B9E8A]' : 'text-amber-500'}`} />
+                <span className="text-[11px] font-bold text-[#3D7A69]">
                   {isVerified ? 'Ley de Gauss Comprobada' : 'Verificando...'}
                 </span>
               </div>
@@ -659,26 +659,26 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
           ) : (
             <div className="flex items-center gap-4 text-xs font-mono">
               <div>
-                <span className="text-slate-400">Q_enc: </span>
-                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-400' : parseFloat(qEncNano) < 0 ? 'text-sky-400' : 'text-slate-300'}`}>
+                <span className="text-[#6B6560]">Q_enc: </span>
+                <span className={`font-bold ${parseFloat(qEncNano) > 0 ? 'text-rose-600' : parseFloat(qEncNano) < 0 ? 'text-sky-600' : 'text-[#4A4540]'}`}>
                   {qEncNano} nC
                 </span>
               </div>
 
-              <div className="border-l border-slate-800 pl-3">
-                <span className="text-slate-400">Φ_teórico: </span>
-                <span className="text-indigo-300 font-bold">{theoFluxSci} N·m²/C</span>
+              <div className="border-l border-[#E0D8CF] pl-3">
+                <span className="text-[#6B6560]">Φ_teórico: </span>
+                <span className="text-indigo-700 font-bold">{theoFluxSci} N·m²/C</span>
               </div>
 
-              <div className="border-l border-slate-800 pl-3">
-                <span className="text-slate-400">Φ_numérico: </span>
-                <span className="text-emerald-400 font-bold">{numFluxSci} N·m²/C</span>
+              <div className="border-l border-[#E0D8CF] pl-3">
+                <span className="text-[#6B6560]">Φ_numérico: </span>
+                <span className="text-[#3D7A69] font-bold">{numFluxSci} N·m²/C</span>
               </div>
 
               {/* Verification Badge */}
-              <div className="border-l border-slate-800 pl-3 flex items-center gap-1.5">
-                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`} />
-                <span className={`text-[11px] font-bold ${isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
+              <div className="border-l border-[#E0D8CF] pl-3 flex items-center gap-1.5">
+                <CheckCircle2 className={`w-4 h-4 ${isVerified ? 'text-[#5B9E8A]' : 'text-amber-500'}`} />
+                <span className={`text-[11px] font-bold ${isVerified ? 'text-[#3D7A69]' : 'text-amber-600'}`}>
                   {isVerified ? 'VERIFICADO (Error ' + errorPercent + '%)' : 'Error: ' + errorPercent + '%'}
                 </span>
               </div>
@@ -687,7 +687,7 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
 
           <button
             onClick={() => setIsTelemetryOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer ml-1"
             title="Minimizar panel de telemetría"
           >
             <ChevronUp className="w-3.5 h-3.5" />
@@ -696,27 +696,27 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
       ) : (
         <button
           onClick={() => setIsTelemetryOpen(true)}
-          className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           title="Expandir telemetría de Ley de Gauss"
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="font-bold text-emerald-400">Ley de Gauss:</span>
-          <span className="font-mono text-slate-300 font-semibold">{qEncNano} nC</span>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <span className="w-2 h-2 rounded-full bg-[#5B9E8A]" />
+          <span className="font-bold text-[#3D7A69]">Ley de Gauss:</span>
+          <span className="font-mono text-[#2D2A26] font-semibold">{qEncNano} nC</span>
+          <ChevronDown className="w-3.5 h-3.5 text-[#6B6560]" />
         </button>
       )}
 
       {/* Surface & Physics Controls HUD (Top Right - Collapsible) */}
       {isControlsOpen ? (
-        <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/70 shadow-2xl">
+        <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-[#D5CEC6] shadow-md">
           {/* Surface Shape Switcher */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-medium">
+          <div className="flex items-center bg-[#EDE8DF] p-1 rounded-lg border border-[#D5CEC6] text-xs font-medium">
             <button
               onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'circle' }))}
               className={`px-3 py-1 rounded cursor-pointer transition-all ${
                 settings.surfaceShape === 'circle'
-                  ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#5B9E8A] text-white shadow-sm font-semibold'
+                  : 'text-[#6B6560] hover:text-[#2D2A26]'
               }`}
             >
               Esfera
@@ -774,7 +774,7 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
 
           <button
             onClick={() => setIsControlsOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer"
             title="Minimizar controles de superficie"
           >
             <ChevronUp className="w-3.5 h-3.5" />
@@ -783,26 +783,26 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
       ) : (
         <button
           onClick={() => setIsControlsOpen(true)}
-          className="absolute top-3 right-4 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute top-3 right-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           title="Expandir controles de superficie"
         >
           <span>⚙️ Superficie</span>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#6B6560]" />
         </button>
       )}
 
       {/* Selected Charge Inspector (Bottom Right) */}
       {selectedCharge && (
-        <div className="absolute bottom-4 right-4 z-20 bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-700 shadow-2xl flex items-center gap-4 text-xs">
+        <div className="absolute bottom-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#D5CEC6] shadow-md flex items-center gap-4 text-xs">
           <div>
-            <div className="text-slate-400 text-[10px]">Carga Seleccionada:</div>
-            <div className="font-mono font-bold text-white">
+            <div className="text-[#6B6560] text-[10px]">Carga Seleccionada:</div>
+            <div className="font-mono font-bold text-[#2D2A26]">
               {(selectedCharge.charge * 1e9).toFixed(1)} nC
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-[10px]">Ajustar q:</span>
+            <span className="text-[#6B6560] text-[10px]">Ajustar q:</span>
             <input
               type="range"
               min="-10"

@@ -32,13 +32,13 @@ const BATTERY_X = 140;
 
 function drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-  bgGrad.addColorStop(0, '#090d16');
-  bgGrad.addColorStop(1, '#05070d');
+  bgGrad.addColorStop(0, '#FAF7F2');
+  bgGrad.addColorStop(1, '#EFE9DF');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
   // Subtle grid lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
   ctx.lineWidth = 1;
   for (let x = 0; x < w; x += 40) {
     ctx.beginPath();

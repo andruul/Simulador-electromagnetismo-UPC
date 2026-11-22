@@ -98,11 +98,11 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.scale(dpr, dpr);
 
     // 1. Clear background
-    ctx.fillStyle = '#090d16';
+    ctx.fillStyle = '#FAF7F2';
     ctx.fillRect(0, 0, width, height);
 
     // 2. Subtle grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
     ctx.lineWidth = 1;
     for (let x = 0; x < width; x += 40) {
       ctx.beginPath();

@@ -11,8 +11,6 @@ import {
   Search,
   PanelRightClose,
   PanelRightOpen,
-  PanelLeftClose,
-  PanelLeftOpen,
   Command,
   CircleDot,
   BatteryCharging,
@@ -37,8 +35,8 @@ interface TopNavbarProps {
   onGenerateReport?: () => void;
   onOpenSearch: () => void;
   onOpenWelcome: () => void;
-  isLeftPanelOpen: boolean;
-  onToggleLeftPanel: () => void;
+  isLeftPanelOpen?: boolean;
+  onToggleLeftPanel?: () => void;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
 }
@@ -56,8 +54,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onGenerateReport,
   onOpenSearch,
   onOpenWelcome,
-  isLeftPanelOpen,
-  onToggleLeftPanel,
+  isLeftPanelOpen: _isLeftPanelOpen,
+  onToggleLeftPanel: _onToggleLeftPanel,
   isSidebarOpen,
   onToggleSidebar
 }) => {
@@ -80,23 +78,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             <LayoutGrid className="w-3 h-3 text-[#5B9E8A]" />
             <span className="hidden sm:inline">Salas UPC</span>
           </span>
-        </button>
-
-        {/* Left Panel Toggle Button */}
-        <button
-          onClick={onToggleLeftPanel}
-          className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-            isLeftPanelOpen
-              ? 'bg-[#EDE8DF] text-[#6B6560] border-[#D5CEC6] hover:bg-[#E0D8CF]'
-              : 'bg-[#5B9E8A]/15 text-[#3D7A69] border-[#5B9E8A]/40 hover:bg-[#5B9E8A]/25'
-          }`}
-          title={isLeftPanelOpen ? 'Ocultar panel de guía' : 'Mostrar panel de guía'}
-        >
-          {isLeftPanelOpen ? (
-            <PanelLeftClose className="w-3.5 h-3.5" />
-          ) : (
-            <PanelLeftOpen className="w-3.5 h-3.5" />
-          )}
         </button>
       </div>
 

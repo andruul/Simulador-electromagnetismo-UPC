@@ -134,7 +134,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
     const height = container.clientHeight || 600;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#070b14');
+    scene.background = new THREE.Color('#FAF7F2');
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
@@ -424,44 +424,44 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
   const qDivNC = (physics.theoreticalChargeFromDivergence * 1e9).toFixed(3);
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#070b14]">
+    <div className="relative w-full h-full overflow-hidden select-none bg-[#FAF7F2]">
       {/* 3D Canvas Mount */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing block" />
 
       {/* Top Left: Real-Time Gauss 3D & Divergence Telemetry (Collapsible) */}
       <div className="absolute top-3 left-4 z-20 max-w-[calc(100%-2rem)]">
         {viewMode === 'explore' ? (
-          <div className="bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-emerald-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[#D5CEC6] shadow-md flex flex-wrap items-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-[#3D7A69]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#5B9E8A] animate-pulse" />
               <span>Flujo Neto 3D:</span>
             </div>
-            <span className="font-mono text-white font-bold">
+            <span className="font-mono text-[#2D2A26] font-bold">
               {physics.totalFlux > 0 ? '+' : ''}
               {physics.totalFlux.toFixed(1)} N·m²/C
             </span>
-            <div className="border-l border-slate-800 pl-3 flex items-center gap-1">
-              <span className="text-slate-400">Carga neta:</span>
-              <span className="font-mono text-cyan-300 font-bold">{qEncNC} nC</span>
+            <div className="border-l border-[#E0D8CF] pl-3 flex items-center gap-1">
+              <span className="text-[#6B6560]">Carga neta:</span>
+              <span className="font-mono text-sky-700 font-bold">{qEncNC} nC</span>
             </div>
           </div>
         ) : (
-          <div className="bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center gap-4 text-xs font-mono">
-            <div className="flex items-center gap-2 border-r border-slate-800 pr-3">
-              <span className="text-emerald-400 font-bold">Φ_neto = ∮ E·dA:</span>
-              <span className="text-white font-bold">{physics.totalFlux.toFixed(2)} N·m²/C</span>
+          <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[#D5CEC6] shadow-md flex flex-wrap items-center gap-4 text-xs font-mono">
+            <div className="flex items-center gap-2 border-r border-[#E0D8CF] pr-3">
+              <span className="text-[#3D7A69] font-bold">Φ_neto = ∮ E·dA:</span>
+              <span className="text-[#2D2A26] font-bold">{physics.totalFlux.toFixed(2)} N·m²/C</span>
             </div>
-            <div className="border-r border-slate-800 pr-3">
-              <span className="text-slate-400">Q_gauss: </span>
-              <span className="text-cyan-300 font-bold">{qEncNC} nC</span>
+            <div className="border-r border-[#E0D8CF] pr-3">
+              <span className="text-[#6B6560]">Q_gauss: </span>
+              <span className="text-sky-700 font-bold">{qEncNC} nC</span>
             </div>
-            <div className="border-r border-slate-800 pr-3">
-              <span className="text-slate-400">Q_teorema (∇·E): </span>
-              <span className="text-indigo-300 font-bold">{qDivNC} nC</span>
+            <div className="border-r border-[#E0D8CF] pr-3">
+              <span className="text-[#6B6560]">Q_teorema (∇·E): </span>
+              <span className="text-indigo-700 font-bold">{qDivNC} nC</span>
             </div>
             <div className="flex items-center gap-1 text-[11px]">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-emerald-400 font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#5B9E8A]" />
+              <span className="text-[#3D7A69] font-semibold">
                 Error &lt; {physics.relativeError.toFixed(2)}%
               </span>
             </div>
@@ -471,15 +471,15 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
 
       {/* Top Right: Shape & Field Configuration HUD (Collapsible) */}
       {isControlsOpen ? (
-        <div className="absolute top-3 right-4 z-20 w-80 bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-700/80 shadow-2xl text-xs space-y-2.5 text-slate-200">
-          <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
-            <div className="flex items-center gap-1.5 font-bold text-slate-100 text-[11px] uppercase tracking-wide">
-              <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="absolute top-3 right-4 z-20 w-80 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#D5CEC6] shadow-md text-xs space-y-2.5 text-[#2D2A26]">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#E0D8CF]">
+            <div className="flex items-center gap-1.5 font-bold text-[#2D2A26] text-[11px] uppercase tracking-wide">
+              <Sliders className="w-3.5 h-3.5 text-[#5B9E8A]" />
               <span>Configuración 3D</span>
             </div>
             <button
               onClick={() => setIsControlsOpen(false)}
-              className="p-1 text-slate-400 hover:text-white rounded cursor-pointer"
+              className="p-1 text-[#6B6560] hover:text-[#2D2A26] rounded cursor-pointer"
               title="Minimizar controles"
             >
               <ChevronUp className="w-3.5 h-3.5" />
@@ -689,26 +689,26 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
       ) : (
         <button
           onClick={() => setIsControlsOpen(true)}
-          className="absolute top-3 right-4 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute top-3 right-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
         >
-          <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+          <Sliders className="w-3.5 h-3.5 text-[#5B9E8A]" />
           <span>Configurar 3D</span>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#6B6560]" />
         </button>
       )}
 
       {/* Bottom Left: Detailed Face-by-Face Flux Table (Collapsible) */}
       <div className="absolute bottom-4 left-4 z-20 max-w-[calc(100%-2rem)]">
         {isFaceTableOpen ? (
-          <div className="bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-700/80 shadow-2xl text-xs space-y-1.5 max-w-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-1">
-              <div className="flex items-center gap-1.5 text-slate-200 font-bold text-[11px]">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#D5CEC6] shadow-md text-xs space-y-1.5 max-w-sm">
+            <div className="flex items-center justify-between border-b border-[#E0D8CF] pb-1">
+              <div className="flex items-center gap-1.5 text-[#2D2A26] font-bold text-[11px]">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>Desglose de Flujo por Cara (∬ E · n̂ dA)</span>
               </div>
               <button
                 onClick={() => setIsFaceTableOpen(false)}
-                className="p-0.5 text-slate-400 hover:text-white rounded cursor-pointer"
+                className="p-0.5 text-[#6B6560] hover:text-[#2D2A26] rounded cursor-pointer"
                 title="Minimizar tabla"
               >
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -719,16 +719,16 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
               {physics.faces.map((face) => (
                 <div
                   key={face.id}
-                  className="flex items-center justify-between p-1.5 rounded bg-slate-950/70 border border-slate-800/80 text-[11px]"
+                  className="flex items-center justify-between p-1.5 rounded bg-[#EDE8DF] border border-[#D5CEC6] text-[11px]"
                 >
-                  <span className="text-slate-300 font-medium truncate pr-2">{face.name}</span>
+                  <span className="text-[#4A4540] font-medium truncate pr-2">{face.name}</span>
                   <span
                     className={`font-mono font-bold whitespace-nowrap ${
                       face.flux > 0.1
-                        ? 'text-rose-400'
+                        ? 'text-rose-600'
                         : face.flux < -0.1
-                          ? 'text-sky-400'
-                          : 'text-slate-400'
+                          ? 'text-sky-600'
+                          : 'text-[#6B6560]'
                     }`}
                   >
                     {face.flux > 0 ? '+' : ''}
@@ -738,9 +738,9 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
               ))}
             </div>
 
-            <div className="border-t border-slate-800 pt-1.5 flex items-center justify-between text-[11px] font-bold">
-              <span className="text-slate-200">Flujo Neto Total:</span>
-              <span className="font-mono text-emerald-400 text-xs">
+            <div className="border-t border-[#E0D8CF] pt-1.5 flex items-center justify-between text-[11px] font-bold">
+              <span className="text-[#2D2A26]">Flujo Neto Total:</span>
+              <span className="font-mono text-[#3D7A69] text-xs">
                 {physics.totalFlux > 0 ? '+' : ''}
                 {physics.totalFlux.toFixed(2)} N·m²/C
               </span>
@@ -749,11 +749,11 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
         ) : (
           <button
             onClick={() => setIsFaceTableOpen(true)}
-            className="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             <span>Balance por Caras ({physics.faces.length})</span>
-            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronUp className="w-3.5 h-3.5 text-[#6B6560]" />
           </button>
         )}
       </div>

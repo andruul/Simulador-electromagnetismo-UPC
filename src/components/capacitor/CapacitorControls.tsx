@@ -16,31 +16,31 @@ export const CapacitorBatteryControls: React.FC<BatteryControlsProps> = ({
   onToggleBattery,
   onBatteryVoltageChange
 }) => (
-  <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/70 shadow-2xl">
+  <div className="absolute top-3 right-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-[#D5CEC6] shadow-md">
     <button
       onClick={onToggleBattery}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
         connectedToBattery
-          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30'
+          ? 'bg-[#5B9E8A]/15 text-[#3D7A69] border border-[#5B9E8A]/40 hover:bg-[#5B9E8A]/25'
+          : 'bg-rose-100 text-rose-700 border border-rose-300 hover:bg-rose-200'
       }`}
     >
       {connectedToBattery ? (
         <>
-          <BatteryCharging className="w-4 h-4 text-emerald-400" />
+          <BatteryCharging className="w-4 h-4 text-[#5B9E8A]" />
           <span>Conectado (V cte)</span>
         </>
       ) : (
         <>
-          <Unplug className="w-4 h-4 text-rose-400" />
+          <Unplug className="w-4 h-4 text-rose-600" />
           <span>Desconectado (Q cte)</span>
         </>
       )}
     </button>
 
     {connectedToBattery && (
-      <div className="flex items-center gap-2 px-2 text-xs text-slate-300 border-l border-slate-800">
-        <span className="text-[11px]">Voltaje:</span>
+      <div className="flex items-center gap-2 px-2 text-xs text-[#4A4540] border-l border-[#E0D8CF]">
+        <span className="text-[11px] text-[#6B6560]">Voltaje:</span>
         <input
           type="range"
           min="-3.0"
@@ -48,9 +48,9 @@ export const CapacitorBatteryControls: React.FC<BatteryControlsProps> = ({
           step="0.1"
           value={batteryVoltage}
           onChange={(e) => onBatteryVoltageChange(parseFloat(e.target.value))}
-          className="w-16 accent-cyan-500 cursor-pointer"
+          className="w-16 accent-sky-500 cursor-pointer"
         />
-        <span className="font-mono w-9 text-right text-cyan-300 font-bold">{batteryVoltage.toFixed(1)}V</span>
+        <span className="font-mono w-9 text-right text-sky-700 font-bold">{batteryVoltage.toFixed(1)}V</span>
       </div>
     )}
   </div>
@@ -130,28 +130,28 @@ export const CapacitorBottomControls: React.FC<BottomControlsProps> = ({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/70 shadow-2xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#4A4540] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
         title="Expandir parámetros del condensador"
       >
-        <Layers className="w-3.5 h-3.5 text-amber-400" />
-        <span className="font-semibold text-slate-300">Parámetros Placas & Dieléctrico</span>
-        <span className="text-[10px] text-slate-400 font-mono">
+        <Layers className="w-3.5 h-3.5 text-amber-600" />
+        <span className="font-semibold text-[#2D2A26]">Parámetros Placas & Dieléctrico</span>
+        <span className="text-[10px] text-[#6B6560] font-mono">
           (d={plateDistanceMm.toFixed(1)}mm, A={plateAreaMm2}mm²)
         </span>
-        <ChevronUp className="w-3.5 h-3.5 text-slate-400 ml-1" />
+        <ChevronUp className="w-3.5 h-3.5 text-[#6B6560] ml-1" />
       </button>
     );
   }
 
   return (
-    <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-20 flex flex-wrap items-center gap-3 bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl">
+    <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-20 flex flex-wrap items-center gap-3 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-[#D5CEC6] shadow-md">
       <div className="flex items-center gap-2">
-        <Layers className="w-4 h-4 text-amber-400" />
-        <span className="text-xs font-semibold text-slate-300">Dieléctrico:</span>
+        <Layers className="w-4 h-4 text-amber-600" />
+        <span className="text-xs font-semibold text-[#2D2A26]">Dieléctrico:</span>
         <select
           value={selectedMaterialId}
           onChange={(e) => onMaterialChange(e.target.value)}
-          className="bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1 focus:ring-1 focus:ring-cyan-500 cursor-pointer"
+          className="bg-[#EDE8DF] border border-[#D5CEC6] text-[#2D2A26] text-xs rounded-lg px-2 py-1 focus:ring-1 focus:ring-[#5B9E8A] cursor-pointer"
         >
           {DIELECTRIC_MATERIALS.map((m) => (
             <option key={m.id} value={m.id}>
@@ -195,7 +195,7 @@ export const CapacitorBottomControls: React.FC<BottomControlsProps> = ({
         display={`${plateAreaMm2.toFixed(0)} mm²`}
       />
 
-      <div className="flex items-center gap-1.5 border-l border-slate-800 pl-3 text-xs">
+      <div className="flex items-center gap-1.5 border-l border-[#E0D8CF] pl-3 text-xs">
         <InstrumentToggle active={showVoltmeter} onClick={onToggleVoltmeter}>
           Voltímetro
         </InstrumentToggle>
@@ -206,7 +206,7 @@ export const CapacitorBottomControls: React.FC<BottomControlsProps> = ({
 
       <button
         onClick={() => setIsOpen(false)}
-        className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+        className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer ml-1"
         title="Minimizar barra de parámetros"
       >
         <ChevronDown className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ const InstrumentToggle: React.FC<{
   <button
     onClick={onClick}
     className={`px-2 py-0.5 rounded cursor-pointer transition-all text-[11px] ${
-      active ? 'bg-cyan-600 text-white shadow' : 'bg-slate-800 text-slate-400'
+      active ? 'bg-[#5B9E8A] text-white shadow-sm font-semibold' : 'bg-[#EDE8DF] text-[#6B6560] hover:text-[#2D2A26]'
     }`}
   >
     {children}

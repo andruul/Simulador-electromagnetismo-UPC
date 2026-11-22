@@ -176,34 +176,34 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20 p-4 bg-black/75 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20 p-4 bg-black/40 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-200"
+        className="relative w-full max-w-2xl bg-white border border-[#D5CEC6] rounded-2xl shadow-2xl overflow-hidden flex flex-col text-[#2D2A26]"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         {/* Search Input Bar */}
-        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-800 bg-slate-950/80">
-          <Search className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" />
+        <div className="relative flex items-center px-4 py-3.5 border-b border-[#E0D8CF] bg-[#F5F0E8]">
+          <Search className="w-5 h-5 text-[#5B9E8A] mr-3 flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => changeQuery(e.target.value)}
             placeholder="Buscar por concepto: Coulomb, Gauss, Capacitor, Lorentz, Wien, Ciclotrón..."
-            className="w-full bg-transparent border-0 outline-none text-white placeholder-slate-500 text-sm md:text-base font-sans"
+            className="w-full bg-transparent border-0 outline-none text-[#2D2A26] placeholder-[#A89E94] text-sm md:text-base font-sans"
           />
           {query ? (
             <button
               onClick={() => changeQuery('')}
-              className="p-1 text-slate-400 hover:text-white rounded-md cursor-pointer transition-colors"
+              className="p-1 text-[#6B6560] hover:text-[#2D2A26] rounded-md cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           ) : (
-            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-slate-800/80 border border-slate-700/60 text-[10px] text-slate-400 font-mono">
+            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-white border border-[#D5CEC6] text-[10px] text-[#6B6560] font-mono">
               <Command className="w-3 h-3" />
               <span>K</span>
             </div>
@@ -211,8 +211,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         </div>
 
         {/* Category Filters */}
-        <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-950/40 border-b border-slate-800/70 overflow-x-auto text-xs select-none">
-          <span className="text-[11px] text-slate-500 font-medium mr-1">Filtrar:</span>
+        <div className="flex items-center gap-1.5 px-4 py-2 bg-[#FAFAF7] border-b border-[#E0D8CF] overflow-x-auto text-xs select-none">
+          <span className="text-[11px] text-[#A89E94] font-medium mr-1">Filtrar:</span>
           {[
             { id: 'all', label: 'Todos' },
             { id: 'electrostatics', label: 'Electrostática' },
@@ -228,8 +228,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               onClick={() => changeCategory(cat.id)}
               className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer text-xs font-medium whitespace-nowrap ${
                 selectedCategory === cat.id
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[#5B9E8A]/15 text-[#3D7A69] border border-[#5B9E8A]/40 shadow-sm'
+                  : 'text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF]'
               }`}
             >
               {cat.label}
@@ -240,7 +240,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         {/* Results List */}
         <div
           ref={listRef}
-          className="max-h-[60vh] overflow-y-auto p-3 space-y-2 divide-y divide-slate-800/40"
+          className="max-h-[60vh] overflow-y-auto p-3 space-y-2 divide-y divide-[#E0D8CF]/60"
         >
           {filteredTopics.length > 0 ? (
             filteredTopics.map((topic, index) => {
@@ -256,8 +256,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   }}
                   className={`pt-2 p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
                     isSelected
-                      ? 'bg-slate-800/90 border-emerald-500/50 shadow-lg shadow-emerald-500/5'
-                      : 'border-transparent hover:bg-slate-800/40'
+                      ? 'bg-[#EDE8DF] border-[#5B9E8A]/50 shadow-md'
+                      : 'border-transparent hover:bg-[#F5F0E8]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">

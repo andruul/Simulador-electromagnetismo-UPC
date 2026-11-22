@@ -116,7 +116,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     const height = container.clientHeight;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090d16);
+    scene.background = new THREE.Color(0xFAF7F2);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
@@ -590,60 +590,60 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full select-none bg-[#090d16] overflow-hidden">
+    <div className="relative w-full h-full select-none bg-[#FAF7F2] overflow-hidden">
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Preset bar top-left */}
-      <div className="absolute top-4 left-4 max-w-[calc(100%-5rem)] md:max-w-xl flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl z-10">
-        <span className="text-xs font-semibold text-slate-400 px-2 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Experimentos 3D:
+      <div className="absolute top-4 left-4 max-w-[calc(100%-5rem)] md:max-w-xl flex flex-wrap items-center gap-1.5 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-[#D5CEC6] shadow-md z-10">
+        <span className="text-xs font-semibold text-[#6B6560] px-2 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Experimentos 3D:
         </span>
         <button
           onClick={() => applyPreset('helix')}
-          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors cursor-pointer"
+          className="px-2.5 py-1 text-xs bg-[#EDE8DF] hover:bg-[#E0D8CF] text-[#2D2A26] rounded-lg border border-[#D5CEC6] transition-colors cursor-pointer"
         >
           Espiral / Hélice (B puro)
         </button>
         <button
           onClick={() => applyPreset('velocity_selector')}
-          className="px-2.5 py-1 text-xs bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 rounded-lg border border-emerald-600/40 transition-colors cursor-pointer"
+          className="px-2.5 py-1 text-xs bg-[#5B9E8A]/15 hover:bg-[#5B9E8A]/25 text-[#3D7A69] rounded-lg border border-[#5B9E8A]/40 transition-colors cursor-pointer font-medium"
         >
           Selector de Velocidades (Wien)
         </button>
         <button
           onClick={() => applyPreset('drift')}
-          className="px-2.5 py-1 text-xs bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 rounded-lg border border-purple-600/40 transition-colors cursor-pointer"
+          className="px-2.5 py-1 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg border border-purple-300 transition-colors cursor-pointer"
         >
           Deriva E × B (Cicloide)
         </button>
         <button
           onClick={() => applyPreset('magnetic_bottle')}
-          className="px-2.5 py-1 text-xs bg-sky-950/60 hover:bg-sky-900/80 text-sky-300 rounded-lg border border-sky-600/40 transition-colors cursor-pointer"
+          className="px-2.5 py-1 text-xs bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg border border-sky-300 transition-colors cursor-pointer"
         >
           Botella Magnética (Espejo)
         </button>
         <button
           onClick={() => applyPreset('cyclotron')}
-          className="px-2.5 py-1 text-xs bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 rounded-lg border border-rose-600/40 transition-colors cursor-pointer"
+          className="px-2.5 py-1 text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg border border-rose-300 transition-colors cursor-pointer"
         >
           Ciclotrón
         </button>
       </div>
 
       {/* Telemetry and Physics Parameters HUD (Top Right) */}
-      <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/70 shadow-2xl text-xs z-10 transition-all max-w-[calc(100%-2rem)]">
+      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md rounded-xl border border-[#D5CEC6] shadow-md text-xs z-10 transition-all max-w-[calc(100%-2rem)]">
         <div
-          className="flex items-center justify-between p-2.5 border-b border-slate-700/60 gap-3 cursor-pointer select-none"
+          className="flex items-center justify-between p-2.5 border-b border-[#E0D8CF] gap-3 cursor-pointer select-none"
           onClick={() => setIsHudExpanded(!isHudExpanded)}
         >
-          <div className="flex items-center gap-1.5 font-bold text-sky-400">
+          <div className="flex items-center gap-1.5 font-bold text-sky-700">
             <Compass className="w-4 h-4" />
             <span>DINÁMICA DE LORENTZ</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">Boris Pusher 3D</span>
+            <span className="text-[10px] text-[#6B6560] font-mono hidden sm:inline">Boris Pusher 3D</span>
             <button
-              className="p-0.5 text-slate-400 hover:text-white rounded"
+              className="p-0.5 text-[#6B6560] hover:text-[#2D2A26] rounded"
               title={isHudExpanded ? 'Minimizar HUD' : 'Expandir HUD'}
             >
               {isHudExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -733,11 +733,11 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
 
       {/* Bottom Floating Control Bar (Collapsible) */}
       {isBottomOpen ? (
-        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
+        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] z-10">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              isPlaying ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              isPlaying ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300' : 'bg-[#5B9E8A] hover:bg-[#4A8A77] text-white'
             }`}
           >
             {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -746,28 +746,28 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
 
           <button
             onClick={() => addParticle(1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300 rounded-lg transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> +q
           </button>
 
           <button
             onClick={() => addParticle(-1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 rounded-lg transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> −q
           </button>
 
           <button
             onClick={clearParticles}
-            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+            className="px-2.5 py-1.5 bg-[#EDE8DF] hover:bg-[#E0D8CF] text-[#4A4540] rounded-lg transition-colors cursor-pointer border border-[#D5CEC6]"
           >
             Reiniciar
           </button>
 
           <button
             onClick={() => setIsBottomOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] hover:bg-[#EDE8DF] rounded transition-colors cursor-pointer ml-1"
             title="Minimizar barra de controles"
           >
             <ChevronDown className="w-3.5 h-3.5" />
@@ -776,18 +776,18 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       ) : (
         <button
           onClick={() => setIsBottomOpen(true)}
-          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-sky-300 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-sky-700 hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           title="Abrir controles de partículas"
         >
-          <Plus className="w-3.5 h-3.5 text-sky-400" />
+          <Plus className="w-3.5 h-3.5 text-sky-600" />
           <span>Partículas & Simulación</span>
-          <ChevronUp className="w-3 h-3 text-slate-400" />
+          <ChevronUp className="w-3 h-3 text-[#6B6560]" />
         </button>
       )}
 
       {/* Orbit Tip */}
-      <div className="absolute bottom-5 right-5 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2 pointer-events-none">
-        <RotateCw className="w-3 h-3 text-sky-400" />
+      <div className="absolute bottom-5 right-5 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#D5CEC6] text-[11px] text-[#6B6560] flex items-center gap-2 pointer-events-none shadow-sm">
+        <RotateCw className="w-3 h-3 text-sky-600" />
         <span>Usa el clic izquierdo para rotar la cámara y la rueda para zoom</span>
       </div>
     </div>
