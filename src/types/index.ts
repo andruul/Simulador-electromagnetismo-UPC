@@ -137,6 +137,47 @@ export interface GaussSettings {
 }
 
 // ==========================================
+// Gauss's Law 3D & Non-Uniform Fields
+// ==========================================
+export type GaussianShape3D = 'cube' | 'cylinder' | 'sphere' | 'tetrahedron';
+
+export type NonUniformFieldModel =
+  | 'linear_x'
+  | 'quadratic_x'
+  | 'divergent_xyz'
+  | 'radial_cylinder'
+  | 'point_charge';
+
+export interface NonUniformFieldParams {
+  model: NonUniformFieldModel;
+  alpha: number; // Principal coefficient (e.g. E_x = alpha * x)
+  beta: number;  // Secondary coefficient or offset
+  gamma: number; // Tertiary coefficient (e.g. E_z = gamma * z)
+  chargeQ: number; // For point charge mode (nC)
+}
+
+export interface FaceFluxResult {
+  id: string;
+  name: string;
+  area: number; // in m²
+  flux: number; // in N·m²/C
+  normal: Vector3D;
+  center: Vector3D;
+  fluxDensityAvg: number; // flux / area
+}
+
+export interface Gauss3DCalculation {
+  shape: GaussianShape3D;
+  totalFlux: number; // N·m²/C
+  enclosedCharge: number; // Coulombs (Φ * ε0)
+  theoreticalChargeFromDivergence: number; // Coulombs (∭ ∇·E dV * ε0)
+  divergenceAvg: number; // N/(C·m)
+  volume: number; // m³
+  relativeError: number; // percentage
+  faces: FaceFluxResult[];
+}
+
+// ==========================================
 // Capacitance & Dielectrics Types
 // ==========================================
 export interface DielectricMaterial {

@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import { Gauss3DViewer } from './Gauss3DViewer';
 
 interface GaussFluxCanvasProps {
   presetRequest?: string | null;
@@ -70,6 +71,9 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   const [draggedChargeId, setDraggedChargeId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [surfaceDragStart, setSurfaceDragStart] = useState({ cx: 0, cy: 0 });
+
+  // Dimension mode: 2D Planar vs 3D Volumetric with Non-Uniform Fields
+  const [dimMode, setDimMode] = useState<'2d' | '3d'>('2d');
 
   // Collapsible overlay states (clean canvas view)
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(true);
@@ -588,8 +592,56 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   const errorPercent = (gaussResult.relativeError * 100).toFixed(2);
   const isVerified = parseFloat(errorPercent) < 2.0 || Math.abs(gaussResult.numericalFlux) < 1e-2;
 
+  // 3D Volumetric View Mode with Non-Uniform Electric Fields
+  if (dimMode === '3d') {
+    return (
+      <div ref={containerRef} className="w-full h-full relative flex flex-col bg-slate-950 select-none overflow-hidden">
+        {/* 2D / 3D Dimension Mode Switcher Pill */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center bg-slate-900/95 backdrop-blur-md p-1 rounded-xl border border-slate-700/80 shadow-2xl">
+          <button
+            onClick={() => setDimMode('2d')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+          >
+            <span>Plano 2D</span>
+          </button>
+          <button
+            onClick={() => setDimMode('3d')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25"
+          >
+            <span>Espacio 3D (No Uniforme)</span>
+            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/30 text-emerald-200 rounded uppercase">
+              3D
+            </span>
+          </button>
+        </div>
+
+        {/* 3D Volumetric Gauss & Non-uniform fields */}
+        <Gauss3DViewer viewMode={viewMode} />
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef} className="w-full h-full relative flex flex-col bg-slate-950 select-none overflow-hidden">
+      {/* 2D / 3D Dimension Mode Switcher Pill */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center bg-slate-900/95 backdrop-blur-md p-1 rounded-xl border border-slate-700/80 shadow-2xl">
+        <button
+          onClick={() => setDimMode('2d')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer bg-emerald-600 text-white shadow-lg shadow-emerald-500/25"
+        >
+          <span>Plano 2D</span>
+        </button>
+        <button
+          onClick={() => setDimMode('3d')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+        >
+          <span>Espacio 3D (No Uniforme)</span>
+          <span className="px-1.5 py-0.5 text-[9px] font-bold bg-slate-800 text-slate-400 rounded uppercase">
+            3D
+          </span>
+        </button>
+      </div>
+
       {/* Top Scientific Formula & Verification HUD (Collapsible) */}
       {isTelemetryOpen ? (
         <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700/70 shadow-2xl">
