@@ -21,8 +21,7 @@ import {
   CheckCircle2,
   Sparkles,
   ChevronDown,
-  ChevronUp,
-  Info
+  ChevronUp
 } from 'lucide-react';
 
 interface Gauss3DViewerProps {
@@ -759,11 +758,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
         )}
       </div>
 
-      {/* Bottom Right: 3D Orbit Tip */}
-      <div className="absolute bottom-4 right-4 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none">
-        <Info className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-        <span>Gira con clic izquierdo y haz zoom con la rueda</span>
-      </div>
+
     </div>
   );
 };

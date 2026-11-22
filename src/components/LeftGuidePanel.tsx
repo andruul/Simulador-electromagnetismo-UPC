@@ -14,9 +14,7 @@ import {
   FlaskConical,
   HelpCircle,
   ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
-  BookOpen
+  ChevronRight
 } from 'lucide-react';
 import { CollapsibleSection } from './CollapsibleSection';
 
@@ -26,7 +24,6 @@ interface LeftGuidePanelProps {
   isOpen: boolean;
   onToggle: () => void;
   onApplyPreset: (presetKey: string) => void;
-  onOpenTheory: () => void;
   gaussDimMode?: '2d' | '3d';
   onGaussDimChange?: (dim: '2d' | '3d') => void;
 }
@@ -179,7 +176,6 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
   isOpen,
   onToggle,
   onApplyPreset,
-  onOpenTheory,
   gaussDimMode = '2d',
   onGaussDimChange
 }) => {
@@ -191,13 +187,6 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
   const [openObjectives, setOpenObjectives] = useState<boolean>(true); // Open by default so students immediately see the Reto de Exploración!
   const [openPresets, setOpenPresets] = useState<boolean>(true);
 
-  const allOpen = openHowItWorks && openObjectives && openPresets;
-  const toggleAll = () => {
-    const nextState = !allOpen;
-    setOpenHowItWorks(nextState);
-    setOpenObjectives(nextState);
-    setOpenPresets(nextState);
-  };
 
   if (!isOpen) {
     return (
@@ -236,15 +225,6 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Quick toggle all sections button */}
-          <button
-            onClick={toggleAll}
-            className="p-1 text-slate-400 hover:text-emerald-300 hover:bg-slate-850 rounded transition-colors cursor-pointer"
-            title={allOpen ? 'Contraer todas las secciones' : 'Expandir todas las secciones'}
-          >
-            <ChevronsUpDown className="w-3.5 h-3.5" />
-          </button>
-
           <button
             onClick={onToggle}
             className="p-1 text-slate-400 hover:text-white hover:bg-slate-850 rounded transition-colors cursor-pointer"
@@ -291,11 +271,7 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
           title="¿Cómo funciona?"
           subtitle="3 pasos: interactúa, observa y aprende"
           icon={<HelpCircle className="w-3.5 h-3.5 text-sky-400" />}
-          badge={
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono">
-              3 Pasos
-            </span>
-          }
+          badge={undefined}
           isOpen={openHowItWorks}
           onToggle={() => setOpenHowItWorks((prev) => !prev)}
         >
@@ -422,14 +398,6 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
           </div>
         </CollapsibleSection>
 
-        {/* Quick Theory Callout */}
-        <button
-          onClick={onOpenTheory}
-          className="w-full py-2 px-3 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer mt-1"
-        >
-          <BookOpen className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-          <span className="truncate">¿Explicación completa? Ver Teoría</span>
-        </button>
       </div>
     </aside>
   );

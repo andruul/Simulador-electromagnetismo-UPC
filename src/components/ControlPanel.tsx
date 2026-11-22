@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type {
   SimulationMode,
-  ViewMode,
   PointCharge,
   ElectrostaticsSettings,
   Lorentz3DSettings
@@ -13,15 +12,10 @@ import {
   Layers,
   Zap,
   RotateCw,
-  Compass,
   Lock,
   Unlock,
   X,
-  Gauge,
   Sliders,
-  BatteryCharging,
-  CircleDot,
-  Sparkles,
   ChevronsUpDown,
   Settings2
 } from 'lucide-react';
@@ -29,7 +23,6 @@ import { CollapsibleSection } from './CollapsibleSection';
 
 interface ControlPanelProps {
   mode: SimulationMode;
-  viewMode: ViewMode;
   // Electrostatics props
   charges: PointCharge[];
   setCharges: React.Dispatch<React.SetStateAction<PointCharge[]>>;
@@ -47,7 +40,6 @@ interface ControlPanelProps {
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   mode,
-  viewMode,
   charges,
   setCharges,
   selectedChargeId,
@@ -112,16 +104,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           >
             <ChevronsUpDown className="w-3.5 h-3.5" />
           </button>
-
-          <span
-            className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
-              viewMode === 'explore'
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
-                : 'bg-sky-950 text-sky-300 border-sky-500/40'
-            }`}
-          >
-            {viewMode === 'explore' ? 'Exploración' : 'Medición'}
-          </span>
 
           {onClose && (
             <button
@@ -541,84 +523,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       )}
 
-      {/* ----------------- MODE: GAUSS ----------------- */}
-      {mode === 'gauss' && (
-        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
-          <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
-            <CircleDot className="w-4 h-4" />
-            <span>Superficies & Flujo</span>
-          </div>
-          <p className="text-[11px] text-slate-300 leading-snug">
-            Los controles de geometría (2D o 3D con Tetraedro, Cubo, Cilindro) y parámetros de campo se encuentran integrados directamente en el visor flotante.
-          </p>
-          <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-xs border border-slate-800">
-            Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀
-          </div>
-        </div>
-      )}
-
-      {/* ----------------- MODE: CAPACITOR ----------------- */}
-      {mode === 'capacitor' && (
-        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
-          <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs">
-            <BatteryCharging className="w-4 h-4" />
-            <span>Laboratorio de Capacitores</span>
-          </div>
-          <p className="text-[11px] text-slate-300 leading-snug">
-            Los controles interactivos de separación, área, voltaje y dieléctricos están en los paneles flotantes del laboratorio.
-          </p>
-          <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-xs border border-slate-800">
-            C = κ · ε₀ · A / d
-          </div>
-        </div>
-      )}
-
-      {/* ----------------- MODE: MAGNETOSTATICS ----------------- */}
-      {mode === 'magnetostatics' && (
-        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
-          <div className="flex items-center gap-2 text-teal-400 font-semibold text-xs">
-            <Compass className="w-4 h-4" />
-            <span>Conductores & Corrientes</span>
-          </div>
-          <p className="text-[11px] text-slate-300 leading-snug">
-            Arrastra los conductores y la brújula directamente sobre el lienzo para interactuar con el campo B.
-          </p>
-          <div className="p-2 bg-slate-950 rounded text-center font-mono text-teal-300 text-xs border border-slate-800">
-            B = (μ₀ · I) / (2π · r)
-          </div>
-        </div>
-      )}
-
-      {/* ----------------- MODE: FARADAY ----------------- */}
-      {mode === 'faraday' && (
-        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
-          <div className="flex items-center gap-2 text-purple-400 font-semibold text-xs">
-            <Sparkles className="w-4 h-4" />
-            <span>Inducción & Ley de Lenz</span>
-          </div>
-          <p className="text-[11px] text-slate-300 leading-snug">
-            Mueve el imán a través de la bobina o activa la oscilación automática desde el HUD inferior.
-          </p>
-          <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-xs border border-slate-800">
-            ε = −N · (dΦ_B / dt)
-          </div>
-        </div>
-      )}
-
-      {/* Mode Contextual Status Card */}
-      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-1 mt-auto">
-        <div className="flex items-center gap-1.5">
-          <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="font-bold text-[10px] text-slate-200">
-            {viewMode === 'explore' ? 'Modo Exploración' : 'Modo Medición (SI)'}
-          </span>
-        </div>
-        <p className="text-[10px] text-slate-400 leading-tight">
-          {viewMode === 'explore'
-            ? 'Visualización pedagógica simplificada para comprensión conceptual.'
-            : 'Instrumentos digitales con precisión analítica del Sistema Internacional.'}
-        </p>
-      </div>
+      {/* Spacer: pushes nothing else to bottom for modes without sidebar controls */}
     </aside>
   );
 };

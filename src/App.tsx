@@ -45,7 +45,6 @@ export const App: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [isZenMode, setIsZenMode] = useState<boolean>(false);
   const [gaussDimMode, setGaussDimMode] = useState<'2d' | '3d'>('2d');
 
   // Preset requests for the laboratory rooms that own their own state
@@ -134,45 +133,21 @@ export const App: React.FC = () => {
   const toggleTheory = useCallback(() => setIsTheoryOpen((prev) => !prev), []);
   const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
 
-  // Zen Mode (Modo Enfoque / Lienzo Limpio): hides sidebars to maximize simulation space
-  const toggleZenMode = useCallback(() => {
-    setIsZenMode((prev) => {
-      const next = !prev;
-      if (next) {
-        setIsLeftPanelOpen(false);
-        setIsSidebarOpen(false);
-      } else {
-        setIsLeftPanelOpen(true);
-        setIsSidebarOpen(true);
-      }
-      return next;
-    });
-  }, []);
-
   const handleToggleLeftPanel = useCallback(() => {
-    setIsLeftPanelOpen((prev) => {
-      const next = !prev;
-      if (next) setIsZenMode(false);
-      return next;
-    });
+    setIsLeftPanelOpen((prev) => !prev);
   }, []);
 
   const handleToggleSidebar = useCallback(() => {
-    setIsSidebarOpen((prev) => {
-      const next = !prev;
-      if (next) setIsZenMode(false);
-      return next;
-    });
+    setIsSidebarOpen((prev) => !prev);
   }, []);
 
-  // Global desktop shortcuts: [Space] Play/Pause, [R] Reset, [M] Mode, [Z] Zen/Focus, [F1] Theory, [Ctrl+K] Search
+  // Global desktop shortcuts: [Space] Play/Pause, [R] Reset, [M] Mode, [F1] Theory, [Ctrl+K] Search
   useGlobalShortcuts({
     onToggleSearch: toggleSearch,
     onToggleTheory: toggleTheory,
     onTogglePlay: togglePlay,
     onReset: handleReset,
-    onToggleViewMode: toggleViewMode,
-    onToggleZenMode: toggleZenMode
+    onToggleViewMode: toggleViewMode
   });
 
   return (
@@ -195,8 +170,6 @@ export const App: React.FC = () => {
         onToggleLeftPanel={handleToggleLeftPanel}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={handleToggleSidebar}
-        isZenMode={isZenMode}
-        onToggleZenMode={toggleZenMode}
       />
 
       {/* Main Workspace Layout (Fixed 4-block desktop arrangement) */}
@@ -217,28 +190,12 @@ export const App: React.FC = () => {
               isOpen={isLeftPanelOpen}
               onToggle={handleToggleLeftPanel}
               onApplyPreset={handleApplyPreset}
-              onOpenTheory={() => setIsTheoryOpen(true)}
               gaussDimMode={gaussDimMode}
               onGaussDimChange={setGaussDimMode}
             />
 
             {/* Center Interactive Simulation Viewport */}
             <main className="flex-1 h-full relative overflow-hidden bg-[#090d16]">
-              {/* Floating banner when in Zen Mode to easily restore panels */}
-              {isZenMode && (
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/40 shadow-xl text-xs text-emerald-300">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="font-medium">Lienzo Limpio</span>
-                  <span className="text-slate-600">|</span>
-                  <button
-                    onClick={toggleZenMode}
-                    className="text-slate-200 hover:text-white font-semibold cursor-pointer underline text-[11px]"
-                  >
-                    Restaurar Paneles [Z]
-                  </button>
-                </div>
-              )}
-
               <ErrorBoundary label="este laboratorio" resetKey={mode}>
                 <RoomViewport
                   mode={mode}
@@ -264,7 +221,6 @@ export const App: React.FC = () => {
             {isSidebarOpen && (
               <ControlPanel
                 mode={mode}
-                viewMode={viewMode}
                 charges={charges}
                 setCharges={setCharges}
                 selectedChargeId={selectedChargeId}
@@ -282,8 +238,8 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom Desktop Status Bar (24px fixed native telemetry & shortcuts) */}
-      <BottomStatusBar mode={mode} viewMode={viewMode} isPlaying={isPlaying} />
+      {/* Bottom Desktop Status Bar */}
+      <BottomStatusBar mode={mode} />
 
       {/* Global Topic Search Modal */}
       <SearchModal
