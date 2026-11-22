@@ -31,6 +31,8 @@ interface RoomViewportProps {
   // One-click preset requests of the rooms that own their state
   presetRequests: Record<PresetRoom, string | null>;
   onPresetHandled: (room: PresetRoom) => void;
+  gaussDimMode?: '2d' | '3d';
+  onGaussDimChange?: (dim: '2d' | '3d') => void;
 }
 
 /** The interactive simulation viewport: renders the room selected in the navbar. */
@@ -47,7 +49,9 @@ export const RoomViewport: React.FC<RoomViewportProps> = ({
   lorentzSettings,
   setLorentzSettings,
   presetRequests,
-  onPresetHandled
+  onPresetHandled,
+  gaussDimMode,
+  onGaussDimChange
 }) => {
   switch (mode) {
     case 'electrostatics':
@@ -88,6 +92,8 @@ export const RoomViewport: React.FC<RoomViewportProps> = ({
           presetRequest={presetRequests.gauss}
           onPresetHandled={() => onPresetHandled('gauss')}
           viewMode={viewMode}
+          dimMode={gaussDimMode}
+          onDimModeChange={onGaussDimChange}
         />
       );
     case 'capacitor':

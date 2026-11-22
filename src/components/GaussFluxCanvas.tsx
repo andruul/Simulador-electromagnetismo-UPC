@@ -12,7 +12,6 @@ import {
   Trash2,
   CheckCircle2,
   Sliders,
-  Sparkles,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -22,12 +21,16 @@ interface GaussFluxCanvasProps {
   presetRequest?: string | null;
   onPresetHandled?: () => void;
   viewMode?: ViewMode;
+  dimMode?: '2d' | '3d';
+  onDimModeChange?: (mode: '2d' | '3d') => void;
 }
 
 export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   presetRequest,
   onPresetHandled,
-  viewMode = 'explore'
+  viewMode = 'explore',
+  dimMode: controlledDimMode,
+  onDimModeChange
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -73,12 +76,19 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
   const [surfaceDragStart, setSurfaceDragStart] = useState({ cx: 0, cy: 0 });
 
   // Dimension mode: 2D Planar vs 3D Volumetric with Non-Uniform Fields
-  const [dimMode, setDimMode] = useState<'2d' | '3d'>('2d');
+  const [internalDimMode, setInternalDimMode] = useState<'2d' | '3d'>('2d');
+  const dimMode = controlledDimMode ?? internalDimMode;
+  const setDimMode = useCallback(
+    (newDim: '2d' | '3d') => {
+      setInternalDimMode(newDim);
+      onDimModeChange?.(newDim);
+    },
+    [onDimModeChange]
+  );
 
   // Collapsible overlay states (clean canvas view)
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(true);
   const [isControlsOpen, setIsControlsOpen] = useState(true);
-  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
 
   // Update canvas dimensions dynamically with ResizeObserver
   useEffect(() => {
@@ -268,10 +278,16 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
 
   // Handle external preset requests from LeftGuidePanel or Search
   usePresetRequest(presetRequest, onPresetHandled, (preset) => {
-    if (preset === 'monopole') loadPreset('monopole');
-    else if (preset === 'dipole') loadPreset('dipole_inside');
-    else if (preset === 'external') loadPreset('dipole_outside');
-    else if (preset === 'mixed') loadPreset('quadrupole');
+    const is3D = ['tetra_divergent', 'cube_linear', 'cylinder_radial', 'sphere_coulomb'].includes(preset);
+    if (is3D) {
+      if (dimMode !== '3d') setDimMode('3d');
+    } else {
+      if (dimMode !== '2d') setDimMode('2d');
+      if (preset === 'monopole') loadPreset('monopole');
+      else if (preset === 'dipole' || preset === 'dipole_inside') loadPreset('dipole_inside');
+      else if (preset === 'external' || preset === 'dipole_outside') loadPreset('dipole_outside');
+      else if (preset === 'mixed' || preset === 'quadrupole') loadPreset('quadrupole');
+    }
   });
 
   // ==========================================
@@ -616,7 +632,11 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
         </div>
 
         {/* 3D Volumetric Gauss & Non-uniform fields */}
-        <Gauss3DViewer viewMode={viewMode} />
+        <Gauss3DViewer
+          viewMode={viewMode}
+          presetRequest={presetRequest}
+          onPresetHandled={onPresetHandled}
+        />
       </div>
     );
   }
@@ -805,55 +825,6 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
         >
           <span>⚙️ Superficie</span>
           <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-        </button>
-      )}
-
-      {/* Preset Academic Scenarios (Bottom Left - Collapsible) */}
-      {isPresetsOpen ? (
-        <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/70 shadow-2xl">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span className="text-xs text-slate-400 font-medium">Ejercicios UPC:</span>
-          <button
-            onClick={() => loadPreset('monopole')}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-          >
-            Carga Puntual
-          </button>
-          <button
-            onClick={() => loadPreset('dipole_inside')}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-          >
-            Dipolo Interno (Φ=0)
-          </button>
-          <button
-            onClick={() => loadPreset('dipole_outside')}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-          >
-            Cargas Externas (Φ=0)
-          </button>
-          <button
-            onClick={() => loadPreset('quadrupole')}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs cursor-pointer"
-          >
-            Mixta
-          </button>
-          <button
-            onClick={() => setIsPresetsOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
-            title="Minimizar ejercicios"
-          >
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setIsPresetsOpen(true)}
-          className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Ver ejercicios canónicos de Gauss"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>Ejercicios UPC</span>
-          <ChevronUp className="w-3 h-3 text-slate-400" />
         </button>
       )}
 

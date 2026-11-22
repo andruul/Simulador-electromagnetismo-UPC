@@ -12,6 +12,7 @@ import {
   computeGauss3D,
   evaluateNonUniformField
 } from '../physics/gauss';
+import { usePresetRequest } from '../hooks/usePresetRequest';
 import {
   Box,
   CircleDot,
@@ -26,9 +27,15 @@ import {
 
 interface Gauss3DViewerProps {
   viewMode?: ViewMode;
+  presetRequest?: string | null;
+  onPresetHandled?: () => void;
 }
 
-export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({ viewMode = 'explore' }) => {
+export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
+  viewMode = 'explore',
+  presetRequest,
+  onPresetHandled
+}) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
   // 3D Geometry selection
@@ -42,6 +49,58 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({ viewMode = 'explor
     beta: 20,
     gamma: 0,
     chargeQ: 4.0 // nC
+  });
+
+  // Handle 3D preset scenarios from LeftGuidePanel or Search
+  usePresetRequest(presetRequest, onPresetHandled, (preset) => {
+    switch (preset) {
+      case 'tetra_divergent':
+        setShape('tetrahedron');
+        setFieldParams({
+          model: 'divergent_xyz',
+          alpha: 60,
+          beta: 20,
+          gamma: 40,
+          chargeQ: 4.0
+        });
+        setDimensions({ size: 1.6, radius: 0.9, height: 1.8 });
+        break;
+      case 'cube_linear':
+        setShape('cube');
+        setFieldParams({
+          model: 'linear_x',
+          alpha: 100,
+          beta: 20,
+          gamma: 0,
+          chargeQ: 4.0
+        });
+        setDimensions({ size: 1.6, radius: 0.9, height: 1.8 });
+        break;
+      case 'cylinder_radial':
+        setShape('cylinder');
+        setFieldParams({
+          model: 'radial_cylinder',
+          alpha: 80,
+          beta: 0,
+          gamma: 0,
+          chargeQ: 4.0
+        });
+        setDimensions({ size: 1.6, radius: 0.9, height: 1.8 });
+        break;
+      case 'sphere_coulomb':
+        setShape('sphere');
+        setFieldParams({
+          model: 'point_charge',
+          alpha: 0,
+          beta: 0,
+          gamma: 0,
+          chargeQ: 5.0
+        });
+        setDimensions({ size: 1.6, radius: 1.1, height: 1.8 });
+        break;
+      default:
+        break;
+    }
   });
 
   // Visualization toggles

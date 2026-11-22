@@ -543,93 +543,66 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* ----------------- MODE: GAUSS ----------------- */}
       {mode === 'gauss' && (
-        <CollapsibleSection
-          title="Principio de Gauss"
-          subtitle="Flujo y carga encerrada"
-          icon={<CircleDot className="w-3.5 h-3.5 text-emerald-400" />}
-          isOpen={openSection1}
-          onToggle={() => setOpenSection1((prev) => !prev)}
-        >
-          <div className="space-y-2 pt-0.5">
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              El flujo neto a través de una superficie cerrada depende únicamente de la carga neta encerrada:
-            </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-xs border border-slate-800">
-              Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀
-            </div>
+        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
+          <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
+            <CircleDot className="w-4 h-4" />
+            <span>Superficies & Flujo</span>
           </div>
-        </CollapsibleSection>
+          <p className="text-[11px] text-slate-300 leading-snug">
+            Los controles de geometría (2D o 3D con Tetraedro, Cubo, Cilindro) y parámetros de campo se encuentran integrados directamente en el visor flotante.
+          </p>
+          <div className="p-2 bg-slate-950 rounded text-center font-mono text-emerald-300 text-xs border border-slate-800">
+            Φ_E = ∮ E⃗ · dA⃗ = Q_enc / ε₀
+          </div>
+        </div>
       )}
 
       {/* ----------------- MODE: CAPACITOR ----------------- */}
       {mode === 'capacitor' && (
-        <CollapsibleSection
-          title="Ecuaciones de Capacitancia"
-          subtitle="Placas paralelas y dieléctricos"
-          icon={<BatteryCharging className="w-3.5 h-3.5 text-amber-400" />}
-          isOpen={openSection1}
-          onToggle={() => setOpenSection1((prev) => !prev)}
-        >
-          <div className="space-y-2 pt-0.5">
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              La capacitancia almacena energía electrostática entre las placas conductoras:
-            </p>
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-xs border border-slate-800">
-              C = κ · ε₀ · A / d
-            </div>
+        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
+          <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs">
+            <BatteryCharging className="w-4 h-4" />
+            <span>Laboratorio de Capacitores</span>
           </div>
-        </CollapsibleSection>
+          <p className="text-[11px] text-slate-300 leading-snug">
+            Los controles interactivos de separación, área, voltaje y dieléctricos están en los paneles flotantes del laboratorio.
+          </p>
+          <div className="p-2 bg-slate-950 rounded text-center font-mono text-amber-300 text-xs border border-slate-800">
+            C = κ · ε₀ · A / d
+          </div>
+        </div>
       )}
 
       {/* ----------------- MODE: MAGNETOSTATICS ----------------- */}
       {mode === 'magnetostatics' && (
-        <CollapsibleSection
-          title="Biot-Savart & Ampère"
-          subtitle="Campos magnéticos y corrientes"
-          icon={<Compass className="w-3.5 h-3.5 text-teal-400" />}
-          isOpen={openSection1}
-          onToggle={() => setOpenSection1((prev) => !prev)}
-        >
-          <div className="space-y-2 pt-0.5">
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-teal-300 text-xs border border-slate-800">
-              B = (μ₀ · I) / (2π · r)
-            </div>
-            <div className="space-y-1 text-[10px] text-slate-400 pt-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-full bg-cyan-900 border border-cyan-500 text-cyan-300 flex items-center justify-center font-bold text-[9px]">
-                  ⊙
-                </span>
-                <span>Corriente Saliente: Giro antihorario</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-full bg-amber-900 border border-amber-500 text-amber-300 flex items-center justify-center font-bold text-[9px]">
-                  ⊗
-                </span>
-                <span>Corriente Entrante: Giro horario</span>
-              </div>
-            </div>
+        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
+          <div className="flex items-center gap-2 text-teal-400 font-semibold text-xs">
+            <Compass className="w-4 h-4" />
+            <span>Conductores & Corrientes</span>
           </div>
-        </CollapsibleSection>
+          <p className="text-[11px] text-slate-300 leading-snug">
+            Arrastra los conductores y la brújula directamente sobre el lienzo para interactuar con el campo B.
+          </p>
+          <div className="p-2 bg-slate-950 rounded text-center font-mono text-teal-300 text-xs border border-slate-800">
+            B = (μ₀ · I) / (2π · r)
+          </div>
+        </div>
       )}
 
       {/* ----------------- MODE: FARADAY ----------------- */}
       {mode === 'faraday' && (
-        <CollapsibleSection
-          title="Ley de Faraday & Lenz"
-          subtitle="Inducción electromagnética"
-          icon={<Sparkles className="w-3.5 h-3.5 text-purple-400" />}
-          isOpen={openSection1}
-          onToggle={() => setOpenSection1((prev) => !prev)}
-        >
-          <div className="space-y-2 pt-0.5">
-            <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-xs border border-slate-800">
-              ε = −N · (dΦ_B / dt)
-            </div>
-            <p className="text-[10px] text-slate-400 leading-snug">
-              El signo negativo (Lenz) refleja la resistencia al cambio de flujo magnético.
-            </p>
+        <div className="p-3 bg-[#0e1422] rounded-xl border border-slate-800 space-y-2">
+          <div className="flex items-center gap-2 text-purple-400 font-semibold text-xs">
+            <Sparkles className="w-4 h-4" />
+            <span>Inducción & Ley de Lenz</span>
           </div>
-        </CollapsibleSection>
+          <p className="text-[11px] text-slate-300 leading-snug">
+            Mueve el imán a través de la bobina o activa la oscilación automática desde el HUD inferior.
+          </p>
+          <div className="p-2 bg-slate-950 rounded text-center font-mono text-purple-300 text-xs border border-slate-800">
+            ε = −N · (dΦ_B / dt)
+          </div>
+        </div>
       )}
 
       {/* Mode Contextual Status Card */}

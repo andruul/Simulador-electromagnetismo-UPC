@@ -27,6 +27,8 @@ interface LeftGuidePanelProps {
   onToggle: () => void;
   onApplyPreset: (presetKey: string) => void;
   onOpenTheory: () => void;
+  gaussDimMode?: '2d' | '3d';
+  onGaussDimChange?: (dim: '2d' | '3d') => void;
 }
 
 interface GuideContent {
@@ -68,19 +70,36 @@ const GUIDE_DATA: Record<string, GuideContent> = {
   },
   gauss: {
     title: 'Ley de Gauss & Flujo Eléctrico',
-    roomName: 'Sala 2 • Flujo & Superficies',
+    roomName: 'Sala 2 • Superficies en Plano 2D',
     icon: <CircleDot className="w-4 h-4 text-emerald-400" />,
     interact: 'Arrastra la superficie gaussiana (esfera o caja) o mueve las cargas dentro y fuera del contorno.',
     observe: 'Los vectores normales n̂ (amarillos) y de campo E (cian) miden el flujo superficial. El medidor compara la integral con Q/ε₀.',
-    keyConcept: 'Solo las cargas DENTRO de la superficie generan flujo neto. Las cargas exteriores entran y salen cancelando su aporte.',
-    exploreChallenge: 'Coloca una carga fuera de la superficie y comprueba que el flujo total siempre da 0 N·m²/C.',
+    keyConcept: 'Solo las cargas DENTRO de la superficie cerrada generan flujo neto. Las cargas exteriores entran y salen cancelando su aporte.',
+    exploreChallenge: 'Coloca una carga fuera de la superficie gaussiana y comprueba que el flujo total siempre da 0 N·m²/C (las líneas que entran son iguales a las que salen).',
     labObjective: 'Verificar numéricamente la Ley de Gauss: ∮ E · dA = Q_enc / ε₀ con tolerancia < 1%.',
     formula: 'Φ_E = ∮ E · dA = Q_enc / ε₀',
     presets: [
       { key: 'monopole', label: 'Carga Central', desc: 'Monopolo centrado en la esfera', icon: '🎯' },
-      { key: 'dipole', label: 'Dipolo Interno', desc: 'Carga neta 0 => Flujo = 0', icon: '⚖️' },
-      { key: 'external', label: 'Cargas Externas', desc: 'Cargas fuera => Flujo = 0', icon: '🚪' },
+      { key: 'dipole', label: 'Dipolo Interno', desc: 'Carga neta 0 => Flujo neto = 0', icon: '⚖️' },
+      { key: 'external', label: 'Cargas Externas', desc: 'Cargas fuera => Flujo neto = 0', icon: '🚪' },
       { key: 'mixed', label: 'Configuración Mixta', desc: 'Cargas dentro y fuera simultáneas', icon: '🎲' }
+    ]
+  },
+  gauss_3d: {
+    title: 'Ley de Gauss 3D & Divergencia',
+    roomName: 'Sala 2 • Espacio Volumétrico 3D',
+    icon: <CircleDot className="w-4 h-4 text-teal-400" />,
+    interact: 'Selecciona una figura 3D (Tetraedro, Cubo, Cilindro, Esfera) y ajusta los coeficientes del campo eléctrico E(x,y,z) con los deslizadores.',
+    observe: 'El color de cada cara indica el signo del flujo: rojo (saliente), azul (entrante), esmeralda (tangencial). Rota la vista 3D con el ratón.',
+    keyConcept: 'Teorema de la Divergencia de Gauss: el flujo total que atraviesa la superficie cerrada equivale a la integral de volumen: Φ = ∮ E·dA = ∭ (∇·E) dV = Q_enc / ε₀.',
+    exploreChallenge: 'En el Tetraedro o Cubo, ajusta los coeficientes del campo divergente (E = αx î + βy ĵ + γz k̂) y comprueba cómo el balance de flujo en sus caras determina la carga encerrada sin necesidad de añadir cargas puntuales.',
+    labObjective: 'Comprobar numéricamente el Teorema de Gauss en 3D: Φ_neto = ∮ E · dA con tolerancia < 1% frente a la divergencia analítica.',
+    formula: 'Φ_E = ∮ E⃗ · dA⃗ = ∭ (∇ · E⃗) dV = Q_enc / ε₀',
+    presets: [
+      { key: 'tetra_divergent', label: 'Tetraedro Divergente 3D', desc: '4 caras en campo E = αx î + βy ĵ + γz k̂', icon: '🔺' },
+      { key: 'cube_linear', label: 'Cubo en Campo Lineal', desc: 'Gradiente en X: E = (αx + β)î', icon: '🧊' },
+      { key: 'cylinder_radial', label: 'Cilindro con Gradiente', desc: 'Flujo en manto lateral vs tapas', icon: '🥫' },
+      { key: 'sphere_coulomb', label: 'Esfera con Monopolo Q', desc: 'Simetría esférica analítica', icon: '🌐' }
     ]
   },
   capacitor: {
@@ -160,13 +179,16 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
   isOpen,
   onToggle,
   onApplyPreset,
-  onOpenTheory
+  onOpenTheory,
+  gaussDimMode = '2d',
+  onGaussDimChange
 }) => {
-  const content = GUIDE_DATA[mode] || GUIDE_DATA['electrostatics'];
+  const guideKey = mode === 'gauss' ? (gaussDimMode === '3d' ? 'gauss_3d' : 'gauss') : mode;
+  const content = GUIDE_DATA[guideKey] || GUIDE_DATA['electrostatics'];
 
   // Collapsible section states (prevents visual clutter and cognitive overload)
   const [openHowItWorks, setOpenHowItWorks] = useState<boolean>(true);
-  const [openObjectives, setOpenObjectives] = useState<boolean>(false); // Collapsed by default for clean view
+  const [openObjectives, setOpenObjectives] = useState<boolean>(true); // Open by default so students immediately see the Reto de Exploración!
   const [openPresets, setOpenPresets] = useState<boolean>(true);
 
   const allOpen = openHowItWorks && openObjectives && openPresets;
@@ -232,6 +254,35 @@ export const LeftGuidePanel: React.FC<LeftGuidePanelProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Quick Dimension Mode Switcher for Sala 2 */}
+      {mode === 'gauss' && (
+        <div className="px-3 py-1.5 bg-slate-950/80 border-b border-slate-800/80 flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-[10px] text-slate-400 font-medium">Modo:</span>
+          <div className="flex-1 flex items-center bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[10px]">
+            <button
+              onClick={() => onGaussDimChange?.('2d')}
+              className={`flex-1 py-1 rounded text-center font-semibold cursor-pointer transition-all ${
+                gaussDimMode !== '3d'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              Plano 2D
+            </button>
+            <button
+              onClick={() => onGaussDimChange?.('3d')}
+              className={`flex-1 py-1 rounded text-center font-semibold cursor-pointer transition-all ${
+                gaussDimMode === '3d'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              Espacio 3D
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Scrollable Content with Collapsible Sections */}
       <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 text-xs custom-scrollbar">

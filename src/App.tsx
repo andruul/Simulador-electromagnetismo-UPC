@@ -46,6 +46,7 @@ export const App: React.FC = () => {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [isZenMode, setIsZenMode] = useState<boolean>(false);
+  const [gaussDimMode, setGaussDimMode] = useState<'2d' | '3d'>('2d');
 
   // Preset requests for the laboratory rooms that own their own state
   const { requests: presetRequests, request: requestPreset, clear: clearPreset } = useRoomPresets();
@@ -105,6 +106,13 @@ export const App: React.FC = () => {
   const handleSelectMode = useCallback((newMode: SimulationMode) => {
     setMode(newMode);
     setIsWelcomeOpen(false);
+    // Smart focus: open right sidebar for modes needing inspector (electrostatics, lorentz3d);
+    // for rooms with native canvas controls (gauss, capacitor, magnetostatics, faraday), keep canvas wide.
+    if (newMode === 'electrostatics' || newMode === 'lorentz3d') {
+      setIsSidebarOpen(true);
+    } else {
+      setIsSidebarOpen(false);
+    }
   }, []);
 
   // Reset current mode state
@@ -210,6 +218,8 @@ export const App: React.FC = () => {
               onToggle={handleToggleLeftPanel}
               onApplyPreset={handleApplyPreset}
               onOpenTheory={() => setIsTheoryOpen(true)}
+              gaussDimMode={gaussDimMode}
+              onGaussDimChange={setGaussDimMode}
             />
 
             {/* Center Interactive Simulation Viewport */}
@@ -244,6 +254,8 @@ export const App: React.FC = () => {
                   setLorentzSettings={setLorentzSettings}
                   presetRequests={presetRequests}
                   onPresetHandled={clearPreset}
+                  gaussDimMode={gaussDimMode}
+                  onGaussDimChange={setGaussDimMode}
                 />
               </ErrorBoundary>
             </main>
