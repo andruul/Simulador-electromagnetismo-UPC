@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 *.zip
-release
+release/*
+!release/*.exe
 dist
 
 .vercel
