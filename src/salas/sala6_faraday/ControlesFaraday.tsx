@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRightLeft, Repeat, Zap, ChevronDown, ChevronUp } from 'lucide-react';
-import type { OutputDevice } from './faradayRenderer';
+import type { OutputDevice } from './renderizadorFaraday';
 
 interface MagnetControlsProps {
   isOscillating: boolean;

@@ -1,6 +1,6 @@
 import type { CapacitorPhysicsResult } from '../../physics/capacitance';
 import type { DielectricMaterial } from '../../types';
-import type { CapacitorLayout, Point } from './capacitorLayout';
+import type { CapacitorLayout, Point } from './diseñoCapacitor';
 
 /**
  * Pure Canvas 2D renderer of the capacitor laboratory (PhET / MIT TEAL aesthetics).

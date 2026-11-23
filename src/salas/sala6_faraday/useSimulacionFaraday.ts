@@ -11,7 +11,7 @@ import {
   type HistorySample,
   type OutputDevice,
   type Viewport
-} from './faradayRenderer';
+} from './renderizadorFaraday';
 
 /** Resistance of the connected bulb (Ω). */
 const BULB_RESISTANCE_OHM = 10;

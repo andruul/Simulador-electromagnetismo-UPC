@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { usePresetRequest } from '../hooks/usePresetRequest';
-import type { WireCurrent, Vector2D, ViewMode } from '../types';
+import { usePresetRequest } from '../../hooks/usePresetRequest';
+import type { WireCurrent, Vector2D, ViewMode } from '../../types';
 import {
   calculateMagneticField2D,
   traceMagneticLine
-} from '../physics/biotsavart';
+} from '../../physics/biotsavart';
 import { Compass, Sparkles, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface MagnetostaticsCanvasProps {

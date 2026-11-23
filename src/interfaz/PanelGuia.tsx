@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { CollapsibleSection } from './CollapsibleSection';
+import { CollapsibleSection } from './SeccionPlegable';
 
 interface LeftGuidePanelProps {
   mode: SimulationMode;

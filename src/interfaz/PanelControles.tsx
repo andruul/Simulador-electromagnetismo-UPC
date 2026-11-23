@@ -19,7 +19,7 @@ import {
   ChevronsUpDown,
   Settings2
 } from 'lucide-react';
-import { CollapsibleSection } from './CollapsibleSection';
+import { CollapsibleSection } from './SeccionPlegable';
 
 interface ControlPanelProps {
   mode: SimulationMode;

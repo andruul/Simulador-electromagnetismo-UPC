@@ -6,12 +6,12 @@ import type {
   SimulationMode,
   ViewMode
 } from '../types';
-import { ElectrostaticsCanvas } from './ElectrostaticsCanvas';
-import { LorentzViewer3D } from './LorentzViewer3D';
-import { MagnetostaticsCanvas } from './MagnetostaticsCanvas';
-import { GaussFluxCanvas } from './GaussFluxCanvas';
-import { CapacitorLabCanvas } from './CapacitorLabCanvas';
-import { FaradayInductionCanvas } from './FaradayInductionCanvas';
+import { ElectrostaticsCanvas } from '../salas/sala1_electrostatica/LienzoElectrostatica';
+import { LorentzViewer3D } from '../salas/sala5_lorentz3d/VisorLorentz3D';
+import { MagnetostaticsCanvas } from '../salas/sala4_magnetostatica/LienzoMagnetostatica';
+import { GaussFluxCanvas } from '../salas/sala2_gauss/LienzoGauss2D';
+import { CapacitorLabCanvas } from '../salas/sala3_capacitancia/LienzoCapacitor';
+import { FaradayInductionCanvas } from '../salas/sala6_faraday/LienzoFaraday';
 import type { PresetRoom } from '../hooks/useRoomPresets';
 
 interface RoomViewportProps {

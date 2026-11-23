@@ -1,17 +1,17 @@
 import React, { useMemo, useRef, useState } from 'react';
-import type { Vector2D, ViewMode } from '../types';
-import type { BarMagnet, InductionCoil } from '../physics/faraday';
-import { useElementSize } from '../hooks/useElementSize';
-import { usePresetRequest } from '../hooks/usePresetRequest';
-import { FaradayHud } from './faraday/FaradayHud';
-import { FaradayBottomControls, FaradayMagnetControls } from './faraday/FaradayControls';
+import type { Vector2D, ViewMode } from '../../types';
+import type { BarMagnet, InductionCoil } from '../../physics/faraday';
+import { useElementSize } from '../../hooks/useElementSize';
+import { usePresetRequest } from '../../hooks/usePresetRequest';
+import { FaradayHud } from './TelemetriaFaraday';
+import { FaradayBottomControls, FaradayMagnetControls } from './ControlesFaraday';
 import {
   createViewport,
   toMeters,
   toPixels,
   type OutputDevice
-} from './faraday/faradayRenderer';
-import { useFaradaySimulation } from './faraday/useFaradaySimulation';
+} from './renderizadorFaraday';
+import { useFaradaySimulation } from './useSimulacionFaraday';
 
 export interface FaradayInductionCanvasProps {
   presetRequest?: string | null;

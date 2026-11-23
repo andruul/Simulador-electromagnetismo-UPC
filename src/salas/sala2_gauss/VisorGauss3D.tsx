@@ -7,12 +7,12 @@ import type {
   NonUniformFieldParams,
   Vector3D,
   ViewMode
-} from '../types';
+} from '../../types';
 import {
   computeGauss3D,
   evaluateNonUniformField
-} from '../physics/gauss';
-import { usePresetRequest } from '../hooks/usePresetRequest';
+} from '../../physics/gauss';
+import { usePresetRequest } from '../../hooks/usePresetRequest';
 import {
   Box,
   CircleDot,

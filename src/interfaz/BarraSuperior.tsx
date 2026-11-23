@@ -20,7 +20,7 @@ import {
   Eye,
   FileDown
 } from 'lucide-react';
-import { UpcLogo } from './UpcBadge';
+import { UpcLogo } from './InsigniaUPC';
 
 interface TopNavbarProps {
   mode: SimulationMode;

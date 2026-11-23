@@ -12,7 +12,7 @@ import {
   FlaskConical,
   Atom
 } from 'lucide-react';
-import { UpcLogo } from './UpcBadge';
+import { UpcLogo } from './InsigniaUPC';
 import type { SimulationMode } from '../types';
 
 interface WelcomeScreenProps {

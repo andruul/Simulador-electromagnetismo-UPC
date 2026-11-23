@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { usePresetRequest } from '../hooks/usePresetRequest';
+import { usePresetRequest } from '../../hooks/usePresetRequest';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { Particle3D, Lorentz3DSettings, ViewMode } from '../types';
-import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../physics/lorentz';
+import type { Particle3D, Lorentz3DSettings, ViewMode } from '../../types';
+import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../../physics/lorentz';
 import { RotateCw, Sparkles, Plus, Play, Pause, Compass, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LorentzViewer3DProps {

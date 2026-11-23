@@ -6,16 +6,16 @@ import type {
   ElectrostaticsSettings,
   Lorentz3DSettings
 } from './types';
-import { TopNavbar } from './components/TopNavbar';
-import { LeftGuidePanel } from './components/LeftGuidePanel';
-import { ControlPanel } from './components/ControlPanel';
-import { RoomViewport } from './components/RoomViewport';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { NoticeToast } from './components/NoticeToast';
-import { TheoryModal } from './components/TheoryModal';
-import { WelcomeScreen } from './components/WelcomeScreen';
-import { SearchModal } from './components/SearchModal';
-import { BottomStatusBar } from './components/BottomStatusBar';
+import { TopNavbar } from './interfaz/BarraSuperior';
+import { LeftGuidePanel } from './interfaz/PanelGuia';
+import { ControlPanel } from './interfaz/PanelControles';
+import { RoomViewport } from './interfaz/VisorSalas';
+import { ErrorBoundary } from './interfaz/ControladorErrores';
+import { NoticeToast } from './interfaz/AvisoNotificacion';
+import { TheoryModal } from './interfaz/ModalTeoria';
+import { WelcomeScreen } from './interfaz/PantallaBienvenida';
+import { SearchModal } from './interfaz/ModalBuscador';
+import { BottomStatusBar } from './interfaz/BarraEstado';
 import { useExportActions } from './hooks/useExportActions';
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
 import { isPresetRoom, useRoomPresets, type PresetRoom } from './hooks/useRoomPresets';

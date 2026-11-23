@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ViewMode } from '../../types';
-import type { InstantValues } from './useFaradaySimulation';
+import type { InstantValues } from './useSimulacionFaraday';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 /** Bulb power thresholds (W) for the qualitative "bright" / "dim" labels. */

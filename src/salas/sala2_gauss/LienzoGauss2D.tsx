@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { usePresetRequest } from '../hooks/usePresetRequest';
-import type { GaussianSurface, GaussSettings, ViewMode } from '../types';
+import { usePresetRequest } from '../../hooks/usePresetRequest';
+import type { GaussianSurface, GaussSettings, ViewMode } from '../../types';
 import {
   computeGaussLaw,
   calculateElectricField2D,
   type ChargeSI
-} from '../physics/gauss';
+} from '../../physics/gauss';
 import {
   Plus,
   Minus,
@@ -15,7 +15,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { Gauss3DViewer } from './Gauss3DViewer';
+import { Gauss3DViewer } from './VisorGauss3D';
 
 interface GaussFluxCanvasProps {
   presetRequest?: string | null;
