@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Particle3D, Lorentz3DSettings, ViewMode } from '../../types';
 import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../../physics/lorentz';
-import { RotateCw, Sparkles, Plus, Play, Pause, Compass, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Play, Pause, Compass, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LorentzViewer3DProps {
   settings: Lorentz3DSettings;
@@ -527,14 +527,6 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     return null;
   };
 
-  // One-click preset buttons (event handlers may update both states directly)
-  const applyPreset = (presetName: string) => {
-    const built = buildPreset(presetName);
-    if (!built) return;
-    setSettings((s) => ({ ...s, ...built.settings }));
-    setParticles(built.particles);
-  };
-
   // Handle preset request from parent (welcome screen or search modal).
   // Particles are this component's own state (applied while rendering); the shared
   // settings belong to the parent and are updated once the preset is committed.
@@ -592,43 +584,6 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   return (
     <div className="relative w-full h-full select-none bg-[#FAF7F2] overflow-hidden">
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
-
-      {/* Preset bar top-left */}
-      <div className="absolute top-4 left-4 max-w-[calc(100%-5rem)] md:max-w-xl flex flex-wrap items-center gap-1.5 bg-white/95 backdrop-blur-md p-2 rounded-xl border border-[#D5CEC6] shadow-md z-10">
-        <span className="text-xs font-semibold text-[#6B6560] px-2 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Experimentos 3D:
-        </span>
-        <button
-          onClick={() => applyPreset('helix')}
-          className="px-2.5 py-1 text-xs bg-[#EDE8DF] hover:bg-[#E0D8CF] text-[#2D2A26] rounded-lg border border-[#D5CEC6] transition-colors cursor-pointer"
-        >
-          Espiral / Hélice (B puro)
-        </button>
-        <button
-          onClick={() => applyPreset('velocity_selector')}
-          className="px-2.5 py-1 text-xs bg-[#5B9E8A]/15 hover:bg-[#5B9E8A]/25 text-[#3D7A69] rounded-lg border border-[#5B9E8A]/40 transition-colors cursor-pointer font-medium"
-        >
-          Selector de Velocidades (Wien)
-        </button>
-        <button
-          onClick={() => applyPreset('drift')}
-          className="px-2.5 py-1 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg border border-purple-300 transition-colors cursor-pointer"
-        >
-          Deriva E × B (Cicloide)
-        </button>
-        <button
-          onClick={() => applyPreset('magnetic_bottle')}
-          className="px-2.5 py-1 text-xs bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-lg border border-sky-300 transition-colors cursor-pointer"
-        >
-          Botella Magnética (Espejo)
-        </button>
-        <button
-          onClick={() => applyPreset('cyclotron')}
-          className="px-2.5 py-1 text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg border border-rose-300 transition-colors cursor-pointer"
-        >
-          Ciclotrón
-        </button>
-      </div>
 
       {/* Telemetry and Physics Parameters HUD (Top Right) */}
       <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md rounded-xl border border-[#D5CEC6] shadow-md text-xs z-10 transition-all max-w-[calc(100%-2rem)]">
@@ -784,12 +739,6 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
           <ChevronUp className="w-3 h-3 text-[#6B6560]" />
         </button>
       )}
-
-      {/* Orbit Tip */}
-      <div className="absolute bottom-5 right-5 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#D5CEC6] text-[11px] text-[#6B6560] flex items-center gap-2 pointer-events-none shadow-sm">
-        <RotateCw className="w-3 h-3 text-sky-600" />
-        <span>Usa el clic izquierdo para rotar la cámara y la rueda para zoom</span>
-      </div>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import {
   calculateMagneticField2D,
   traceMagneticLine
 } from '../../physics/biotsavart';
-import { Compass, Sparkles, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface MagnetostaticsCanvasProps {
   presetRequest?: string | null;
@@ -36,7 +36,6 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
   // Settings
   const [showVectors, setShowVectors] = useState(true);
   const [showLines, setShowLines] = useState(true);
-  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [isControlsOpen, setIsControlsOpen] = useState(true);
 
   // Dynamic ResizeObserver
@@ -464,84 +463,33 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
         className="w-full h-full cursor-crosshair block"
       />
 
-      {/* Preset bar (Collapsible, default minimized to preserve canvas area) */}
-      {isPresetsOpen ? (
-        <div className="absolute top-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/60 shadow-2xl z-10">
-          <span className="text-xs font-semibold text-slate-400 px-2 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Configuraciones:
-          </span>
-          <button
-            onClick={() => applyPreset('single')}
-            className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-600/40 transition-colors cursor-pointer"
-          >
-            Hilo Simple
-          </button>
-          <button
-            onClick={() => applyPreset('parallel_attraction')}
-            className="px-2.5 py-1 text-xs bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 rounded-lg border border-cyan-600/40 transition-colors cursor-pointer"
-          >
-            Atracción
-          </button>
-          <button
-            onClick={() => applyPreset('parallel_repulsion')}
-            className="px-2.5 py-1 text-xs bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 rounded-lg border border-amber-600/40 transition-colors cursor-pointer"
-          >
-            Repulsión
-          </button>
-          <button
-            onClick={() => applyPreset('solenoid')}
-            className="px-2.5 py-1 text-xs bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 rounded-lg border border-indigo-600/40 transition-colors cursor-pointer"
-          >
-            Solenoide
-          </button>
-
-          <button
-            onClick={() => setIsPresetsOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
-            title="Minimizar presets"
-          >
-            <ChevronUp className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setIsPresetsOpen(true)}
-          className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Ver configuraciones de conductores"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>Configuraciones</span>
-          <ChevronDown className="w-3 h-3 text-slate-400" />
-        </button>
-      )}
-
       {/* Bottom control bar (Collapsible) */}
       {isControlsOpen ? (
-        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
-          <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
-            <Plus className="w-3.5 h-3.5 text-cyan-400" /> Conductor:
+        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] z-10">
+          <span className="font-semibold text-[#6B6560] mr-1 flex items-center gap-1">
+            <Plus className="w-3.5 h-3.5 text-teal-600" /> Conductor:
           </span>
           <button
             onClick={() => addWire(4)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-100 hover:bg-teal-200 text-teal-800 border border-teal-300 rounded-lg transition-colors cursor-pointer"
           >
             Saliente (⊙)
           </button>
           <button
             onClick={() => addWire(-4)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg transition-colors cursor-pointer"
           >
             Entrante (⊗)
           </button>
 
-          <div className="h-4 w-px bg-slate-700 mx-1" />
+          <div className="h-4 w-px bg-[#D5CEC6] mx-1" />
 
           <button
             onClick={() => setShowVectors(!showVectors)}
             className={`px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer ${
               showVectors
-                ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                : 'bg-slate-800 border-slate-700 text-slate-400'
+                ? 'bg-sky-100 border-sky-300 text-sky-800 font-semibold'
+                : 'bg-[#EDE8DF] border-[#D5CEC6] text-[#6B6560]'
             }`}
           >
             Vectores B
@@ -550,8 +498,8 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
             onClick={() => setShowLines(!showLines)}
             className={`px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer ${
               showLines
-                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                : 'bg-slate-800 border-slate-700 text-slate-400'
+                ? 'bg-teal-100 border-teal-300 text-teal-800 font-semibold'
+                : 'bg-[#EDE8DF] border-[#D5CEC6] text-[#6B6560]'
             }`}
           >
             Líneas
@@ -559,7 +507,7 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
 
           <button
             onClick={() => setIsControlsOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] rounded transition-colors cursor-pointer ml-1"
             title="Minimizar barra de conductores"
           >
             <ChevronDown className="w-3.5 h-3.5" />
@@ -568,20 +516,14 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
       ) : (
         <button
           onClick={() => setIsControlsOpen(true)}
-          className="absolute bottom-4 left-4 z-10 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           title="Añadir conductores y alternar vectores"
         >
-          <Plus className="w-3.5 h-3.5 text-cyan-400" />
+          <Plus className="w-3.5 h-3.5 text-teal-600" />
           <span>Conductores & Vectores</span>
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronUp className="w-3.5 h-3.5 text-[#6B6560]" />
         </button>
       )}
-
-      {/* Help tooltip */}
-      <div className="absolute bottom-4 right-4 bg-slate-900/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none z-10">
-        <Compass className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
-        <span className="truncate">Arrastra la brújula o los conductores para verificar la Regla de la Mano Derecha</span>
-      </div>
     </div>
   );
 };

@@ -612,7 +612,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#090d16]">
+    <div className="relative w-full h-full overflow-hidden select-none bg-[#FAF7F2]">
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}
@@ -623,26 +623,26 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
 
       {/* Floating Action Overlay for Test Particle (Collapsible) */}
       {isParticleBarOpen ? (
-        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl text-xs text-slate-200 z-10">
-          <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-yellow-400" /> Partícula de prueba:
+        <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] z-10">
+          <span className="font-semibold text-[#6B6560] mr-1 flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 text-amber-500" /> Partícula de prueba:
           </span>
           <button
             onClick={() => spawnTestParticle(1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300/60 rounded-lg transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> Positiva (+1)
           </button>
           <button
             onClick={() => spawnTestParticle(-1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300/60 rounded-lg transition-colors cursor-pointer"
           >
             <Minus className="w-3.5 h-3.5" /> Negativa (−1)
           </button>
           {testParticles.length > 0 && (
             <button
               onClick={clearTestParticles}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 bg-[#EDE8DF] hover:bg-[#E0D8CF] text-[#4A4540] border border-[#D5CEC6] rounded-lg transition-colors cursor-pointer"
             >
               Limpiar ({testParticles.length})
             </button>
@@ -650,7 +650,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
 
           <button
             onClick={() => setIsParticleBarOpen(false)}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer ml-1"
+            className="p-1 text-[#6B6560] hover:text-[#2D2A26] rounded transition-colors cursor-pointer ml-1"
             title="Minimizar barra de partículas"
           >
             <ChevronDown className="w-3.5 h-3.5" />
@@ -659,20 +659,14 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       ) : (
         <button
           onClick={() => setIsParticleBarOpen(true)}
-          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/60 shadow-xl text-xs text-yellow-300 hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
           title="Abrir controles de partícula de prueba"
         >
-          <Zap className="w-3.5 h-3.5 text-yellow-400" />
+          <Zap className="w-3.5 h-3.5 text-amber-500" />
           <span>Partícula de prueba</span>
-          <ChevronUp className="w-3 h-3 text-slate-400" />
+          <ChevronUp className="w-3 h-3 text-[#6B6560]" />
         </button>
       )}
-
-      {/* Instructions pill */}
-      <div className="absolute top-4 left-4 max-w-[calc(100%-2rem)] bg-slate-900/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 hidden sm:flex items-center gap-2 pointer-events-none z-10">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-        <span className="truncate">Arrastra las cargas o el sensor amarillo para explorar el campo y potencial</span>
-      </div>
     </div>
   );
 };

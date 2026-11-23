@@ -217,8 +217,8 @@ export const App: React.FC = () => {
               </ErrorBoundary>
             </main>
 
-            {/* Right Side Control Inspector (320px) */}
-            {isSidebarOpen && (
+            {/* Right Side Control Inspector (320px) — solo en salas que tienen controles laterales */}
+            {(mode === 'electrostatics' || mode === 'lorentz3d') && isSidebarOpen && (
               <ControlPanel
                 mode={mode}
                 charges={charges}
