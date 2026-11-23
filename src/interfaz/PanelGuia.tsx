@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SimulationMode, ViewMode } from '../types';
+import type { SimulationMode, ViewMode } from '../tipos';
 import {
   Compass,
   Zap,

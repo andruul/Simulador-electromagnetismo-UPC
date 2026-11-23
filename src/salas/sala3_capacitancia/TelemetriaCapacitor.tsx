@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { CapacitorPhysicsResult } from '../../physics/capacitance';
-import type { DielectricMaterial, ViewMode } from '../../types';
+import type { CapacitorPhysicsResult } from '../../fisica/capacitancia';
+import type { DielectricMaterial, ViewMode } from '../../tipos';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CapacitorHudProps {

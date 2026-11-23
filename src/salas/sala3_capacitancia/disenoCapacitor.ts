@@ -1,4 +1,4 @@
-import { sampleLocalPotential } from '../../physics/capacitance';
+import { sampleLocalPotential } from '../../fisica/capacitancia';
 
 /**
  * Pure geometry of the capacitor laboratory (screen pixels) and of the virtual probes.

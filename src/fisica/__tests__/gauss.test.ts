@@ -9,7 +9,7 @@ import {
   integrateSphereFlux,
   type ChargeSI
 } from '../gauss';
-import type { GaussianSurface } from '../../types';
+import type { GaussianSurface } from '../../tipos';
 import { relErr } from './testUtils';
 
 const NC = 1e-9;

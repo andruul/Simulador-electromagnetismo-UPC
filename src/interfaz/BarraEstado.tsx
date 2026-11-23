@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SimulationMode } from '../types';
+import type { SimulationMode } from '../tipos';
 import { Sparkles } from 'lucide-react';
 
 interface BottomStatusBarProps {

@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react';
-import type { Vector2D, ViewMode } from '../../types';
-import type { BarMagnet, InductionCoil } from '../../physics/faraday';
-import { useElementSize } from '../../hooks/useElementSize';
-import { usePresetRequest } from '../../hooks/usePresetRequest';
+import type { Vector2D, ViewMode } from '../../tipos';
+import type { BarMagnet, InductionCoil } from '../../fisica/faraday';
+import { useElementSize } from '../../ganchos/useDimensionElemento';
+import { usePresetRequest } from '../../ganchos/usePeticionPreset';
 import { FaradayHud } from './TelemetriaFaraday';
 import { FaradayBottomControls, FaradayMagnetControls } from './ControlesFaraday';
 import {

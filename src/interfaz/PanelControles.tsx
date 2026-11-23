@@ -4,7 +4,7 @@ import type {
   PointCharge,
   ElectrostaticsSettings,
   Lorentz3DSettings
-} from '../types';
+} from '../tipos';
 import {
   Plus,
   Minus,

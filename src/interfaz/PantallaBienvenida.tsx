@@ -13,7 +13,7 @@ import {
   Atom
 } from 'lucide-react';
 import { UpcLogo } from './InsigniaUPC';
-import type { SimulationMode } from '../types';
+import type { SimulationMode } from '../tipos';
 
 interface WelcomeScreenProps {
   onStartSimulation: () => void;

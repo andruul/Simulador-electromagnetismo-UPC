@@ -4,8 +4,8 @@ import {
   calculateElectricField,
   calculateElectricPotential,
   traceFieldLine
-} from '../electrostatics';
-import type { PointCharge } from '../../types';
+} from '../electrostatica';
+import type { PointCharge } from '../../tipos';
 import { relErr } from './testUtils';
 
 /**

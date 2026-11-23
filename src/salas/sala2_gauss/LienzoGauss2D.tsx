@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { usePresetRequest } from '../../hooks/usePresetRequest';
-import type { GaussianSurface, GaussSettings, ViewMode } from '../../types';
+import { usePresetRequest } from '../../ganchos/usePeticionPreset';
+import type { GaussianSurface, GaussSettings, ViewMode } from '../../tipos';
 import {
   computeGaussLaw,
   calculateElectricField2D,
   type ChargeSI
-} from '../../physics/gauss';
+} from '../../fisica/gauss';
 import {
   Plus,
   Minus,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ViewMode } from '../../types';
+import type { ViewMode } from '../../tipos';
 import type { InstantValues } from './useSimulacionFaraday';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 

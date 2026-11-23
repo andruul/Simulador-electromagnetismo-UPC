@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { PointCharge, TestParticle2D, Sensor2D, ElectrostaticsSettings, ViewMode } from '../../types';
+import type { PointCharge, TestParticle2D, Sensor2D, ElectrostaticsSettings, ViewMode } from '../../tipos';
 import {
   calculateElectricField,
   calculateElectricPotential,
   traceFieldLine,
   traceEquipotentialLine
-} from '../../physics/electrostatics';
+} from '../../fisica/electrostatica';
 import { Plus, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ElectrostaticsCanvasProps {

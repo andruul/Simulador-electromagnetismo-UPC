@@ -1,10 +1,10 @@
-import type { Vector2D } from '../../types';
+import type { Vector2D } from '../../tipos';
 import {
   getMagnetPoles,
   traceMagneticFieldLine,
   type BarMagnet,
   type InductionCoil
-} from '../../physics/faraday';
+} from '../../fisica/faraday';
 
 /**
  * Pure Canvas 2D renderer of the Faraday induction laboratory.

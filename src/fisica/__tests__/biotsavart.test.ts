@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calculateMagneticField2D, MU0_OVER_2PI } from '../biotsavart';
-import type { WireCurrent } from '../../types';
+import type { WireCurrent } from '../../tipos';
 import { relErr } from './testUtils';
 
 /**

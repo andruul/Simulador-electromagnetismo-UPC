@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { ViewMode } from '../../types';
-import { DIELECTRIC_MATERIALS, computeCapacitorState } from '../../physics/capacitance';
-import { useElementSize } from '../../hooks/useElementSize';
-import { usePresetRequest } from '../../hooks/usePresetRequest';
+import type { ViewMode } from '../../tipos';
+import { DIELECTRIC_MATERIALS, computeCapacitorState } from '../../fisica/capacitancia';
+import { useElementSize } from '../../ganchos/useDimensionElemento';
+import { usePresetRequest } from '../../ganchos/usePeticionPreset';
 import { CapacitorHud } from './TelemetriaCapacitor';
 import { CapacitorBatteryControls, CapacitorBottomControls } from './ControlesCapacitor';
 import {
@@ -10,7 +10,7 @@ import {
   measureProbeField,
   measureProbeVoltage,
   type Point
-} from './diseñoCapacitor';
+} from './disenoCapacitor';
 import { drawCapacitorScene } from './renderizadorCapacitor';
 
 export interface CapacitorLabCanvasProps {

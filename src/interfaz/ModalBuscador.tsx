@@ -14,7 +14,7 @@ import {
   Layers,
   Flame
 } from 'lucide-react';
-import { TOPICS_DATABASE, type TopicItem } from '../data/topics';
+import { TOPICS_DATABASE, type TopicItem } from '../datos/temas';
 
 interface SearchModalProps {
   isOpen: boolean;

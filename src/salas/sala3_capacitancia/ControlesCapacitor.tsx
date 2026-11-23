@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BatteryCharging, Layers, Unplug, ChevronDown, ChevronUp } from 'lucide-react';
-import { DIELECTRIC_MATERIALS } from '../../physics/capacitance';
+import { DIELECTRIC_MATERIALS } from '../../fisica/capacitancia';
 
 interface BatteryControlsProps {
   connectedToBattery: boolean;

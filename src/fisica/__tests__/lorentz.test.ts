@@ -6,7 +6,7 @@ import {
   dotProduct,
   vectorLength
 } from '../lorentz';
-import type { Particle3D, Vector3D } from '../../types';
+import type { Particle3D, Vector3D } from '../../tipos';
 import { relErr } from './testUtils';
 
 const ZERO: Vector3D = { x: 0, y: 0, z: 0 };

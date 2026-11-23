@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SimulationMode, ViewMode } from '../types';
+import type { SimulationMode, ViewMode } from '../tipos';
 import {
   Zap,
   RotateCw,

@@ -5,14 +5,14 @@ import type {
   PointCharge,
   SimulationMode,
   ViewMode
-} from '../types';
+} from '../tipos';
 import { ElectrostaticsCanvas } from '../salas/sala1_electrostatica/LienzoElectrostatica';
 import { LorentzViewer3D } from '../salas/sala5_lorentz3d/VisorLorentz3D';
 import { MagnetostaticsCanvas } from '../salas/sala4_magnetostatica/LienzoMagnetostatica';
 import { GaussFluxCanvas } from '../salas/sala2_gauss/LienzoGauss2D';
 import { CapacitorLabCanvas } from '../salas/sala3_capacitancia/LienzoCapacitor';
 import { FaradayInductionCanvas } from '../salas/sala6_faraday/LienzoFaraday';
-import type { PresetRoom } from '../hooks/useRoomPresets';
+import type { PresetRoom } from '../ganchos/usePresetsSalas';
 
 interface RoomViewportProps {
   mode: SimulationMode;

@@ -3,7 +3,7 @@ import {
   computeGauss3D,
   EPSILON_0
 } from '../gauss';
-import type { NonUniformFieldParams } from '../../types';
+import type { NonUniformFieldParams } from '../../tipos';
 
 describe("Gauss's Law 3D & Non-Uniform Fields Physics Engine", () => {
   it('Cube in linear non-uniform field E = alpha * x * i verifies Divergence Theorem', () => {

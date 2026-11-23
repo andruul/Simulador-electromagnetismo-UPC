@@ -4,7 +4,7 @@ import {
   computeFaradayInduction,
   type BarMagnet,
   type InductionCoil
-} from '../../physics/faraday';
+} from '../../fisica/faraday';
 import {
   OSCILLOSCOPE_POINTS,
   drawFaradayFrame,

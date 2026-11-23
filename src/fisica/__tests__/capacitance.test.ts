@@ -4,7 +4,7 @@ import {
   computeCapacitorState,
   sampleLocalPotential,
   type CapacitorCalculationInput
-} from '../capacitance';
+} from '../capacitancia';
 import { EPSILON_0 } from '../gauss';
 import { relErr } from './testUtils';
 
