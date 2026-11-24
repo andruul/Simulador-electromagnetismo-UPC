@@ -543,45 +543,50 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
       ctx.textBaseline = 'middle';
       ctx.fillText(isPositive ? '+' : '−', px, py);
 
-      // Charge label (in nC)
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '10px monospace';
+      // Charge label (in nC) with high-contrast ivory pill
       const qValStr = `${(c.charge * 1e9).toFixed(1)} nC`;
-      ctx.fillText(qValStr, px, py + 22);
+      ctx.font = 'bold 10px monospace';
+      const tw = ctx.measureText(qValStr).width;
+      ctx.fillStyle = 'rgba(255, 253, 249, 0.90)';
+      ctx.beginPath();
+      ctx.roundRect(px - tw / 2 - 5, py + 15, tw + 10, 15, 4);
+      ctx.fill();
+      ctx.fillStyle = '#231F1C';
+      ctx.fillText(qValStr, px, py + 22.5);
     }
 
-    // Legend on canvas corner
+    // Legend on canvas corner (Warm Ivory Editorial)
     ctx.save();
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+    ctx.fillStyle = 'rgba(255, 253, 249, 0.94)';
+    ctx.strokeStyle = '#D6CCBE';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(14, h - 80, 200, 66, 8);
+    ctx.roundRect(14, h - 80, 200, 66, 10);
     ctx.fill();
     ctx.stroke();
 
-    ctx.font = '10px sans-serif';
+    ctx.font = 'bold 10px system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
     // Normal vector legend
-    ctx.fillStyle = '#facc15';
+    ctx.fillStyle = '#C27803';
     ctx.fillRect(24, h - 64, 12, 3);
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#231F1C';
     ctx.fillText('Vector normal exterior n̂', 42, h - 63);
 
     // E field vector legend
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#3A7CA5';
     ctx.fillRect(24, h - 46, 12, 3);
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#231F1C';
     ctx.fillText('Campo Eléctrico E', 42, h - 45);
 
     // Surface element dA
-    ctx.fillStyle = '#34d399';
+    ctx.fillStyle = '#2D7A64';
     ctx.beginPath();
     ctx.arc(30, h - 28, 4, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#231F1C';
     ctx.fillText('Elemento de superficie dA', 42, h - 28);
     ctx.restore();
 
@@ -725,8 +730,8 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
               onClick={() => setSettings((s) => ({ ...s, surfaceShape: 'rectangle' }))}
               className={`px-3 py-1 rounded cursor-pointer transition-all ${
                 settings.surfaceShape === 'rectangle'
-                  ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#2D7A64] text-white shadow-sm font-semibold'
+                  : 'text-[#5C554E] hover:text-[#231F1C]'
               }`}
             >
               Caja
@@ -734,9 +739,9 @@ export const GaussFluxCanvas: React.FC<GaussFluxCanvasProps> = ({
           </div>
 
           {/* Size Slider */}
-          <div className="flex items-center gap-1.5 px-1.5 text-xs text-slate-300">
-            <Sliders className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-[11px]">Radio:</span>
+          <div className="flex items-center gap-1.5 px-1.5 text-xs text-[#231F1C]">
+            <Sliders className="w-3.5 h-3.5 text-[#5C554E]" />
+            <span className="text-[11px] font-medium">Radio:</span>
             <input
               type="range"
               min="0.5"

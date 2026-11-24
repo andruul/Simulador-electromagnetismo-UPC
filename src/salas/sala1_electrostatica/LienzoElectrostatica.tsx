@@ -193,35 +193,29 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       ctx.stroke();
     }
 
-    // 3. Potential Heatmap (fast block rendering)
+    // 3. Potential Heatmap (soft editorial pastel terracotta & cerulean)
     if (settings.showPotentialHeatmap && charges.length > 0) {
       const step = 16;
       for (let x = 0; x < width; x += step) {
         for (let y = 0; y < height; y += step) {
           const V = calculateElectricPotential(x + step / 2, y + step / 2, charges, settings.kConstant);
           const normV = Math.tanh(V / 600);
-          let r = 0, g = 0, b = 0, a = Math.min(0.35, Math.abs(normV) * 0.4);
+          const a = Math.min(0.24, Math.abs(normV) * 0.28);
 
           if (normV > 0) {
-            r = Math.floor(255 * normV);
-            g = Math.floor(60 * normV);
-            b = Math.floor(90 * (1 - normV));
+            ctx.fillStyle = `rgba(229, 107, 111, ${a})`;
           } else {
-            const neg = Math.abs(normV);
-            r = Math.floor(40 * (1 - neg));
-            g = Math.floor(150 * neg);
-            b = Math.floor(255 * neg);
+            ctx.fillStyle = `rgba(74, 144, 184, ${a})`;
           }
 
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
           ctx.fillRect(x, y, step, step);
         }
       }
     }
 
-    // 4. Equipotential Lines
+    // 4. Equipotential Lines (soft sage teal)
     if (settings.showEquipotentialLines && charges.length > 0) {
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+      ctx.strokeStyle = 'rgba(45, 122, 100, 0.50)';
       ctx.lineWidth = 1.2;
       ctx.setLineDash([4, 4]);
 
@@ -267,17 +261,18 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
           const length = Math.min(step * 0.75, Math.max(8, Math.log10(mag + 1) * 7));
 
           const strength = Math.min(1, Math.log10(mag + 1) / 3.5);
-          const red = Math.floor(strength * 255);
-          const blue = Math.floor((1 - strength) * 255);
-          const green = Math.floor(180 * strength);
+          // Harmonized warm palette: soft slate-blue (weak) -> muted terracotta-plum (strong)
+          const red = Math.floor(82 + strength * 124);
+          const green = Math.floor(96 - strength * 18);
+          const blue = Math.floor(138 - strength * 58);
 
           ctx.save();
           ctx.translate(x, y);
           ctx.rotate(angle);
 
-          ctx.strokeStyle = `rgba(${red}, ${green}, ${blue}, 0.65)`;
-          ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, 0.85)`;
-          ctx.lineWidth = 1.4;
+          ctx.strokeStyle = `rgba(${red}, ${green}, ${blue}, 0.55)`;
+          ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, 0.72)`;
+          ctx.lineWidth = 1.3;
 
           // Arrow shaft
           ctx.beginPath();
@@ -306,7 +301,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
 
       for (const c of charges) {
         if (c.charge > 0) {
-          ctx.strokeStyle = 'rgba(244, 63, 94, 0.75)';
+          ctx.strokeStyle = 'rgba(196, 86, 82, 0.72)';
           const count = Math.round(linesPerCharge * Math.abs(c.charge));
           for (let i = 0; i < count; i++) {
             const angle = (2 * Math.PI * i) / count;
@@ -342,9 +337,9 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
                 ctx.save();
                 ctx.translate(p1.x, p1.y);
                 ctx.rotate(arrAngle);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fillStyle = '#B84844';
                 ctx.beginPath();
-                ctx.moveTo(5, 0);
+                ctx.moveTo(5.5, 0);
                 ctx.lineTo(-4, -3.5);
                 ctx.lineTo(-4, 3.5);
                 ctx.closePath();
@@ -358,7 +353,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
 
       const hasPositive = charges.some((c) => c.charge > 0);
       if (!hasPositive) {
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+        ctx.strokeStyle = 'rgba(58, 124, 165, 0.72)';
         for (const c of charges) {
           if (c.charge < 0) {
             const count = Math.round(linesPerCharge * Math.abs(c.charge));
@@ -423,18 +418,18 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       const radius = 18;
 
       ctx.save();
-      ctx.shadowColor = isPositive ? '#ef4444' : '#0ea5e9';
-      ctx.shadowBlur = isSelected ? 22 : 14;
+      ctx.shadowColor = isPositive ? 'rgba(217, 83, 79, 0.45)' : 'rgba(58, 124, 165, 0.45)';
+      ctx.shadowBlur = isSelected ? 18 : 10;
 
-      const grad = ctx.createRadialGradient(c.x - 3, c.y - 3, 2, c.x, c.y, radius);
+      const grad = ctx.createRadialGradient(c.x - 4, c.y - 4, 2, c.x, c.y, radius);
       if (isPositive) {
-        grad.addColorStop(0, '#fca5a5');
-        grad.addColorStop(0.5, '#dc2626');
-        grad.addColorStop(1, '#991b1b');
+        grad.addColorStop(0, '#F5A3A5');
+        grad.addColorStop(0.55, '#D95B5F');
+        grad.addColorStop(1, '#A93A3E');
       } else {
-        grad.addColorStop(0, '#7dd3fc');
-        grad.addColorStop(0.5, '#0284c7');
-        grad.addColorStop(1, '#075985');
+        grad.addColorStop(0, '#96CBE5');
+        grad.addColorStop(0.55, '#3E82AA');
+        grad.addColorStop(1, '#255878');
       }
 
       ctx.fillStyle = grad;
@@ -443,24 +438,33 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       ctx.fill();
 
       if (isSelected) {
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = '#231F1C';
         ctx.lineWidth = 2.5;
         ctx.stroke();
       }
 
       ctx.restore();
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 20px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(isPositive ? '+' : '−', c.x, c.y);
 
-      ctx.font = '11px system-ui, sans-serif';
-      ctx.fillStyle = '#cbd5e1';
-      ctx.fillText(`${c.charge > 0 ? '+' : ''}${c.charge} µC`, c.x, c.y + radius + 14);
+      const chargeLabel = `${c.charge > 0 ? '+' : ''}${c.charge} µC`;
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const labelW = ctx.measureText(chargeLabel).width;
+      ctx.fillStyle = 'rgba(255, 253, 249, 0.90)';
+      ctx.strokeStyle = '#DDD5C8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(c.x - labelW / 2 - 6, c.y + radius + 5, labelW + 12, 18, 5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#231F1C';
+      ctx.fillText(chargeLabel, c.x, c.y + radius + 14);
     }
 
-    // 9. Field Sensor (Multimeter probe)
+    // 9. Field Sensor (Multimeter probe — High-contrast Warm Ivory & Ochre)
     if (sensor.active) {
       const E = calculateElectricField(sensor.x, sensor.y, charges, settings.kConstant);
       const V = calculateElectricPotential(sensor.x, sensor.y, charges, settings.kConstant);
@@ -468,10 +472,12 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       const angleDeg = (Math.atan2(E.y, E.x) * 180) / Math.PI;
 
       ctx.save();
-      ctx.strokeStyle = isDraggingSensor ? '#38bdf8' : '#e2e8f0';
-      ctx.lineWidth = 1.8;
+      ctx.fillStyle = 'rgba(254, 243, 199, 0.75)';
+      ctx.strokeStyle = isDraggingSensor ? '#2D7A64' : '#B45309';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(sensor.x, sensor.y, 12, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
 
       ctx.beginPath();
@@ -487,8 +493,8 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
         const endX = sensor.x + arrowLen * Math.cos(arrAngle);
         const endY = sensor.y + arrowLen * Math.sin(arrAngle);
 
-        ctx.strokeStyle = '#facc15';
-        ctx.fillStyle = '#facc15';
+        ctx.strokeStyle = '#B45309';
+        ctx.fillStyle = '#B45309';
         ctx.lineWidth = 2.5;
 
         ctx.beginPath();
@@ -511,38 +517,43 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
         ctx.fill();
       }
 
-      const boxW = 145;
-      const boxH = 68;
+      const boxW = 186;
+      const boxH = 72;
       let boxX = sensor.x + 22;
-      let boxY = sensor.y - 34;
-      if (boxX + boxW > width) boxX = sensor.x - boxW - 22;
+      let boxY = sensor.y - 36;
+      if (boxX + boxW > width - 8) boxX = sensor.x - boxW - 22;
       if (boxY < 10) boxY = 10;
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-      ctx.lineWidth = 1;
+      ctx.shadowColor = 'rgba(60, 50, 40, 0.14)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
+      ctx.strokeStyle = '#D6CCBE';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.roundRect(boxX, boxY, boxW, boxH, 6);
+      ctx.roundRect(boxX, boxY, boxW, boxH, 8);
       ctx.fill();
       ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
 
-      ctx.fillStyle = viewMode === 'explore' ? '#10b981' : '#38bdf8';
+      ctx.fillStyle = viewMode === 'explore' ? '#2D7A64' : '#2B6CB0';
       ctx.font = 'bold 11px system-ui, sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(viewMode === 'explore' ? 'SENSOR EXPLORADOR' : 'MULTÍMETRO DIGITAL (SI)', boxX + 10, boxY + 16);
+      ctx.fillText(viewMode === 'explore' ? 'SENSOR EXPLORADOR' : 'MULTÍMETRO DIGITAL (SI)', boxX + 10, boxY + 17);
 
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = '11px monospace';
+      ctx.fillStyle = '#231F1C';
+      ctx.font = 'bold 11px monospace';
       if (viewMode === 'explore') {
         const fieldLevel = Emag > 120 ? 'Muy Fuerte' : Emag > 40 ? 'Medio' : 'Suave';
         const voltLevel = V > 60 ? 'Alto (+)' : V < -60 ? 'Bajo (−)' : 'Cero (0V)';
-        ctx.fillText(`Campo: ${fieldLevel} (${Emag.toFixed(0)})`, boxX + 10, boxY + 32);
-        ctx.fillText(`Voltaje: ${voltLevel}`, boxX + 10, boxY + 47);
-        ctx.fillText(`Ángulo: ${angleDeg.toFixed(0)}°`, boxX + 10, boxY + 61);
+        ctx.fillText(`Campo: ${fieldLevel} (${Emag.toFixed(0)})`, boxX + 10, boxY + 34);
+        ctx.fillText(`Voltaje: ${voltLevel}`, boxX + 10, boxY + 49);
+        ctx.fillText(`Ángulo: ${angleDeg.toFixed(0)}°`, boxX + 10, boxY + 63);
       } else {
-        ctx.fillText(`|E|: ${Emag.toFixed(2)} N/C`, boxX + 10, boxY + 32);
-        ctx.fillText(`V:   ${V.toFixed(2)} Volts`, boxX + 10, boxY + 47);
-        ctx.fillText(`θ:   ${angleDeg.toFixed(1)}°`, boxX + 10, boxY + 61);
+        ctx.fillText(`|E|: ${Emag.toFixed(2)} N/C`, boxX + 10, boxY + 34);
+        ctx.fillText(`V:   ${V.toFixed(2)} Volts`, boxX + 10, boxY + 49);
+        ctx.fillText(`θ:   ${angleDeg.toFixed(1)}°`, boxX + 10, boxY + 63);
       }
 
       ctx.restore();

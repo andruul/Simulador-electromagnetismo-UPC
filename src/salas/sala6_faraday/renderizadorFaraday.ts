@@ -502,22 +502,22 @@ function drawOscilloscope(ctx: CanvasRenderingContext2D, frame: FaradayFrame): v
   const oscY = frame.viewport.height - 90;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-  ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
-  ctx.lineWidth = 1;
+  ctx.fillStyle = 'rgba(255, 253, 249, 0.95)';
+  ctx.strokeStyle = '#D6CCBE';
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
   ctx.roundRect(oscX, oscY, oscW, oscH, 8);
   ctx.fill();
   ctx.stroke();
 
   // Center line
-  ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+  ctx.strokeStyle = 'rgba(140, 128, 114, 0.28)';
   ctx.beginPath();
   ctx.moveTo(oscX, oscY + oscH / 2);
   ctx.lineTo(oscX + oscW, oscY + oscH / 2);
   ctx.stroke();
 
-  // Flux (cyan) and EMF (rose) traces
+  // Flux (cerulean) and EMF (terracotta rose) traces
   const pts = frame.history;
   if (pts.length > 2) {
     const plot = (color: string, width: number, value: (s: HistorySample) => number): void => {
@@ -532,17 +532,17 @@ function drawOscilloscope(ctx: CanvasRenderingContext2D, frame: FaradayFrame): v
       }
       ctx.stroke();
     };
-    plot('#38bdf8', 1.5, (s) => s.flux * OSC_FLUX_PX_PER_MWB);
-    plot('#fb7185', 1.8, (s) => s.emf * OSC_EMF_PX_PER_V);
+    plot('#2B6CB0', 1.6, (s) => s.flux * OSC_FLUX_PX_PER_MWB);
+    plot('#C53030', 1.9, (s) => s.emf * OSC_EMF_PX_PER_V);
   }
 
   // Legend
-  ctx.font = '9px monospace';
+  ctx.font = 'bold 9.5px monospace';
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#38bdf8';
+  ctx.fillStyle = '#2B6CB0';
   ctx.fillText('— Flujo Φ_B', oscX + 8, oscY + 14);
-  ctx.fillStyle = '#fb7185';
-  ctx.fillText('— FEM ε (V)', oscX + 85, oscY + 14);
+  ctx.fillStyle = '#C53030';
+  ctx.fillText('— FEM ε (V)', oscX + 92, oscY + 14);
   ctx.restore();
 }
 

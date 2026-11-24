@@ -79,7 +79,7 @@ const LabSlider: React.FC<LabSliderProps> = ({
   valueClass,
   display
 }) => (
-  <div className="flex items-center gap-2 text-xs text-slate-300 border-l border-slate-800 pl-3">
+  <div className="flex items-center gap-2 text-xs text-[#4A4540] border-l border-[#DDD5C8] pl-3">
     <span className="text-[11px] whitespace-nowrap">{label}</span>
     <input
       type="range"

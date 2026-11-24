@@ -609,57 +609,57 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         {isHudExpanded && (
           <div className="p-3.5 w-72 max-w-full">
             {viewMode === 'explore' ? (
-              <div className="space-y-1.5 text-[11px] text-slate-300">
+              <div className="space-y-1.5 text-[11px] text-[#231F1C]">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Rapidez:</span>
-                  <span className="text-emerald-400 font-semibold">
+                  <span className="text-[#5C554E]">Rapidez:</span>
+                  <span className="text-[#2D7A64] font-semibold">
                     {telemetry.speed > 3.5 ? 'Muy Rápida ⚡' : telemetry.speed > 1 ? 'Moderada' : 'Lenta'} ({telemetry.speed.toFixed(1)} m/s)
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Fuerza Magnética:</span>
-                  <span className="text-yellow-400 font-semibold">
+                  <span className="text-[#5C554E]">Fuerza Magnética:</span>
+                  <span className="text-amber-700 font-semibold">
                     {telemetry.force > 4 ? 'Curva Fuerte' : 'Curva Suave'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Órbita (Radio):</span>
-                  <span className="text-indigo-300 font-medium">
+                  <span className="text-[#5C554E]">Órbita (Radio):</span>
+                  <span className="text-indigo-700 font-semibold">
                     {telemetry.larmorRadius > 0 ? (telemetry.larmorRadius < 2 ? 'Espiral Estrecha' : 'Giro Amplio') : 'Línea Recta'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-t border-slate-800 pt-1 text-[10px]">
-                  <span className="text-slate-500">Comportamiento:</span>
-                  <span className="text-sky-300">
+                <div className="flex justify-between items-center border-t border-[#E2D9CC] pt-1 text-[10px]">
+                  <span className="text-[#5C554E]">Comportamiento:</span>
+                  <span className="text-[#2B6CB0] font-semibold">
                     {Math.abs(settings.bField.z) > 0 ? 'Giro Orbital Conservativo' : 'Vuelo Libre'}
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="space-y-1.5 font-mono text-[11px] text-slate-300">
+              <div className="space-y-1.5 font-mono text-[11px] text-[#231F1C]">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Rapidez |v|:</span>
-                  <span className="text-emerald-400 font-semibold">{telemetry.speed.toFixed(2)} m/s</span>
+                  <span className="text-[#5C554E]">Rapidez |v|:</span>
+                  <span className="text-[#2D7A64] font-bold">{telemetry.speed.toFixed(2)} m/s</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Fuerza Lorentz |F|:</span>
-                  <span className="text-yellow-400 font-semibold">{telemetry.force.toFixed(2)} N</span>
+                  <span className="text-[#5C554E]">Fuerza Lorentz |F|:</span>
+                  <span className="text-amber-700 font-bold">{telemetry.force.toFixed(2)} N</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Energía Cinética:</span>
-                  <span className="text-sky-300">{telemetry.kineticEnergy.toFixed(2)} J</span>
+                  <span className="text-[#5C554E]">Energía Cinética:</span>
+                  <span className="text-[#2B6CB0] font-semibold">{telemetry.kineticEnergy.toFixed(2)} J</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Radio de Larmor (r_L):</span>
-                  <span className="text-indigo-300">{telemetry.larmorRadius.toFixed(2)} m</span>
+                  <span className="text-[#5C554E]">Radio de Larmor (r_L):</span>
+                  <span className="text-indigo-700 font-semibold">{telemetry.larmorRadius.toFixed(2)} m</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Frecuencia Ciclotrón:</span>
-                  <span className="text-purple-300">{telemetry.cyclotronFreq.toFixed(2)} Hz</span>
+                  <span className="text-[#5C554E]">Frecuencia Ciclotrón:</span>
+                  <span className="text-purple-700 font-semibold">{telemetry.cyclotronFreq.toFixed(2)} Hz</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-800 pt-1 text-[10px]">
-                  <span className="text-slate-500">Posición (x, y, z):</span>
-                  <span className="text-slate-400">
+                <div className="flex justify-between border-t border-[#E2D9CC] pt-1 text-[10px]">
+                  <span className="text-[#5C554E]">Posición (x, y, z):</span>
+                  <span className="text-[#231F1C] font-medium">
                     ({telemetry.pos.x.toFixed(1)}, {telemetry.pos.y.toFixed(1)},{' '}
                     {telemetry.pos.z.toFixed(1)})
                   </span>
@@ -668,18 +668,18 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
             )}
 
             {/* Vector Legend */}
-            <div className="border-t border-slate-800 mt-2.5 pt-2 grid grid-cols-2 gap-1 text-[10px]">
-              <span className="flex items-center gap-1 text-lime-400">
-                <span className="w-2 h-2 rounded-full bg-lime-400 inline-block" /> Vector v (Velocidad)
+            <div className="border-t border-[#E2D9CC] mt-2.5 pt-2 grid grid-cols-2 gap-1 text-[10px] font-medium">
+              <span className="flex items-center gap-1 text-emerald-700">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" /> Vector v (Velocidad)
               </span>
-              <span className="flex items-center gap-1 text-yellow-400">
-                <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Vector F (Lorentz)
+              <span className="flex items-center gap-1 text-amber-700">
+                <span className="w-2 h-2 rounded-full bg-amber-600 inline-block" /> Vector F (Lorentz)
               </span>
-              <span className="flex items-center gap-1 text-cyan-400">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" /> Campo B (Magnético)
+              <span className="flex items-center gap-1 text-teal-700">
+                <span className="w-2 h-2 rounded-full bg-teal-600 inline-block" /> Campo B (Magnético)
               </span>
-              <span className="flex items-center gap-1 text-rose-400">
-                <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" /> Campo E (Eléctrico)
+              <span className="flex items-center gap-1 text-rose-700">
+                <span className="w-2 h-2 rounded-full bg-rose-600 inline-block" /> Campo E (Eléctrico)
               </span>
             </div>
           </div>

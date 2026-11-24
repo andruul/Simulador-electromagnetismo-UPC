@@ -276,9 +276,9 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.save();
     ctx.translate(compass.x, compass.y);
 
-    // Compass Housing
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = isDraggingCompass ? '#38bdf8' : '#64748b';
+    // Compass Housing (Warm Ivory & Brass-Slate)
+    ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
+    ctx.strokeStyle = isDraggingCompass ? '#2D7A64' : '#8C8275';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(0, 0, 24, 0, Math.PI * 2);
@@ -286,7 +286,7 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.stroke();
 
     // Cardinal dots
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#8C8275';
     ctx.fillRect(-1, -22, 2, 4);
     ctx.fillRect(-1, 18, 2, 4);
     ctx.fillRect(-22, -1, 4, 2);
@@ -295,8 +295,8 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     // Needle rotating along B vector
     ctx.rotate(needleAngle);
 
-    // North Needle (Red)
-    ctx.fillStyle = '#ef4444';
+    // North Needle (Terracotta Red)
+    ctx.fillStyle = '#D9534F';
     ctx.beginPath();
     ctx.moveTo(0, -3);
     ctx.lineTo(19, 0);
@@ -304,8 +304,8 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.closePath();
     ctx.fill();
 
-    // South Needle (White/Silver)
-    ctx.fillStyle = '#e2e8f0';
+    // South Needle (Cool Slate)
+    ctx.fillStyle = '#94A3B8';
     ctx.beginPath();
     ctx.moveTo(0, -3);
     ctx.lineTo(-19, 0);
@@ -314,38 +314,45 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     ctx.fill();
 
     // Needle pivot
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#231F1C';
     ctx.beginPath();
     ctx.arc(0, 0, 3, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
 
-    // Compass Telemetry Tag
-    const tagX = compass.x + 30;
-    const tagY = compass.y - 20;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-    ctx.lineWidth = 1;
+    // Compass Telemetry Tag (Warm Ivory Editorial)
+    const tagW = 166;
+    const tagH = 54;
+    const tagX = compass.x + 30 + tagW > width ? compass.x - tagW - 30 : compass.x + 30;
+    const tagY = compass.y - 24;
+    ctx.save();
+    ctx.shadowColor = 'rgba(60, 50, 40, 0.12)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
+    ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
+    ctx.strokeStyle = '#D6CCBE';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.roundRect(tagX, tagY, 130, 48, 6);
+    ctx.roundRect(tagX, tagY, tagW, tagH, 8);
     ctx.fill();
     ctx.stroke();
+    ctx.restore();
 
-    ctx.fillStyle = viewMode === 'explore' ? '#10b981' : '#38bdf8';
-    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.fillStyle = viewMode === 'explore' ? '#2D7A64' : '#2B6CB0';
+    ctx.font = 'bold 10.5px system-ui, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(viewMode === 'explore' ? 'BRÚJULA DE EXPLORACIÓN' : 'MAGNETÓMETRO (SI)', tagX + 8, tagY + 16);
+    ctx.fillText(viewMode === 'explore' ? 'BRÚJULA DE EXPLORACIÓN' : 'MAGNETÓMETRO (SI)', tagX + 10, tagY + 16);
 
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '11px monospace';
+    ctx.fillStyle = '#231F1C';
+    ctx.font = 'bold 11px monospace';
     if (viewMode === 'explore') {
       const magLevel = B_mag * 10 > 25 ? 'Intenso 🧲' : B_mag * 10 > 8 ? 'Moderado' : 'Débil';
-      ctx.fillText(`Intensidad: ${magLevel}`, tagX + 8, tagY + 32);
-      ctx.fillText(`Giro: ${((needleAngle * 180) / Math.PI).toFixed(0)}°`, tagX + 8, tagY + 45);
+      ctx.fillText(`Intensidad: ${magLevel}`, tagX + 10, tagY + 33);
+      ctx.fillText(`Giro: ${((needleAngle * 180) / Math.PI).toFixed(0)}°`, tagX + 10, tagY + 47);
     } else {
-      ctx.fillText(`|B|: ${(B_mag * 10).toFixed(2)} µT`, tagX + 8, tagY + 32);
-      ctx.fillText(`θ:   ${((needleAngle * 180) / Math.PI).toFixed(1)}°`, tagX + 8, tagY + 45);
+      ctx.fillText(`|B|: ${(B_mag * 10).toFixed(2)} µT`, tagX + 10, tagY + 33);
+      ctx.fillText(`θ:   ${((needleAngle * 180) / Math.PI).toFixed(1)}°`, tagX + 10, tagY + 47);
     }
   }, [dimensions, wires, selectedWireId, compass, isDraggingCompass, showVectors, showLines, viewMode]);
 
@@ -454,7 +461,7 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none bg-[#090d16]">
+    <div className="relative w-full h-full overflow-hidden select-none bg-[#FAF7F2]">
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}

@@ -158,19 +158,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
       case 'electrostatics':
-        return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'gauss':
-        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'capacitor':
-        return 'bg-sky-500/15 text-sky-300 border-sky-500/30';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'lorentz3d':
-        return 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'magnetostatics':
-        return 'bg-teal-500/15 text-teal-300 border-teal-500/30';
+        return 'bg-teal-50 text-teal-700 border-teal-200';
       case 'faraday':
-        return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
-        return 'bg-slate-500/15 text-slate-300 border-slate-500/30';
+        return 'bg-[#F4EFE6] text-[#5C554E] border-[#DDD5C8]';
     }
   };
 
@@ -262,7 +262,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F4EFE6] text-[#5C554E] border border-[#DDD5C8]">
                         {topic.unitName}
                       </span>
                       <span
@@ -273,7 +273,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                         {getCategoryIcon(topic.category)}
                         {topic.badge}
                       </span>
-                      <h3 className="font-bold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                      <h3 className="font-bold text-sm text-[#231F1C] group-hover:text-[#2D7A64] transition-colors">
                         {topic.title}
                       </h3>
                     </div>
@@ -284,10 +284,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                         onSelectTopic(topic);
                         onClose();
                       }}
-                      className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          ? 'bg-[#2D7A64] hover:bg-[#246351] text-white shadow-sm'
+                          : 'bg-[#F4EFE6] text-[#4A4540] border border-[#DDD5C8] hover:bg-[#EAE3D7]'
                       }`}
                     >
                       <span>Cargar Simulación</span>
@@ -295,61 +295,61 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-400 leading-relaxed">{topic.synopsis}</p>
+                  <p className="text-xs text-[#5C554E] leading-relaxed">{topic.synopsis}</p>
 
                   {topic.simpleExplanation && (
-                    <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200/90 flex items-start gap-1.5">
-                      <span className="font-semibold text-emerald-400 shrink-0">💡 En simple:</span>
-                      <span className="text-slate-300">{topic.simpleExplanation}</span>
+                    <div className="p-2 rounded-lg bg-[#E6F2EE] border border-[#B3D9CC] text-[11px] text-[#231F1C] flex items-start gap-1.5">
+                      <span className="font-semibold text-[#2D7A64] shrink-0">💡 En simple:</span>
+                      <span className="text-[#3D3732]">{topic.simpleExplanation}</span>
                     </div>
                   )}
 
                   {topic.formula && (
-                    <div className="p-2 rounded-lg bg-slate-950/70 border border-slate-800/80 font-mono text-[11px] text-emerald-300/90 flex items-center justify-between overflow-x-auto">
+                    <div className="p-2 rounded-lg bg-[#FAF7F2] border border-[#DDD5C8] font-mono text-[11px] text-[#2D7A64] font-semibold flex items-center justify-between overflow-x-auto">
                       <span>{topic.formula}</span>
-                      <span className="text-[9px] text-slate-500 font-sans ml-2">Fórmula clave</span>
+                      <span className="text-[9px] text-[#827A71] font-sans ml-2">Fórmula clave</span>
                     </div>
                   )}
                 </div>
               );
             })
           ) : (
-            <div className="py-12 text-center text-slate-400 space-y-3">
-              <Sparkles className="w-8 h-8 text-slate-600 mx-auto" />
-              <p className="text-sm font-medium">No se encontraron temas con &ldquo;{query}&rdquo;</p>
-              <p className="text-xs text-slate-500">
-                Prueba buscando términos como: <code className="text-emerald-400">coulomb</code>,{' '}
-                <code className="text-emerald-400">lorentz</code>, <code className="text-emerald-400">wien</code>,{' '}
-                <code className="text-emerald-400">biot</code> o <code className="text-emerald-400">ampere</code>.
+            <div className="py-12 text-center text-[#5C554E] space-y-3">
+              <Sparkles className="w-8 h-8 text-[#827A71] mx-auto" />
+              <p className="text-sm font-medium text-[#231F1C]">No se encontraron temas con &ldquo;{query}&rdquo;</p>
+              <p className="text-xs text-[#5C554E]">
+                Prueba buscando términos como: <code className="text-[#2D7A64] font-semibold">coulomb</code>,{' '}
+                <code className="text-[#2D7A64] font-semibold">lorentz</code>, <code className="text-[#2D7A64] font-semibold">wien</code>,{' '}
+                <code className="text-[#2D7A64] font-semibold">biot</code> o <code className="text-[#2D7A64] font-semibold">ampere</code>.
               </p>
             </div>
           )}
         </div>
 
         {/* Footer Navigation Bar */}
-        <div className="px-4 py-2.5 bg-slate-950/90 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between select-none">
+        <div className="px-4 py-2.5 bg-[#F4EFE6] border-t border-[#E2D9CC] text-[11px] text-[#5C554E] flex items-center justify-between select-none">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">
+              <span className="px-1.5 py-0.5 rounded bg-white border border-[#DDD5C8] font-mono text-[10px] text-[#231F1C]">
                 ↑
               </span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">
+              <span className="px-1.5 py-0.5 rounded bg-white border border-[#DDD5C8] font-mono text-[10px] text-[#231F1C]">
                 ↓
               </span>{' '}
               Navegar
             </span>
             <span className="flex items-center gap-1">
-              <CornerDownLeft className="w-3 h-3 text-slate-400" /> Cargar práctica
+              <CornerDownLeft className="w-3 h-3 text-[#5C554E]" /> Cargar práctica
             </span>
             <span className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">
+              <span className="px-1.5 py-0.5 rounded bg-white border border-[#DDD5C8] font-mono text-[10px] text-[#231F1C]">
                 ESC
               </span>{' '}
               Cerrar
             </span>
           </div>
 
-          <span className="text-slate-500 hidden sm:inline-block">
+          <span className="text-[#5C554E] hidden sm:inline-block">
             {filteredTopics.length} tema{filteredTopics.length === 1 ? '' : 's'} disponible{filteredTopics.length === 1 ? '' : 's'}
           </span>
         </div>

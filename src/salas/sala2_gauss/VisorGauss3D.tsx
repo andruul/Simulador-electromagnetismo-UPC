@@ -488,7 +488,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
 
           {/* 3D Gaussian Shape Selector */}
           <div>
-            <label className="text-[10px] font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] font-semibold text-[#5C554E] block mb-1">
               Superficie Gaussiana 3D:
             </label>
             <div className="grid grid-cols-4 gap-1">
@@ -496,8 +496,8 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                 onClick={() => setShape('cube')}
                 className={`py-1.5 px-1 rounded flex flex-col items-center gap-0.5 text-[10px] font-medium transition-all cursor-pointer ${
                   shape === 'cube'
-                    ? 'bg-emerald-600 text-white font-bold shadow'
-                    : 'bg-slate-950 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#2D7A64] text-white font-bold shadow-sm'
+                    : 'bg-[#F4EFE6] text-[#5C554E] hover:bg-[#EAE3D7] hover:text-[#231F1C]'
                 }`}
               >
                 <Box className="w-3.5 h-3.5" /> Cubo
@@ -506,8 +506,8 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                 onClick={() => setShape('cylinder')}
                 className={`py-1.5 px-1 rounded flex flex-col items-center gap-0.5 text-[10px] font-medium transition-all cursor-pointer ${
                   shape === 'cylinder'
-                    ? 'bg-emerald-600 text-white font-bold shadow'
-                    : 'bg-slate-950 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#2D7A64] text-white font-bold shadow-sm'
+                    : 'bg-[#F4EFE6] text-[#5C554E] hover:bg-[#EAE3D7] hover:text-[#231F1C]'
                 }`}
               >
                 <CircleDot className="w-3.5 h-3.5" /> Cilindro
@@ -516,8 +516,8 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                 onClick={() => setShape('tetrahedron')}
                 className={`py-1.5 px-1 rounded flex flex-col items-center gap-0.5 text-[10px] font-medium transition-all cursor-pointer ${
                   shape === 'tetrahedron'
-                    ? 'bg-emerald-600 text-white font-bold shadow'
-                    : 'bg-slate-950 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#2D7A64] text-white font-bold shadow-sm'
+                    : 'bg-[#F4EFE6] text-[#5C554E] hover:bg-[#EAE3D7] hover:text-[#231F1C]'
                 }`}
               >
                 <Pyramid className="w-3.5 h-3.5" /> Tetraedro
@@ -526,8 +526,8 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                 onClick={() => setShape('sphere')}
                 className={`py-1.5 px-1 rounded flex flex-col items-center gap-0.5 text-[10px] font-medium transition-all cursor-pointer ${
                   shape === 'sphere'
-                    ? 'bg-emerald-600 text-white font-bold shadow'
-                    : 'bg-slate-950 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#2D7A64] text-white font-bold shadow-sm'
+                    : 'bg-[#F4EFE6] text-[#5C554E] hover:bg-[#EAE3D7] hover:text-[#231F1C]'
                 }`}
               >
                 <CircleDot className="w-3.5 h-3.5" /> Esfera
@@ -537,7 +537,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
 
           {/* Electric Field Model Switcher */}
           <div>
-            <label className="text-[10px] font-semibold text-slate-400 block mb-1">
+            <label className="text-[10px] font-semibold text-[#5C554E] block mb-1">
               Modelo de Campo E(x,y,z):
             </label>
             <select
@@ -548,7 +548,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                   model: e.target.value as NonUniformFieldModel
                 }))
               }
-              className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+              className="w-full bg-[#FAF7F2] border border-[#DDD5C8] text-[#231F1C] text-xs rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-[#2D7A64] cursor-pointer"
             >
               <option value="linear_x">Lineal: E = (α·x + β) î</option>
               <option value="quadratic_x">Cuadrático: E = (α·x² + β) î</option>
@@ -559,12 +559,12 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
           </div>
 
           {/* Coefficient Sliders */}
-          <div className="space-y-1.5 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+          <div className="space-y-1.5 bg-[#F4EFE6] p-2.5 rounded-lg border border-[#E2D9CC]">
             {fieldParams.model !== 'point_charge' ? (
               <>
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-slate-400">Gradiente α:</span>
-                  <span className="font-mono text-cyan-300 font-bold">{fieldParams.alpha}</span>
+                  <span className="text-[#5C554E]">Gradiente α:</span>
+                  <span className="font-mono text-[#2B6CB0] font-bold">{fieldParams.alpha}</span>
                 </div>
                 <input
                   type="range"
@@ -575,12 +575,12 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                   onChange={(e) =>
                     setFieldParams((prev) => ({ ...prev, alpha: parseFloat(e.target.value) }))
                   }
-                  className="w-full accent-cyan-500 cursor-pointer"
+                  className="w-full accent-[#3A7CA5] cursor-pointer"
                 />
 
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-slate-400">Offset β:</span>
-                  <span className="font-mono text-cyan-300 font-bold">{fieldParams.beta}</span>
+                  <span className="text-[#5C554E]">Offset β:</span>
+                  <span className="font-mono text-[#2B6CB0] font-bold">{fieldParams.beta}</span>
                 </div>
                 <input
                   type="range"
@@ -591,14 +591,14 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                   onChange={(e) =>
                     setFieldParams((prev) => ({ ...prev, beta: parseFloat(e.target.value) }))
                   }
-                  className="w-full accent-cyan-500 cursor-pointer"
+                  className="w-full accent-[#3A7CA5] cursor-pointer"
                 />
 
                 {fieldParams.model === 'divergent_xyz' && (
                   <>
                     <div className="flex justify-between items-center text-[10px]">
-                      <span className="text-slate-400">Gradiente Z γ:</span>
-                      <span className="font-mono text-cyan-300 font-bold">{fieldParams.gamma}</span>
+                      <span className="text-[#5C554E]">Gradiente Z γ:</span>
+                      <span className="font-mono text-indigo-700 font-bold">{fieldParams.gamma}</span>
                     </div>
                     <input
                       type="range"
@@ -609,7 +609,7 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                       onChange={(e) =>
                         setFieldParams((prev) => ({ ...prev, gamma: parseFloat(e.target.value) }))
                       }
-                      className="w-full accent-indigo-500 cursor-pointer"
+                      className="w-full accent-indigo-600 cursor-pointer"
                     />
                   </>
                 )}
@@ -617,8 +617,8 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
             ) : (
               <>
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-slate-400">Carga Central Q:</span>
-                  <span className="font-mono text-rose-400 font-bold">{fieldParams.chargeQ} nC</span>
+                  <span className="text-[#5C554E]">Carga Central Q:</span>
+                  <span className="font-mono text-rose-700 font-bold">{fieldParams.chargeQ} nC</span>
                 </div>
                 <input
                   type="range"
@@ -629,15 +629,15 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                   onChange={(e) =>
                     setFieldParams((prev) => ({ ...prev, chargeQ: parseFloat(e.target.value) }))
                   }
-                  className="w-full accent-rose-500 cursor-pointer"
+                  className="w-full accent-rose-600 cursor-pointer"
                 />
               </>
             )}
 
             {/* Scale/Dimension Slider */}
-            <div className="flex justify-between items-center text-[10px] pt-1 border-t border-slate-800">
-              <span className="text-slate-400">Tamaño Superficie (L/R):</span>
-              <span className="font-mono text-emerald-400 font-bold">
+            <div className="flex justify-between items-center text-[10px] pt-1 border-t border-[#DDD5C8]">
+              <span className="text-[#5C554E]">Tamaño Superficie (L/R):</span>
+              <span className="font-mono text-[#2D7A64] font-bold">
                 {shape === 'cube' || shape === 'tetrahedron'
                   ? dimensions.size.toFixed(1)
                   : dimensions.radius.toFixed(1)}{' '}
@@ -659,28 +659,28 @@ export const Gauss3DViewer: React.FC<Gauss3DViewerProps> = ({
                   height: val * 1.2
                 }));
               }}
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-[#2D7A64] cursor-pointer"
             />
           </div>
 
           {/* Vector toggles */}
           <div className="flex items-center justify-between pt-1 text-[11px]">
-            <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center gap-1.5 cursor-pointer text-[#231F1C]">
               <input
                 type="checkbox"
                 checked={showArrows}
                 onChange={(e) => setShowArrows(e.target.checked)}
-                className="accent-cyan-500"
+                className="accent-[#3A7CA5]"
               />
               <span>Flechas E⃗ 3D</span>
             </label>
 
-            <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center gap-1.5 cursor-pointer text-[#231F1C]">
               <input
                 type="checkbox"
                 checked={showNormals}
                 onChange={(e) => setShowNormals(e.target.checked)}
-                className="accent-amber-500"
+                className="accent-amber-600"
               />
               <span>Normales n̂</span>
             </label>
