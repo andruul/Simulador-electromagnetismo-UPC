@@ -174,7 +174,7 @@ function drawFieldVectors(ctx: CanvasRenderingContext2D, scene: CapacitorScene):
     // Arrow indicating E-field direction
     const arrowY = (lyTop + lyBot) / 2;
     const dir = isPositiveV ? 1 : -1;
-    ctx.fillStyle = isInsideSlab ? '#f59e0b' : '#38bdf8';
+    ctx.fillStyle = isInsideSlab ? '#D97706' : '#2B6CB0';
     ctx.beginPath();
     ctx.moveTo(lx, arrowY + dir * 6);
     ctx.lineTo(lx - 4, arrowY - dir * 4);
@@ -182,6 +182,61 @@ function drawFieldVectors(ctx: CanvasRenderingContext2D, scene: CapacitorScene):
     ctx.closePath();
     ctx.fill();
   }
+
+  // Efecto de borde de Kirchhoff (líneas curvas salientes en los extremos finitos de las placas)
+  const lyTopEdge = topPlateY + plateThicknessPx + 4;
+  const lyBotEdge = botPlateY - 4;
+  const gapPx = lyBotEdge - lyTopEdge;
+  const dirEdge = isPositiveV ? 1 : -1;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(43, 108, 176, 0.42)';
+  ctx.setLineDash([4, 3]);
+  ctx.lineWidth = 1.35;
+  for (const bulgeFactor of [0.28, 0.55]) {
+    const bulge = gapPx * bulgeFactor;
+    // Borde izquierdo
+    ctx.beginPath();
+    ctx.moveTo(plateLeftX + 3, lyTopEdge);
+    ctx.bezierCurveTo(
+      plateLeftX - bulge,
+      lyTopEdge + gapPx * 0.25,
+      plateLeftX - bulge,
+      lyBotEdge - gapPx * 0.25,
+      plateLeftX + 3,
+      lyBotEdge
+    );
+    ctx.stroke();
+
+    // Borde derecho
+    const plateRightX = plateLeftX + plateWidthPx;
+    ctx.beginPath();
+    ctx.moveTo(plateRightX - 3, lyTopEdge);
+    ctx.bezierCurveTo(
+      plateRightX + bulge,
+      lyTopEdge + gapPx * 0.25,
+      plateRightX + bulge,
+      lyBotEdge - gapPx * 0.25,
+      plateRightX - 3,
+      lyBotEdge
+    );
+    ctx.stroke();
+
+    // Puntas de flecha de borde
+    const midY = (lyTopEdge + lyBotEdge) / 2;
+    const leftApexX = plateLeftX - bulge * 0.74;
+    const rightApexX = plateRightX + bulge * 0.74;
+    ctx.fillStyle = 'rgba(43, 108, 176, 0.65)';
+    for (const ax of [leftApexX, rightApexX]) {
+      ctx.beginPath();
+      ctx.moveTo(ax, midY + dirEdge * 5);
+      ctx.lineTo(ax - 3.5, midY - dirEdge * 3.5);
+      ctx.lineTo(ax + 3.5, midY - dirEdge * 3.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 /** Dielectric slab with its handle, label, induced charge and bound dipoles. */

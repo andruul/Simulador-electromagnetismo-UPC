@@ -36,32 +36,35 @@ Proyecto Simulador/
 │   │   └── sala6_faraday/          # Inducción de Faraday y Ley de Lenz
 │   │
 │   ├── interfaz/                   # 🖥️ COMPONENTES VISUALES Y NAVEGACIÓN
-│   │   ├── BarraSuperior.tsx       # Barra de navegación con selector de salas
+│   │   ├── BarraSuperior.tsx       # Barra de navegación con selector de salas y enlace compartible
 │   │   ├── BarraEstado.tsx         # Barra inferior con telemetría de FPS
 │   │   ├── PanelGuia.tsx           # Panel izquierdo retráctil con guía y experimentos
 │   │   ├── PanelControles.tsx      # Panel derecho retráctil con controles rápidos
-│   │   ├── VisorSalas.tsx          # Contenedor central que renderiza la sala seleccionada
+│   │   ├── VisorSalas.tsx          # Contenedor central con carga diferida (React.lazy) por sala
 │   │   ├── PantallaBienvenida.tsx  # Launcher institucional de bienvenida UPC
 │   │   ├── ModalTeoria.tsx         # Modal de fundamentos teóricos y fórmulas
 │   │   ├── ModalBuscador.tsx       # Buscador rápido por teclado (Ctrl+K)
 │   │   ├── InsigniaUPC.tsx         # Escudo y distintivos vectoriales UPC
 │   │   ├── SeccionPlegable.tsx     # Acordeón colapsable
 │   │   ├── AvisoNotificacion.tsx   # Notificaciones Toast
-│   │   └── ControladorErrores.tsx  # Error Boundary que evita caídas
+│   │   ├── ControladorErrores.tsx  # Error Boundary que evita caídas
+│   │   └── __tests__/              # Pruebas automatizadas de componentes UI
 │   │
-│   ├── fisica/                     # ⚛️ MOTOR MATEMÁTICO PURO EN ESPAÑOL
-│   │   ├── electrostatica.ts       # Fórmulas de Coulomb, campo E y potencial V
-│   │   ├── gauss.ts                # Cuadratura numérica y cálculo de flujo de Gauss
-│   │   ├── capacitancia.ts         # Ecuaciones de condensadores y dieléctricos
-│   │   ├── biotsavart.ts           # Ley de Biot-Savart para alambres y espiras
-│   │   ├── lorentz.ts              # Integrador simpléctico de Boris (Fuerza de Lorentz)
-│   │   ├── faraday.ts              # Inducción FEM, cuadratura de Gauss-Legendre y Lenz
-│   │   └── __tests__/              # 104 Pruebas unitarias automatizadas de física
+│   ├── fisica/                     # ⚛️ MOTOR MATEMÁTICO PURO EN ESPAÑOL (UNIDADES SI EXACTAS)
+│   │   ├── electrostatica.ts       # Ley de Coulomb visual y SI exacta (100 px = 1.00 m), RK4
+│   │   ├── gauss.ts                # Cuadratura numérica 2D de flujo de Gauss
+│   │   ├── gauss3d.ts              # Cuadratura 3D y Teorema de la Divergencia en cuerpos cerrados
+│   │   ├── capacitancia.ts         # Condensadores, dieléctricos, borde de Kirchhoff y redes Serie/Paralelo
+│   │   ├── biotsavart.ts           # Biot-Savart SI exacto y Ley de Ampère numérica (∮ B·dl = μ₀ I_enc)
+│   │   ├── lorentz.ts              # Integrador simpléctico de Boris (Fuerza de Lorentz en SI)
+│   │   ├── faraday.ts              # Inducción FEM, cuadratura de Gauss-Legendre (32 nodos) y Lenz
+│   │   └── __tests__/              # 113 Pruebas unitarias automatizadas de física (120 en total con UI)
 │   │
 │   ├── ganchos/                    # 🪝 HOOKS REUTILIZABLES DE REACT
 │   │   ├── useDimensionElemento.ts # Detección responsiva de dimensiones de pantalla
 │   │   ├── useAccionesExportar.ts  # Generación de reportes de laboratorio e imágenes
 │   │   ├── useAtajosTeclado.ts     # Atajos de teclado (Espacio, M, Ctrl+K, F1)
+│   │   ├── useEstadoPersistente.ts # Persistencia en localStorage y enlaces compartibles (?sala=...)
 │   │   ├── usePeticionPreset.ts    # Comunicación de presets entre interfaz y canvas
 │   │   └── usePresetsSalas.ts      # Manejo de experimentos preconfigurados por sala
 │   │

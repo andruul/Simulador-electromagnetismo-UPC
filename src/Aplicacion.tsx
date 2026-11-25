@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, Suspense } from 'react';
 import type {
   SimulationMode,
   ViewMode,
@@ -12,13 +12,16 @@ import { ControlPanel } from './interfaz/PanelControles';
 import { RoomViewport } from './interfaz/VisorSalas';
 import { ErrorBoundary } from './interfaz/ControladorErrores';
 import { NoticeToast } from './interfaz/AvisoNotificacion';
-import { TheoryModal } from './interfaz/ModalTeoria';
 import { WelcomeScreen } from './interfaz/PantallaBienvenida';
-import { SearchModal } from './interfaz/ModalBuscador';
 import { BottomStatusBar } from './interfaz/BarraEstado';
 import { useExportActions } from './ganchos/useAccionesExportar';
 import { useGlobalShortcuts } from './ganchos/useAtajosTeclado';
 import { isPresetRoom, useRoomPresets, type PresetRoom } from './ganchos/usePresetsSalas';
+import {
+  buildShareableUrl,
+  loadInitialSimulatorState,
+  usePersistedSimulatorSync
+} from './ganchos/useEstadoPersistente';
 import {
   buildElectrostaticsPreset,
   createDefaultCharges,
@@ -27,7 +30,13 @@ import {
 } from './configuracion/valoresPorDefecto';
 import type { TopicItem } from './datos/temas';
 
-/** Preset each room returns to when the student presses Reset. */
+const TheoryModal = React.lazy(() =>
+  import('./interfaz/ModalTeoria').then((m) => ({ default: m.TheoryModal }))
+);
+const SearchModal = React.lazy(() =>
+  import('./interfaz/ModalBuscador').then((m) => ({ default: m.SearchModal }))
+);
+
 const RESET_PRESETS: Record<PresetRoom, string> = {
   lorentz3d: 'helix',
   magnetostatics: 'parallel_attraction',
@@ -37,39 +46,62 @@ const RESET_PRESETS: Record<PresetRoom, string> = {
 };
 
 export const App: React.FC = () => {
-  const [mode, setMode] = useState<SimulationMode>('electrostatics');
-  const [viewMode, setViewMode] = useState<ViewMode>('explore');
+  const initialSnapshot = useMemo(
+    () =>
+      loadInitialSimulatorState({
+        mode: 'electrostatics',
+        viewMode: 'explore',
+        charges: createDefaultCharges(),
+        electroSettings: createDefaultElectrostaticsSettings(),
+        lorentzSettings: createDefaultLorentzSettings(),
+        gaussDimMode: '2d'
+      }),
+    []
+  );
+
+  const [mode, setMode] = useState<SimulationMode>(initialSnapshot.state.mode);
+  const [viewMode, setViewMode] = useState<ViewMode>(initialSnapshot.state.viewMode);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isTheoryOpen, setIsTheoryOpen] = useState<boolean>(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(true); // Institutional launcher opens first
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(!initialSnapshot.openedFromUrl);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [gaussDimMode, setGaussDimMode] = useState<'2d' | '3d'>('2d');
+  const [gaussDimMode, setGaussDimMode] = useState<'2d' | '3d'>(initialSnapshot.state.gaussDimMode);
+  const [shareToast, setShareToast] = useState<string | null>(null);
 
-  // Preset requests for the laboratory rooms that own their own state
   const { requests: presetRequests, request: requestPreset, clear: clearPreset } = useRoomPresets();
 
-  // Electrostatics and Lorentz state are shared with the control panel
-  const [charges, setCharges] = useState<PointCharge[]>(createDefaultCharges);
+  const [charges, setCharges] = useState<PointCharge[]>(initialSnapshot.state.charges);
   const [selectedChargeId, setSelectedChargeId] = useState<string | null>(null);
   const [electroSettings, setElectroSettings] = useState<ElectrostaticsSettings>(
-    createDefaultElectrostaticsSettings
+    initialSnapshot.state.electroSettings
   );
   const [lorentzSettings, setLorentzSettings] = useState<Lorentz3DSettings>(
-    createDefaultLorentzSettings
+    initialSnapshot.state.lorentzSettings
   );
+
+  const persistedPayload = useMemo(
+    () => ({
+      mode,
+      viewMode,
+      charges,
+      electroSettings,
+      lorentzSettings,
+      gaussDimMode
+    }),
+    [mode, viewMode, charges, electroSettings, lorentzSettings, gaussDimMode]
+  );
+  usePersistedSimulatorSync(persistedPayload, isWelcomeOpen);
 
   const { notice, dismissNotice, takeScreenshot, generateReport } = useExportActions(mode, viewMode);
 
-  // Apply preset to electrostatics charges
   const applyElectroPreset = useCallback((presetType: string) => {
     setSelectedChargeId(null);
     const preset = buildElectrostaticsPreset(presetType);
     if (preset) setCharges(preset);
   }, []);
 
-  // Apply a preset to whichever room is the target
   const applyPresetTo = useCallback(
     (target: SimulationMode, presetKey: string) => {
       if (target === 'electrostatics') applyElectroPreset(presetKey);
@@ -78,7 +110,6 @@ export const App: React.FC = () => {
     [applyElectroPreset, requestPreset]
   );
 
-  // Launch a practice from Welcome Screen or Search Modal
   const handleLaunchPractice = useCallback(
     (targetMode: SimulationMode | 'theory', presetKey?: string) => {
       setIsWelcomeOpen(false);
@@ -95,18 +126,14 @@ export const App: React.FC = () => {
     [applyPresetTo]
   );
 
-  // Apply preset directly from LeftGuidePanel
   const handleApplyPreset = useCallback(
     (presetKey: string) => applyPresetTo(mode, presetKey),
     [mode, applyPresetTo]
   );
 
-  // Switch mode directly from navbar
   const handleSelectMode = useCallback((newMode: SimulationMode) => {
     setMode(newMode);
     setIsWelcomeOpen(false);
-    // Smart focus: open right sidebar for modes needing inspector (electrostatics, lorentz3d);
-    // for rooms with native canvas controls (gauss, capacitor, magnetostatics, faraday), keep canvas wide.
     if (newMode === 'electrostatics' || newMode === 'lorentz3d') {
       setIsSidebarOpen(true);
     } else {
@@ -114,7 +141,6 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // Reset current mode state
   const handleReset = useCallback(() => {
     if (mode === 'electrostatics') {
       setCharges(createDefaultCharges());
@@ -125,6 +151,22 @@ export const App: React.FC = () => {
     }
   }, [mode, requestPreset]);
 
+  const handleShareLink = useCallback(() => {
+    const link = buildShareableUrl(mode, viewMode, gaussDimMode);
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(link).then(
+        () => {
+          setShareToast('Enlace directo a esta sala copiado al portapapeles.');
+          setTimeout(() => setShareToast(null), 4000);
+        },
+        () => {
+          setShareToast(`Enlace directo: ${link}`);
+          setTimeout(() => setShareToast(null), 6000);
+        }
+      );
+    }
+  }, [mode, viewMode, gaussDimMode]);
+
   const toggleViewMode = useCallback(
     () => setViewMode((prev) => (prev === 'explore' ? 'lab' : 'explore')),
     []
@@ -132,16 +174,9 @@ export const App: React.FC = () => {
   const toggleSearch = useCallback(() => setIsSearchOpen((prev) => !prev), []);
   const toggleTheory = useCallback(() => setIsTheoryOpen((prev) => !prev), []);
   const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
+  const handleToggleLeftPanel = useCallback(() => setIsLeftPanelOpen((prev) => !prev), []);
+  const handleToggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
-  const handleToggleLeftPanel = useCallback(() => {
-    setIsLeftPanelOpen((prev) => !prev);
-  }, []);
-
-  const handleToggleSidebar = useCallback(() => {
-    setIsSidebarOpen((prev) => !prev);
-  }, []);
-
-  // Global desktop shortcuts: [Space] Play/Pause, [R] Reset, [M] Mode, [F1] Theory, [Ctrl+K] Search
   useGlobalShortcuts({
     onToggleSearch: toggleSearch,
     onToggleTheory: toggleTheory,
@@ -152,7 +187,6 @@ export const App: React.FC = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col bg-[#F5F0E8] text-[#2D2A26] overflow-hidden font-sans">
-      {/* Top Application Header Bar */}
       <TopNavbar
         mode={mode}
         setMode={handleSelectMode}
@@ -164,6 +198,7 @@ export const App: React.FC = () => {
         onOpenTheory={() => setIsTheoryOpen(true)}
         onTakeScreenshot={takeScreenshot}
         onGenerateReport={generateReport}
+        onShareLink={handleShareLink}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenWelcome={() => setIsWelcomeOpen((prev) => !prev)}
         isLeftPanelOpen={isLeftPanelOpen}
@@ -172,7 +207,6 @@ export const App: React.FC = () => {
         onToggleSidebar={handleToggleSidebar}
       />
 
-      {/* Main Workspace Layout (Fixed 4-block desktop arrangement) */}
       <div className="flex-1 flex overflow-hidden relative">
         {isWelcomeOpen ? (
           <WelcomeScreen
@@ -183,7 +217,6 @@ export const App: React.FC = () => {
           />
         ) : (
           <>
-            {/* Left Pedagogical Guide & 1-Click Presets Panel (280px) */}
             <LeftGuidePanel
               mode={mode}
               viewMode={viewMode}
@@ -194,7 +227,6 @@ export const App: React.FC = () => {
               onGaussDimChange={setGaussDimMode}
             />
 
-            {/* Center Interactive Simulation Viewport */}
             <main className="flex-1 h-full relative overflow-hidden bg-[#EDE8DF]">
               <ErrorBoundary label="este laboratorio" resetKey={mode}>
                 <RoomViewport
@@ -217,7 +249,6 @@ export const App: React.FC = () => {
               </ErrorBoundary>
             </main>
 
-            {/* Right Side Control Inspector (320px) — solo en salas que tienen controles laterales */}
             {(mode === 'electrostatics' || mode === 'lorentz3d') && isSidebarOpen && (
               <ControlPanel
                 mode={mode}
@@ -238,21 +269,28 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom Desktop Status Bar */}
       <BottomStatusBar mode={mode} />
 
-      {/* Global Topic Search Modal */}
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onSelectTopic={(topic: TopicItem) => handleLaunchPractice(topic.mode, topic.presetKey)}
+      <Suspense fallback={null}>
+        {isSearchOpen && (
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+            onSelectTopic={(topic: TopicItem) => handleLaunchPractice(topic.mode, topic.presetKey)}
+          />
+        )}
+        {isTheoryOpen && (
+          <TheoryModal isOpen={isTheoryOpen} onClose={() => setIsTheoryOpen(false)} />
+        )}
+      </Suspense>
+
+      <NoticeToast
+        message={shareToast ?? notice}
+        onDismiss={() => {
+          setShareToast(null);
+          dismissNotice();
+        }}
       />
-
-      {/* Theory Guide Modal */}
-      <TheoryModal isOpen={isTheoryOpen} onClose={() => setIsTheoryOpen(false)} />
-
-      {/* Visible export error notice */}
-      <NoticeToast message={notice} onDismiss={dismissNotice} />
     </div>
   );
 };

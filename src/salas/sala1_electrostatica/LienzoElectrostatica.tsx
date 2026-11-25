@@ -1,11 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { PointCharge, TestParticle2D, Sensor2D, ElectrostaticsSettings, ViewMode } from '../../tipos';
-import {
-  calculateElectricField,
-  calculateElectricPotential,
-  traceFieldLine,
-  traceEquipotentialLine
-} from '../../fisica/electrostatica';
+import { calculateElectricField } from '../../fisica/electrostatica';
+import { drawElectrostaticsScene } from './renderizadorElectrostatica';
 import { Plus, Minus, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ElectrostaticsCanvasProps {
@@ -32,15 +28,12 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
   const [draggedChargeId, setDraggedChargeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // Sensor state
   const [sensor, setSensor] = useState<Sensor2D>({ x: 400, y: 300, active: true });
   const [isDraggingSensor, setIsDraggingSensor] = useState(false);
 
-  // Test particles that move under Coulomb force
   const [testParticles, setTestParticles] = useState<TestParticle2D[]>([]);
   const [isParticleBarOpen, setIsParticleBarOpen] = useState(true);
 
-  // Update canvas size dynamically with ResizeObserver
   useEffect(() => {
     const container = canvasRef.current?.parentElement;
     if (!container) return;
@@ -61,8 +54,6 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Keep the sensor within visible canvas bounds when the container resizes
-  // (adjusted while rendering, not inside an effect)
   const [sensorClampedFor, setSensorClampedFor] = useState({ width: 0, height: 0 });
   if (
     dimensions.width > 50 &&
@@ -77,10 +68,8 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     }));
   }
 
-  // Keep charges (owned by the parent) within visible canvas bounds as well
   useEffect(() => {
     if (dimensions.width <= 50 || dimensions.height <= 50) return;
-
     setCharges((prev) =>
       prev.map((c) => ({
         ...c,
@@ -90,7 +79,6 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     );
   }, [dimensions.width, dimensions.height, setCharges]);
 
-  // Spawn a test particle at sensor position or center
   const spawnTestParticle = (chargeValue: number = 1) => {
     const newP: TestParticle2D = {
       id: Math.random().toString(36).substring(2, 9),
@@ -101,16 +89,13 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       charge: chargeValue,
       mass: 1,
       trail: [],
-      color: chargeValue > 0 ? '#fb7185' : '#38bdf8'
+      color: chargeValue > 0 ? '#D95B5F' : '#3E82AA'
     };
     setTestParticles((prev) => [...prev.slice(-24), newP]);
   };
 
-  const clearTestParticles = () => {
-    setTestParticles([]);
-  };
+  const clearTestParticles = () => setTestParticles([]);
 
-  // Physics animation loop for moving test particles
   useEffect(() => {
     if (!isPlaying || testParticles.length === 0) return;
 
@@ -122,26 +107,14 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
         prevParticles
           .map((p) => {
             const E = calculateElectricField(p.x, p.y, charges, settings.kConstant);
-            // a = q * E / m
             const ax = (p.charge * E.x) / p.mass;
             const ay = (p.charge * E.y) / p.mass;
-
-            // Verlet / Euler with light damping
             const vx = (p.vx + ax * dt) * 0.99;
             const vy = (p.vy + ay * dt) * 0.99;
             const newX = p.x + vx * dt;
             const newY = p.y + vy * dt;
-
             const trail = [...p.trail, { x: newX, y: newY }].slice(-40);
-
-            return {
-              ...p,
-              x: newX,
-              y: newY,
-              vx,
-              vy,
-              trail
-            };
+            return { ...p, x: newX, y: newY, vx, vy, trail };
           })
           .filter(
             (p) =>
@@ -151,7 +124,6 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
               p.y <= dimensions.height + 100
           )
       );
-
       animId = requestAnimationFrame(step);
     };
 
@@ -159,12 +131,10 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [isPlaying, charges, settings.kConstant, dimensions, testParticles.length]);
 
-  // Main rendering effect
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
 
     const { width, height } = dimensions;
     const dpr = window.devicePixelRatio || 1;
@@ -172,392 +142,17 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
 
-    // 1. Background clear
-    ctx.fillStyle = '#FAF7F2';
-    ctx.fillRect(0, 0, width, height);
-
-    // 2. Grid lines
-    ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
-    ctx.lineWidth = 1;
-    const gridSize = 40;
-    for (let x = 0; x < width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    // 3. Potential Heatmap (soft editorial pastel terracotta & cerulean)
-    if (settings.showPotentialHeatmap && charges.length > 0) {
-      const step = 16;
-      for (let x = 0; x < width; x += step) {
-        for (let y = 0; y < height; y += step) {
-          const V = calculateElectricPotential(x + step / 2, y + step / 2, charges, settings.kConstant);
-          const normV = Math.tanh(V / 600);
-          const a = Math.min(0.24, Math.abs(normV) * 0.28);
-
-          if (normV > 0) {
-            ctx.fillStyle = `rgba(229, 107, 111, ${a})`;
-          } else {
-            ctx.fillStyle = `rgba(74, 144, 184, ${a})`;
-          }
-
-          ctx.fillRect(x, y, step, step);
-        }
-      }
-    }
-
-    // 4. Equipotential Lines (soft sage teal)
-    if (settings.showEquipotentialLines && charges.length > 0) {
-      ctx.strokeStyle = 'rgba(45, 122, 100, 0.50)';
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash([4, 4]);
-
-      for (const c of charges) {
-        const radii = [35, 70, 120, 180, 260];
-        for (const r of radii) {
-          const startX = c.x + r;
-          const startY = c.y;
-          const eqPoints = traceEquipotentialLine(
-            startX,
-            startY,
-            charges,
-            width,
-            height,
-            4,
-            250,
-            settings.kConstant
-          );
-
-          if (eqPoints.length > 2) {
-            ctx.beginPath();
-            ctx.moveTo(eqPoints[0].x, eqPoints[0].y);
-            for (let i = 1; i < eqPoints.length; i++) {
-              ctx.lineTo(eqPoints[i].x, eqPoints[i].y);
-            }
-            ctx.stroke();
-          }
-        }
-      }
-      ctx.setLineDash([]);
-    }
-
-    // 5. Electric Vector Field (arrows)
-    if (settings.showVectorField && charges.length > 0) {
-      const step = Math.max(25, settings.vectorGridDensity);
-      for (let x = step / 2; x < width; x += step) {
-        for (let y = step / 2; y < height; y += step) {
-          const E = calculateElectricField(x, y, charges, settings.kConstant);
-          const mag = Math.hypot(E.x, E.y);
-          if (mag < 0.01) continue;
-
-          const angle = Math.atan2(E.y, E.x);
-          const length = Math.min(step * 0.75, Math.max(8, Math.log10(mag + 1) * 7));
-
-          const strength = Math.min(1, Math.log10(mag + 1) / 3.5);
-          // Harmonized warm palette: soft slate-blue (weak) -> muted terracotta-plum (strong)
-          const red = Math.floor(82 + strength * 124);
-          const green = Math.floor(96 - strength * 18);
-          const blue = Math.floor(138 - strength * 58);
-
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(angle);
-
-          ctx.strokeStyle = `rgba(${red}, ${green}, ${blue}, 0.55)`;
-          ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, 0.72)`;
-          ctx.lineWidth = 1.3;
-
-          // Arrow shaft
-          ctx.beginPath();
-          ctx.moveTo(-length / 2, 0);
-          ctx.lineTo(length / 2, 0);
-          ctx.stroke();
-
-          // Arrow head
-          const headSize = Math.max(3, length * 0.28);
-          ctx.beginPath();
-          ctx.moveTo(length / 2, 0);
-          ctx.lineTo(length / 2 - headSize, -headSize * 0.55);
-          ctx.lineTo(length / 2 - headSize, headSize * 0.55);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.restore();
-        }
-      }
-    }
-
-    // 6. Continuous Field Lines (RK4)
-    if (settings.showFieldLines && charges.length > 0) {
-      const linesPerCharge = settings.fieldLinesPerCharge || 16;
-      ctx.lineWidth = 1.6;
-
-      for (const c of charges) {
-        if (c.charge > 0) {
-          ctx.strokeStyle = 'rgba(196, 86, 82, 0.72)';
-          const count = Math.round(linesPerCharge * Math.abs(c.charge));
-          for (let i = 0; i < count; i++) {
-            const angle = (2 * Math.PI * i) / count;
-            const startX = c.x + 16 * Math.cos(angle);
-            const startY = c.y + 16 * Math.sin(angle);
-
-            const points = traceFieldLine(
-              startX,
-              startY,
-              1,
-              charges,
-              width,
-              height,
-              settings.rk4StepSize || 4,
-              settings.maxFieldLineSteps || 250,
-              settings.kConstant
-            );
-
-            if (points.length > 1) {
-              ctx.beginPath();
-              ctx.moveTo(points[0].x, points[0].y);
-              for (let p = 1; p < points.length; p++) {
-                ctx.lineTo(points[p].x, points[p].y);
-              }
-              ctx.stroke();
-
-              if (points.length > 20) {
-                const mid = Math.floor(points.length / 2);
-                const p1 = points[mid];
-                const p2 = points[mid + 1] || points[mid];
-                const arrAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-                ctx.save();
-                ctx.translate(p1.x, p1.y);
-                ctx.rotate(arrAngle);
-                ctx.fillStyle = '#B84844';
-                ctx.beginPath();
-                ctx.moveTo(5.5, 0);
-                ctx.lineTo(-4, -3.5);
-                ctx.lineTo(-4, 3.5);
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-              }
-            }
-          }
-        }
-      }
-
-      const hasPositive = charges.some((c) => c.charge > 0);
-      if (!hasPositive) {
-        ctx.strokeStyle = 'rgba(58, 124, 165, 0.72)';
-        for (const c of charges) {
-          if (c.charge < 0) {
-            const count = Math.round(linesPerCharge * Math.abs(c.charge));
-            for (let i = 0; i < count; i++) {
-              const angle = (2 * Math.PI * i) / count;
-              const startX = c.x + 16 * Math.cos(angle);
-              const startY = c.y + 16 * Math.sin(angle);
-
-              const points = traceFieldLine(
-                startX,
-                startY,
-                -1,
-                charges,
-                width,
-                height,
-                settings.rk4StepSize || 4,
-                settings.maxFieldLineSteps || 250,
-                settings.kConstant
-              );
-
-              if (points.length > 1) {
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, points[0].y);
-                for (let p = 1; p < points.length; p++) {
-                  ctx.lineTo(points[p].x, points[p].y);
-                }
-                ctx.stroke();
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // 7. Test Particles (moving under Coulomb force)
-    for (const tp of testParticles) {
-      if (tp.trail.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(tp.trail[0].x, tp.trail[0].y);
-        for (let i = 1; i < tp.trail.length; i++) {
-          ctx.lineTo(tp.trail[i].x, tp.trail[i].y);
-        }
-        ctx.strokeStyle = tp.color;
-        ctx.lineWidth = 1.8;
-        ctx.stroke();
-      }
-
-      ctx.save();
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = tp.color;
-      ctx.fillStyle = tp.color;
-      ctx.beginPath();
-      ctx.arc(tp.x, tp.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // 8. Render Point Charges
-    for (const c of charges) {
-      const isSelected = c.id === selectedChargeId;
-      const isPositive = c.charge > 0;
-      const radius = 18;
-
-      ctx.save();
-      ctx.shadowColor = isPositive ? 'rgba(217, 83, 79, 0.45)' : 'rgba(58, 124, 165, 0.45)';
-      ctx.shadowBlur = isSelected ? 18 : 10;
-
-      const grad = ctx.createRadialGradient(c.x - 4, c.y - 4, 2, c.x, c.y, radius);
-      if (isPositive) {
-        grad.addColorStop(0, '#F5A3A5');
-        grad.addColorStop(0.55, '#D95B5F');
-        grad.addColorStop(1, '#A93A3E');
-      } else {
-        grad.addColorStop(0, '#96CBE5');
-        grad.addColorStop(0.55, '#3E82AA');
-        grad.addColorStop(1, '#255878');
-      }
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (isSelected) {
-        ctx.strokeStyle = '#231F1C';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-      }
-
-      ctx.restore();
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 20px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(isPositive ? '+' : '−', c.x, c.y);
-
-      const chargeLabel = `${c.charge > 0 ? '+' : ''}${c.charge} µC`;
-      ctx.font = 'bold 11px system-ui, sans-serif';
-      const labelW = ctx.measureText(chargeLabel).width;
-      ctx.fillStyle = 'rgba(255, 253, 249, 0.90)';
-      ctx.strokeStyle = '#DDD5C8';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(c.x - labelW / 2 - 6, c.y + radius + 5, labelW + 12, 18, 5);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#231F1C';
-      ctx.fillText(chargeLabel, c.x, c.y + radius + 14);
-    }
-
-    // 9. Field Sensor (Multimeter probe — High-contrast Warm Ivory & Ochre)
-    if (sensor.active) {
-      const E = calculateElectricField(sensor.x, sensor.y, charges, settings.kConstant);
-      const V = calculateElectricPotential(sensor.x, sensor.y, charges, settings.kConstant);
-      const Emag = Math.hypot(E.x, E.y);
-      const angleDeg = (Math.atan2(E.y, E.x) * 180) / Math.PI;
-
-      ctx.save();
-      ctx.fillStyle = 'rgba(254, 243, 199, 0.75)';
-      ctx.strokeStyle = isDraggingSensor ? '#2D7A64' : '#B45309';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(sensor.x, sensor.y, 12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(sensor.x - 16, sensor.y);
-      ctx.lineTo(sensor.x + 16, sensor.y);
-      ctx.moveTo(sensor.x, sensor.y - 16);
-      ctx.lineTo(sensor.x, sensor.y + 16);
-      ctx.stroke();
-
-      if (Emag > 0.05) {
-        const arrowLen = Math.min(70, Math.max(20, Math.log10(Emag + 1) * 22));
-        const arrAngle = Math.atan2(E.y, E.x);
-        const endX = sensor.x + arrowLen * Math.cos(arrAngle);
-        const endY = sensor.y + arrowLen * Math.sin(arrAngle);
-
-        ctx.strokeStyle = '#B45309';
-        ctx.fillStyle = '#B45309';
-        ctx.lineWidth = 2.5;
-
-        ctx.beginPath();
-        ctx.moveTo(sensor.x, sensor.y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
-        ctx.beginPath();
-        const headSize = 8;
-        ctx.moveTo(endX, endY);
-        ctx.lineTo(
-          endX - headSize * Math.cos(arrAngle - Math.PI / 6),
-          endY - headSize * Math.sin(arrAngle - Math.PI / 6)
-        );
-        ctx.lineTo(
-          endX - headSize * Math.cos(arrAngle + Math.PI / 6),
-          endY - headSize * Math.sin(arrAngle + Math.PI / 6)
-        );
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      const boxW = 186;
-      const boxH = 72;
-      let boxX = sensor.x + 22;
-      let boxY = sensor.y - 36;
-      if (boxX + boxW > width - 8) boxX = sensor.x - boxW - 22;
-      if (boxY < 10) boxY = 10;
-
-      ctx.shadowColor = 'rgba(60, 50, 40, 0.14)';
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 4;
-      ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
-      ctx.strokeStyle = '#D6CCBE';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.roundRect(boxX, boxY, boxW, boxH, 8);
-      ctx.fill();
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
-
-      ctx.fillStyle = viewMode === 'explore' ? '#2D7A64' : '#2B6CB0';
-      ctx.font = 'bold 11px system-ui, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(viewMode === 'explore' ? 'SENSOR EXPLORADOR' : 'MULTÍMETRO DIGITAL (SI)', boxX + 10, boxY + 17);
-
-      ctx.fillStyle = '#231F1C';
-      ctx.font = 'bold 11px monospace';
-      if (viewMode === 'explore') {
-        const fieldLevel = Emag > 120 ? 'Muy Fuerte' : Emag > 40 ? 'Medio' : 'Suave';
-        const voltLevel = V > 60 ? 'Alto (+)' : V < -60 ? 'Bajo (−)' : 'Cero (0V)';
-        ctx.fillText(`Campo: ${fieldLevel} (${Emag.toFixed(0)})`, boxX + 10, boxY + 34);
-        ctx.fillText(`Voltaje: ${voltLevel}`, boxX + 10, boxY + 49);
-        ctx.fillText(`Ángulo: ${angleDeg.toFixed(0)}°`, boxX + 10, boxY + 63);
-      } else {
-        ctx.fillText(`|E|: ${Emag.toFixed(2)} N/C`, boxX + 10, boxY + 34);
-        ctx.fillText(`V:   ${V.toFixed(2)} Volts`, boxX + 10, boxY + 49);
-        ctx.fillText(`θ:   ${angleDeg.toFixed(1)}°`, boxX + 10, boxY + 63);
-      }
-
-      ctx.restore();
-    }
+    drawElectrostaticsScene(ctx, {
+      width,
+      height,
+      charges,
+      selectedChargeId,
+      settings,
+      sensor,
+      isDraggingSensor,
+      testParticles,
+      viewMode
+    });
   }, [
     dimensions,
     charges,
@@ -569,21 +164,24 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     viewMode
   ]);
 
-  // Mouse interaction handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Interacción universal PointerEvents (ratón, pantalla táctil y lápiz óptico)
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.focus();
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    if (Math.hypot(mx - sensor.x, my - sensor.y) < 20) {
+    if (Math.hypot(mx - sensor.x, my - sensor.y) < 24) {
+      e.currentTarget.setPointerCapture(e.pointerId);
       setIsDraggingSensor(true);
       return;
     }
 
     for (const c of charges) {
-      if (Math.hypot(mx - c.x, my - c.y) < 22) {
+      if (Math.hypot(mx - c.x, my - c.y) < 26) {
+        e.currentTarget.setPointerCapture(e.pointerId);
         setDraggedChargeId(c.id);
         setSelectedChargeId(c.id);
         setDragOffset({ x: mx - c.x, y: my - c.y });
@@ -594,7 +192,7 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     setSelectedChargeId(null);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -602,7 +200,11 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     const my = e.clientY - rect.top;
 
     if (isDraggingSensor) {
-      setSensor((prev) => ({ ...prev, x: mx, y: my }));
+      setSensor((prev) => ({
+        ...prev,
+        x: Math.min(Math.max(20, mx), dimensions.width - 20),
+        y: Math.min(Math.max(20, my), dimensions.height - 20)
+      }));
       return;
     }
 
@@ -610,29 +212,76 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
       setCharges((prev) =>
         prev.map((c) =>
           c.id === draggedChargeId && !c.fixed
-            ? { ...c, x: mx - dragOffset.x, y: my - dragOffset.y }
+            ? {
+                ...c,
+                x: Math.min(Math.max(20, mx - dragOffset.x), dimensions.width - 20),
+                y: Math.min(Math.max(20, my - dragOffset.y), dimensions.height - 20)
+              }
             : c
         )
       );
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setDraggedChargeId(null);
     setIsDraggingSensor(false);
+  };
+
+  // Accesibilidad por teclado: flechas mueven la carga seleccionada (o el sensor si ninguna está activa)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    const step = e.shiftKey ? 20 : 8;
+    let dx = 0;
+    let dy = 0;
+    if (e.key === 'ArrowLeft') dx = -step;
+    else if (e.key === 'ArrowRight') dx = step;
+    else if (e.key === 'ArrowUp') dy = -step;
+    else if (e.key === 'ArrowDown') dy = step;
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedChargeId) {
+      e.preventDefault();
+      setCharges((prev) => prev.filter((c) => c.id !== selectedChargeId));
+      setSelectedChargeId(null);
+      return;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    if (selectedChargeId) {
+      setCharges((prev) =>
+        prev.map((c) =>
+          c.id === selectedChargeId && !c.fixed
+            ? {
+                ...c,
+                x: Math.min(Math.max(20, c.x + dx), dimensions.width - 20),
+                y: Math.min(Math.max(20, c.y + dy), dimensions.height - 20)
+              }
+            : c
+        )
+      );
+    } else {
+      setSensor((prev) => ({
+        ...prev,
+        x: Math.min(Math.max(20, prev.x + dx), dimensions.width - 20),
+        y: Math.min(Math.max(20, prev.y + dy), dimensions.height - 20)
+      }));
+    }
   };
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none bg-[#FAF7F2]">
       <canvas
         ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        className="w-full h-full cursor-crosshair block"
+        tabIndex={0}
+        aria-label="Lienzo interactivo de Electrostática: usa ratón, pantalla táctil o teclas de flecha para desplazar cargas y el sensor"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onKeyDown={handleKeyDown}
+        className="w-full h-full cursor-crosshair block touch-none focus:outline-none"
       />
 
-      {/* Floating Action Overlay for Test Particle (Collapsible) */}
       {isParticleBarOpen ? (
         <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] z-10">
           <span className="font-semibold text-[#6B6560] mr-1 flex items-center gap-1">
@@ -640,13 +289,13 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
           </span>
           <button
             onClick={() => spawnTestParticle(1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300/60 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300/60 rounded-lg transition-colors cursor-pointer font-medium"
           >
             <Plus className="w-3.5 h-3.5" /> Positiva (+1)
           </button>
           <button
             onClick={() => spawnTestParticle(-1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300/60 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300/60 rounded-lg transition-colors cursor-pointer font-medium"
           >
             <Minus className="w-3.5 h-3.5" /> Negativa (−1)
           </button>
@@ -681,3 +330,4 @@ export const ElectrostaticsCanvas: React.FC<ElectrostaticsCanvasProps> = ({
     </div>
   );
 };
+export default ElectrostaticsCanvas;

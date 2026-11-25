@@ -89,3 +89,99 @@ export function traceMagneticLine(
 
   return points;
 }
+
+/** Escala física explícita del laboratorio de Magnetostática: 100 px = 1.00 m. */
+export const MAGNETOSTATICS_PIXELS_PER_METER = 100;
+/** Permeabilidad magnética del vacío en el SI: μ₀ = 4π × 10⁻⁷ T·m/A. */
+export const MU_0_SI = 4 * Math.PI * 1e-7;
+/** Factor μ₀ / (2π) = 2 × 10⁻⁷ T·m/A para conductor rectilíneo infinito. */
+export const MU0_OVER_2PI_SI = 2e-7;
+
+/**
+ * Calcula el campo magnético B = (Bx, By) en Teslas (unidades SI exactas)
+ * para hilos rectilíneos infinitos perpendiculares al plano XY.
+ */
+export function calculateMagneticFieldSI2D(
+  xPx: number,
+  yPx: number,
+  wires: WireCurrent[],
+  pixelsPerMeter: number = MAGNETOSTATICS_PIXELS_PER_METER
+): Vector2D {
+  let bx = 0;
+  let by = 0;
+  const softeningM2 = (3 / pixelsPerMeter) ** 2; // Núcleo conductor de 3 cm
+
+  for (const wire of wires) {
+    const dxM = (xPx - wire.x) / pixelsPerMeter;
+    const dyM = (yPx - wire.y) / pixelsPerMeter;
+    const r2 = dxM * dxM + dyM * dyM + softeningM2;
+    // B_vec = (μ₀ I / (2π r²)) * (-dy, dx)
+    const factor = (MU0_OVER_2PI_SI * wire.current) / r2;
+    bx += -factor * dyM;
+    by += factor * dxM;
+  }
+
+  return { x: bx, y: by };
+}
+
+export interface AmpereLawResult {
+  /** Circulación numérica ∮ B · dl en T·m */
+  circulationTm: number;
+  /** Valor teórico exacto μ₀ · I_enc en T·m */
+  theoreticalTm: number;
+  /** Corriente neta encerrada I_enc en Amperios (A) */
+  enclosedCurrentA: number;
+  /** Error numérico relativo en porcentaje (%) */
+  relativeErrorPct: number;
+}
+
+/**
+ * Ley de Ampère numérica: integra ∮_C B(r) · dl a lo largo de una curva amperiana circular
+ * orientada en sentido antihorario (+Z por regla de la mano derecha) usando regla del punto medio.
+ */
+export function computeAmpereLaw(
+  centerX: number,
+  centerY: number,
+  radiusPx: number,
+  wires: WireCurrent[],
+  pixelsPerMeter: number = MAGNETOSTATICS_PIXELS_PER_METER,
+  segments: number = 256
+): AmpereLawResult {
+  const radiusM = radiusPx / pixelsPerMeter;
+  const dTheta = (2 * Math.PI) / segments;
+  const dlMag = radiusM * dTheta;
+  let circulationTm = 0;
+
+  for (let i = 0; i < segments; i++) {
+    const theta = (i + 0.5) * dTheta;
+    const px = centerX + radiusPx * Math.cos(theta);
+    const py = centerY + radiusPx * Math.sin(theta);
+    const B = calculateMagneticFieldSI2D(px, py, wires, pixelsPerMeter);
+    // Vector tangente unitario antihorario en coordenadas donde +X derecha, +Y abajo -> sentido matemático: (-sin θ, cos θ)
+    const tx = -Math.sin(theta);
+    const ty = Math.cos(theta);
+    circulationTm += (B.x * tx + B.y * ty) * dlMag;
+  }
+
+  let enclosedCurrentA = 0;
+  for (const w of wires) {
+    const dist = Math.hypot(w.x - centerX, w.y - centerY);
+    if (dist < radiusPx) {
+      enclosedCurrentA += w.current;
+    }
+  }
+
+  const theoreticalTm = MU_0_SI * enclosedCurrentA;
+  const denom = Math.max(Math.abs(theoreticalTm), 1e-12);
+  const relativeErrorPct =
+    Math.abs(theoreticalTm) > 1e-11
+      ? (Math.abs(circulationTm - theoreticalTm) / denom) * 100
+      : Math.abs(circulationTm) * 1e6;
+
+  return {
+    circulationTm,
+    theoreticalTm,
+    enclosedCurrentA,
+    relativeErrorPct
+  };
+}

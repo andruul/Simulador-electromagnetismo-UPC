@@ -18,7 +18,8 @@ import {
   LayoutGrid,
   FlaskConical,
   Eye,
-  FileDown
+  FileDown,
+  Share2
 } from 'lucide-react';
 import { UpcLogo } from './InsigniaUPC';
 
@@ -33,6 +34,7 @@ interface TopNavbarProps {
   onOpenTheory: () => void;
   onTakeScreenshot: () => void;
   onGenerateReport?: () => void;
+  onShareLink?: () => void;
   onOpenSearch: () => void;
   onOpenWelcome: () => void;
   isLeftPanelOpen?: boolean;
@@ -52,6 +54,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onOpenTheory,
   onTakeScreenshot,
   onGenerateReport,
+  onShareLink,
   onOpenSearch,
   onOpenWelcome,
   isLeftPanelOpen: _isLeftPanelOpen,
@@ -226,12 +229,23 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         {/* Generate Lab Evidence / Report Button */}
         <button
           onClick={onGenerateReport || onTakeScreenshot}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#5B9E8A] hover:bg-[#4A8A77] text-white shadow-sm transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#2D7A64] hover:bg-[#246351] text-white shadow-sm transition-all cursor-pointer"
           title="Generar Ficha de Evidencia y Reporte de Laboratorio con membrete UPC"
         >
           <FileDown className="w-3.5 h-3.5" />
           <span className="hidden md:inline">Ficha Evidencia</span>
         </button>
+
+        {onShareLink && (
+          <button
+            onClick={onShareLink}
+            className="p-1.5 text-[#5C554E] hover:text-[#2D7A64] hover:bg-[#E6F2EE] rounded-lg border border-transparent hover:border-[#B3D9CC] transition-colors cursor-pointer"
+            title="Copiar enlace directo a esta sala y modo"
+            aria-label="Compartir enlace de la sala actual"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+        )}
 
         {/* Play / Pause — solo visible en salas que lo necesitan */}
         {needsPlayPause && (

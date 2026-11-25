@@ -178,3 +178,62 @@ export function traceEquipotentialLine(
   points.push(...backwardPoints.reverse(), ...forwardPoints);
   return points;
 }
+
+/** Escala física explícita del lienzo 2D: 100 px = 1.00 m (1 cuadrícula de 40 px = 0.40 m). */
+export const ELECTROSTATICS_PIXELS_PER_METER = 100;
+/** Constante electrostática exacta en el SI: k_e = 1 / (4π ε₀) [N·m²/C²]. */
+export const COULOMB_KE_SI = 8.9875517923e9;
+
+/**
+ * Calcula el vector campo eléctrico E (en N/C = V/m, unidades SI exactas)
+ * convirtiendo las coordenadas del lienzo (px) a metros y las cargas (µC) a Coulombs.
+ */
+export function calculateElectricFieldSI(
+  xPx: number,
+  yPx: number,
+  charges: PointCharge[],
+  pixelsPerMeter: number = ELECTROSTATICS_PIXELS_PER_METER
+): Vector2D {
+  let ex = 0;
+  let ey = 0;
+  const softeningM2 = (2 / pixelsPerMeter) ** 2; // Regularización de núcleo de 2 cm
+
+  for (const c of charges) {
+    const dxM = (xPx - c.x) / pixelsPerMeter;
+    const dyM = (yPx - c.y) / pixelsPerMeter;
+    const r2 = dxM * dxM + dyM * dyM + softeningM2;
+    const r = Math.sqrt(r2);
+    const r3 = r * r * r;
+    const qCoulombs = c.charge * 1e-6; // µC -> C
+
+    const factor = (COULOMB_KE_SI * qCoulombs) / r3;
+    ex += factor * dxM;
+    ey += factor * dyM;
+  }
+
+  return { x: ex, y: ey };
+}
+
+/**
+ * Calcula el potencial electrostático escalar V (en Voltios, unidades SI exactas)
+ * con referencia V(∞) = 0 y conversión explícita píxeles -> metros, µC -> C.
+ */
+export function calculateElectricPotentialSI(
+  xPx: number,
+  yPx: number,
+  charges: PointCharge[],
+  pixelsPerMeter: number = ELECTROSTATICS_PIXELS_PER_METER
+): number {
+  let v = 0;
+  const softeningM2 = (2 / pixelsPerMeter) ** 2;
+
+  for (const c of charges) {
+    const dxM = (xPx - c.x) / pixelsPerMeter;
+    const dyM = (yPx - c.y) / pixelsPerMeter;
+    const r = Math.sqrt(dxM * dxM + dyM * dyM + softeningM2);
+    const qCoulombs = c.charge * 1e-6;
+    v += (COULOMB_KE_SI * qCoulombs) / r;
+  }
+
+  return v;
+}

@@ -205,3 +205,102 @@ export function sampleLocalPotential(
   const midV = (voltage / 2) - frac * voltage;
   return midV * decay;
 }
+
+/**
+ * Factor de corrección de borde de Kirchhoff para condensadores de placas finitas:
+ *   f_borde = 1 + (d / (π R)) * [ ln(16 π R / d) - 1 ]
+ * donde R = √(A / π) es el radio efectivo equivalente de las placas.
+ */
+export function calculateKirchhoffFringingFactor(areaM2: number, distanceM: number): number {
+  if (areaM2 <= 0 || distanceM <= 0) return 1;
+  const effRadius = Math.sqrt(areaM2 / Math.PI);
+  const ratio = (16 * Math.PI * effRadius) / distanceM;
+  if (ratio <= Math.E) return 1;
+  return 1 + (distanceM / (Math.PI * effRadius)) * (Math.log(ratio) - 1);
+}
+
+export type CapacitorNetworkTopology = 'single' | 'series' | 'parallel';
+
+export interface CapacitorNetworkResult {
+  topology: CapacitorNetworkTopology;
+  c1PF: number;
+  c2PF: number;
+  equivalentCPF: number;
+  totalChargePC: number;
+  q1PC: number;
+  q2PC: number;
+  v1: number;
+  v2: number;
+  totalEnergyPJ: number;
+}
+
+/**
+ * Resuelve redes de capacitores (Individual, Serie o Paralelo) alimentadas por una fuente V:
+ *  - Serie:    1/C_eq = 1/C₁ + 1/C₂,  Q₁ = Q₂ = C_eq·V,  V₁ = Q/C₁, V₂ = Q/C₂
+ *  - Paralelo: C_eq = C₁ + C₂,        V₁ = V₂ = V,       Q₁ = C₁·V, Q₂ = C₂·V
+ */
+export function computeCapacitorNetwork(
+  topology: CapacitorNetworkTopology,
+  c1PF: number,
+  c2PF: number,
+  supplyVoltage: number
+): CapacitorNetworkResult {
+  const safeC1 = Math.max(0.01, c1PF);
+  const safeC2 = Math.max(0.01, c2PF);
+
+  if (topology === 'single') {
+    const q1 = safeC1 * supplyVoltage;
+    const u = 0.5 * safeC1 * supplyVoltage * supplyVoltage;
+    return {
+      topology,
+      c1PF: safeC1,
+      c2PF: safeC2,
+      equivalentCPF: safeC1,
+      totalChargePC: q1,
+      q1PC: q1,
+      q2PC: 0,
+      v1: supplyVoltage,
+      v2: 0,
+      totalEnergyPJ: u
+    };
+  }
+
+  if (topology === 'series') {
+    const cEq = (safeC1 * safeC2) / (safeC1 + safeC2);
+    const qSeries = cEq * supplyVoltage;
+    const v1 = qSeries / safeC1;
+    const v2 = qSeries / safeC2;
+    const uTotal = 0.5 * cEq * supplyVoltage * supplyVoltage;
+    return {
+      topology,
+      c1PF: safeC1,
+      c2PF: safeC2,
+      equivalentCPF: cEq,
+      totalChargePC: qSeries,
+      q1PC: qSeries,
+      q2PC: qSeries,
+      v1,
+      v2,
+      totalEnergyPJ: uTotal
+    };
+  }
+
+  // parallel
+  const cEq = safeC1 + safeC2;
+  const q1 = safeC1 * supplyVoltage;
+  const q2 = safeC2 * supplyVoltage;
+  const qTotal = q1 + q2;
+  const uTotal = 0.5 * cEq * supplyVoltage * supplyVoltage;
+  return {
+    topology,
+    c1PF: safeC1,
+    c2PF: safeC2,
+    equivalentCPF: cEq,
+    totalChargePC: qTotal,
+    q1PC: q1,
+    q2PC: q2,
+    v1: supplyVoltage,
+    v2: supplyVoltage,
+    totalEnergyPJ: uTotal
+  };
+}

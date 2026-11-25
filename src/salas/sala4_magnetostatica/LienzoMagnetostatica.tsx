@@ -1,11 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { usePresetRequest } from '../../ganchos/usePeticionPreset';
 import type { WireCurrent, Vector2D, ViewMode } from '../../tipos';
 import {
-  calculateMagneticField2D,
-  traceMagneticLine
+  MAGNETOSTATICS_PIXELS_PER_METER,
+  computeAmpereLaw
 } from '../../fisica/biotsavart';
-import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  drawMagnetostaticsScene,
+  type AmperianLoop
+} from './renderizadorMagnetostatica';
+import { Plus, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 
 interface MagnetostaticsCanvasProps {
   presetRequest?: string | null;
@@ -29,16 +33,19 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
   const [draggedWireId, setDraggedWireId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // Compass probe
-  const [compass, setCompass] = useState<Vector2D>({ x: 400, y: 200 });
+  const [compass, setCompass] = useState<Vector2D>({ x: 400, y: 190 });
   const [isDraggingCompass, setIsDraggingCompass] = useState(false);
 
-  // Settings
+  // Ley de Ampère interactiva: ∮ B · dl = μ₀ I_enc
+  const [showAmpereLoop, setShowAmpereLoop] = useState(true);
+  const [ampereLoop, setAmpereLoop] = useState<AmperianLoop>({ x: 400, y: 300, radiusPx: 110 });
+  const [isDraggingLoop, setIsDraggingLoop] = useState(false);
+  const [isAmpereHudOpen, setIsAmpereHudOpen] = useState(true);
+
   const [showVectors, setShowVectors] = useState(true);
   const [showLines, setShowLines] = useState(true);
   const [isControlsOpen, setIsControlsOpen] = useState(true);
 
-  // Dynamic ResizeObserver
   useEffect(() => {
     const container = canvasRef.current?.parentElement;
     if (!container) return;
@@ -59,8 +66,6 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Bounds clamping to keep conductors and compass inside canvas bounds
-  // (adjusted while rendering whenever the canvas size changes, not inside an effect)
   const [clampedFor, setClampedFor] = useState({ width: 0, height: 0 });
   if (
     dimensions.width > 50 &&
@@ -68,7 +73,6 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     (clampedFor.width !== dimensions.width || clampedFor.height !== dimensions.height)
   ) {
     setClampedFor({ width: dimensions.width, height: dimensions.height });
-
     setWires((prev) =>
       prev.map((w) => ({
         ...w,
@@ -76,19 +80,28 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
         y: Math.min(Math.max(30, w.y), dimensions.height - 30)
       }))
     );
-
     setCompass((prev) => ({
       x: Math.min(Math.max(30, prev.x), dimensions.width - 30),
       y: Math.min(Math.max(30, prev.y), dimensions.height - 30)
     }));
   }
 
-  // Main rendering loop
+  const ampereStats = useMemo(
+    () =>
+      computeAmpereLaw(
+        ampereLoop.x,
+        ampereLoop.y,
+        ampereLoop.radiusPx,
+        wires,
+        MAGNETOSTATICS_PIXELS_PER_METER
+      ),
+    [ampereLoop, wires]
+  );
+
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
 
     const { width, height } = dimensions;
     const dpr = window.devicePixelRatio || 1;
@@ -96,281 +109,50 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
 
-    // 1. Clear background
-    ctx.fillStyle = '#FAF7F2';
-    ctx.fillRect(0, 0, width, height);
+    drawMagnetostaticsScene(ctx, {
+      width,
+      height,
+      wires,
+      selectedWireId,
+      compass,
+      isDraggingCompass,
+      showVectors,
+      showLines,
+      showAmpereLoop,
+      ampereLoop,
+      viewMode
+    });
+  }, [
+    dimensions,
+    wires,
+    selectedWireId,
+    compass,
+    isDraggingCompass,
+    showVectors,
+    showLines,
+    showAmpereLoop,
+    ampereLoop,
+    viewMode
+  ]);
 
-    // 2. Subtle grid
-    ctx.strokeStyle = 'rgba(80, 70, 60, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < width; x += 40) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    // 3. Magnetic Vector Field
-    if (showVectors && wires.length > 0) {
-      const step = 32;
-      for (let x = step / 2; x < width; x += step) {
-        for (let y = step / 2; y < height; y += step) {
-          const B = calculateMagneticField2D(x, y, wires);
-          const mag = Math.hypot(B.x, B.y);
-          if (mag < 0.01) continue;
-
-          const angle = Math.atan2(B.y, B.x);
-          const length = Math.min(step * 0.75, Math.max(8, Math.log10(mag + 1) * 7.5));
-          const strength = Math.min(1, Math.log10(mag + 1) / 3.0);
-
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(angle);
-
-          // Color palette: Cyan -> Teal -> Bright Emerald
-          ctx.strokeStyle = `rgba(${Math.floor(14 + 100 * strength)}, ${Math.floor(
-            165 + 60 * strength
-          )}, ${Math.floor(233 - 50 * strength)}, 0.65)`;
-          ctx.fillStyle = ctx.strokeStyle;
-          ctx.lineWidth = 1.3;
-
-          ctx.beginPath();
-          ctx.moveTo(-length / 2, 0);
-          ctx.lineTo(length / 2, 0);
-          ctx.stroke();
-
-          const head = Math.max(3, length * 0.28);
-          ctx.beginPath();
-          ctx.moveTo(length / 2, 0);
-          ctx.lineTo(length / 2 - head, -head * 0.55);
-          ctx.lineTo(length / 2 - head, head * 0.55);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.restore();
-        }
-      }
-    }
-
-    // 4. Closed Magnetic Field Lines
-    if (showLines && wires.length > 0) {
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.65)';
-      ctx.lineWidth = 1.6;
-
-      for (const w of wires) {
-        const radii = [25, 50, 85, 130, 190, 270];
-        for (const r of radii) {
-          const startX = w.x + r;
-          const startY = w.y;
-          const points = traceMagneticLine(startX, startY, 1, wires, width, height, 3, 300);
-
-          if (points.length > 2) {
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-              ctx.lineTo(points[i].x, points[i].y);
-            }
-            ctx.stroke();
-
-            // Arrow along line
-            if (points.length > 15) {
-              const mid = Math.floor(points.length / 2);
-              const p1 = points[mid];
-              const p2 = points[mid + 1] || points[mid];
-              const arrAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-              ctx.save();
-              ctx.translate(p1.x, p1.y);
-              ctx.rotate(arrAngle);
-              ctx.fillStyle = '#22d3ee';
-              ctx.beginPath();
-              ctx.moveTo(4, 0);
-              ctx.lineTo(-4, -3);
-              ctx.lineTo(-4, 3);
-              ctx.closePath();
-              ctx.fill();
-              ctx.restore();
-            }
-          }
-        }
-      }
-    }
-
-    // 5. Render Conductors (Wires)
-    for (const w of wires) {
-      const isSelected = w.id === selectedWireId;
-      const isOut = w.current > 0;
-      const radius = 17;
-
-      ctx.save();
-      ctx.shadowColor = isOut ? '#06b6d4' : '#f59e0b';
-      ctx.shadowBlur = isSelected ? 20 : 12;
-
-      // Conductor body
-      const grad = ctx.createRadialGradient(w.x - 3, w.y - 3, 2, w.x, w.y, radius);
-      if (isOut) {
-        grad.addColorStop(0, '#a5f3fc');
-        grad.addColorStop(0.5, '#0891b2');
-        grad.addColorStop(1, '#164e63');
-      } else {
-        grad.addColorStop(0, '#fef3c7');
-        grad.addColorStop(0.5, '#d97706');
-        grad.addColorStop(1, '#78350f');
-      }
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(w.x, w.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (isSelected) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // Current notation: Dot (out of screen) or Cross (into screen)
-      ctx.save();
-      if (isOut) {
-        // Dot (circle)
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(w.x, w.y, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        // Cross (X)
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        const s = 6;
-        ctx.moveTo(w.x - s, w.y - s);
-        ctx.lineTo(w.x + s, w.y + s);
-        ctx.moveTo(w.x + s, w.y - s);
-        ctx.lineTo(w.x - s, w.y + s);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // Label & Ampere value
-      ctx.font = '11px system-ui, sans-serif';
-      ctx.fillStyle = '#e2e8f0';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        `${w.label || 'I'}: ${Math.abs(w.current)} A (${isOut ? 'Hacia ti ⊙' : 'Hacia dentro ⊗'})`,
-        w.x,
-        w.y + radius + 15
-      );
-    }
-
-    // 6. Magnetic Compass Probe
-    const B_at_compass = calculateMagneticField2D(compass.x, compass.y, wires);
-    const B_mag = Math.hypot(B_at_compass.x, B_at_compass.y);
-    const needleAngle = Math.atan2(B_at_compass.y, B_at_compass.x);
-
-    ctx.save();
-    ctx.translate(compass.x, compass.y);
-
-    // Compass Housing (Warm Ivory & Brass-Slate)
-    ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
-    ctx.strokeStyle = isDraggingCompass ? '#2D7A64' : '#8C8275';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, 24, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    // Cardinal dots
-    ctx.fillStyle = '#8C8275';
-    ctx.fillRect(-1, -22, 2, 4);
-    ctx.fillRect(-1, 18, 2, 4);
-    ctx.fillRect(-22, -1, 4, 2);
-    ctx.fillRect(18, -1, 4, 2);
-
-    // Needle rotating along B vector
-    ctx.rotate(needleAngle);
-
-    // North Needle (Terracotta Red)
-    ctx.fillStyle = '#D9534F';
-    ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.lineTo(19, 0);
-    ctx.lineTo(0, 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // South Needle (Cool Slate)
-    ctx.fillStyle = '#94A3B8';
-    ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.lineTo(-19, 0);
-    ctx.lineTo(0, 3);
-    ctx.closePath();
-    ctx.fill();
-
-    // Needle pivot
-    ctx.fillStyle = '#231F1C';
-    ctx.beginPath();
-    ctx.arc(0, 0, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-
-    // Compass Telemetry Tag (Warm Ivory Editorial)
-    const tagW = 166;
-    const tagH = 54;
-    const tagX = compass.x + 30 + tagW > width ? compass.x - tagW - 30 : compass.x + 30;
-    const tagY = compass.y - 24;
-    ctx.save();
-    ctx.shadowColor = 'rgba(60, 50, 40, 0.12)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 3;
-    ctx.fillStyle = 'rgba(255, 253, 249, 0.96)';
-    ctx.strokeStyle = '#D6CCBE';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.roundRect(tagX, tagY, tagW, tagH, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.fillStyle = viewMode === 'explore' ? '#2D7A64' : '#2B6CB0';
-    ctx.font = 'bold 10.5px system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(viewMode === 'explore' ? 'BRÚJULA DE EXPLORACIÓN' : 'MAGNETÓMETRO (SI)', tagX + 10, tagY + 16);
-
-    ctx.fillStyle = '#231F1C';
-    ctx.font = 'bold 11px monospace';
-    if (viewMode === 'explore') {
-      const magLevel = B_mag * 10 > 25 ? 'Intenso 🧲' : B_mag * 10 > 8 ? 'Moderado' : 'Débil';
-      ctx.fillText(`Intensidad: ${magLevel}`, tagX + 10, tagY + 33);
-      ctx.fillText(`Giro: ${((needleAngle * 180) / Math.PI).toFixed(0)}°`, tagX + 10, tagY + 47);
-    } else {
-      ctx.fillText(`|B|: ${(B_mag * 10).toFixed(2)} µT`, tagX + 10, tagY + 33);
-      ctx.fillText(`θ:   ${((needleAngle * 180) / Math.PI).toFixed(1)}°`, tagX + 10, tagY + 47);
-    }
-  }, [dimensions, wires, selectedWireId, compass, isDraggingCompass, showVectors, showLines, viewMode]);
-
-  // Mouse handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // PointerEvents universales (ratón + táctil)
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.focus();
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    if (Math.hypot(mx - compass.x, my - compass.y) < 25) {
+    if (Math.hypot(mx - compass.x, my - compass.y) < 28) {
+      e.currentTarget.setPointerCapture(e.pointerId);
       setIsDraggingCompass(true);
       return;
     }
 
     for (const w of wires) {
-      if (Math.hypot(mx - w.x, my - w.y) < 22) {
+      if (Math.hypot(mx - w.x, my - w.y) < 24) {
+        e.currentTarget.setPointerCapture(e.pointerId);
         setDraggedWireId(w.id);
         setSelectedWireId(w.id);
         setDragOffset({ x: mx - w.x, y: my - w.y });
@@ -378,10 +160,21 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
       }
     }
 
+    if (showAmpereLoop) {
+      const distToLoopCenter = Math.hypot(mx - ampereLoop.x, my - ampereLoop.y);
+      if (Math.abs(distToLoopCenter - ampereLoop.radiusPx) < 18 || distToLoopCenter < ampereLoop.radiusPx) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setIsDraggingLoop(true);
+        setDragOffset({ x: mx - ampereLoop.x, y: my - ampereLoop.y });
+        setSelectedWireId(null);
+        return;
+      }
+    }
+
     setSelectedWireId(null);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -389,88 +182,217 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
     const my = e.clientY - rect.top;
 
     if (isDraggingCompass) {
-      setCompass({ x: mx, y: my });
+      setCompass({
+        x: Math.min(Math.max(24, mx), dimensions.width - 24),
+        y: Math.min(Math.max(24, my), dimensions.height - 24)
+      });
       return;
     }
 
     if (draggedWireId) {
       setWires((prev) =>
         prev.map((w) =>
-          w.id === draggedWireId ? { ...w, x: mx - dragOffset.x, y: my - dragOffset.y } : w
+          w.id === draggedWireId
+            ? {
+                ...w,
+                x: Math.min(Math.max(24, mx - dragOffset.x), dimensions.width - 24),
+                y: Math.min(Math.max(24, my - dragOffset.y), dimensions.height - 24)
+              }
+            : w
         )
       );
+      return;
+    }
+
+    if (isDraggingLoop) {
+      setAmpereLoop((prev) => ({
+        ...prev,
+        x: Math.min(Math.max(30, mx - dragOffset.x), dimensions.width - 30),
+        y: Math.min(Math.max(30, my - dragOffset.y), dimensions.height - 30)
+      }));
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setDraggedWireId(null);
     setIsDraggingCompass(false);
+    setIsDraggingLoop(false);
   };
 
-  // Presets
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    const step = e.shiftKey ? 20 : 8;
+    let dx = 0;
+    let dy = 0;
+    if (e.key === 'ArrowLeft') dx = -step;
+    else if (e.key === 'ArrowRight') dx = step;
+    else if (e.key === 'ArrowUp') dy = -step;
+    else if (e.key === 'ArrowDown') dy = step;
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedWireId && wires.length > 1) {
+      e.preventDefault();
+      setWires((prev) => prev.filter((w) => w.id !== selectedWireId));
+      setSelectedWireId(null);
+      return;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    if (selectedWireId) {
+      setWires((prev) =>
+        prev.map((w) =>
+          w.id === selectedWireId ? { ...w, x: w.x + dx, y: w.y + dy } : w
+        )
+      );
+    } else {
+      setCompass((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    }
+  };
+
   const applyPreset = (preset: string) => {
     if (preset === 'single') {
       setWires([{ id: 'w1', x: 400, y: 300, current: 5, label: 'I' }]);
+      setAmpereLoop({ x: 400, y: 300, radiusPx: 100 });
     } else if (preset === 'parallel_attraction') {
       setWires([
         { id: 'w1', x: 340, y: 300, current: 4, label: 'I₁' },
         { id: 'w2', x: 460, y: 300, current: 4, label: 'I₂' }
       ]);
+      setAmpereLoop({ x: 400, y: 300, radiusPx: 115 });
     } else if (preset === 'parallel_repulsion') {
       setWires([
         { id: 'w1', x: 340, y: 300, current: 4, label: 'I₁' },
         { id: 'w2', x: 460, y: 300, current: -4, label: 'I₂' }
       ]);
+      setAmpereLoop({ x: 400, y: 300, radiusPx: 115 });
     } else if (preset === 'solenoid') {
       const newWires: WireCurrent[] = [];
       const startX = 260;
       const spacing = 45;
       for (let i = 0; i < 7; i++) {
-        newWires.push({
-          id: `top_${i}`,
-          x: startX + i * spacing,
-          y: 220,
-          current: 3,
-          label: `⊙`
-        });
-        newWires.push({
-          id: `bot_${i}`,
-          x: startX + i * spacing,
-          y: 380,
-          current: -3,
-          label: `⊗`
-        });
+        newWires.push({ id: `top_${i}`, x: startX + i * spacing, y: 220, current: 3, label: '⊙' });
+        newWires.push({ id: `bot_${i}`, x: startX + i * spacing, y: 380, current: -3, label: '⊗' });
       }
       setWires(newWires);
+      setAmpereLoop({ x: 400, y: 220, radiusPx: 95 });
     }
   };
 
-  // Handle presetRequest from parent
   usePresetRequest(presetRequest, onPresetHandled, applyPreset);
 
   const addWire = (currentVal: number) => {
     const id = 'w_' + Math.random().toString(36).substring(2, 7);
-    const newW: WireCurrent = {
-      id,
-      x: 400 + (Math.random() - 0.5) * 80,
-      y: 300 + (Math.random() - 0.5) * 80,
-      current: currentVal,
-      label: currentVal > 0 ? '⊙' : '⊗'
-    };
-    setWires((prev) => [...prev, newW]);
+    setWires((prev) => [
+      ...prev,
+      {
+        id,
+        x: 400 + (Math.random() - 0.5) * 80,
+        y: 300 + (Math.random() - 0.5) * 80,
+        current: currentVal,
+        label: currentVal > 0 ? '⊙' : '⊗'
+      }
+    ]);
   };
+
+  const circMicroTm = (ampereStats.circulationTm * 1e6).toFixed(2);
+  const theoMicroTm = (ampereStats.theoreticalTm * 1e6).toFixed(2);
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none bg-[#FAF7F2]">
       <canvas
         ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        className="w-full h-full cursor-crosshair block"
+        tabIndex={0}
+        aria-label="Lienzo interactivo de Magnetostática y Ley de Ampère"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onKeyDown={handleKeyDown}
+        className="w-full h-full cursor-crosshair block touch-none focus:outline-none"
       />
 
-      {/* Bottom control bar (Collapsible) */}
+      {/* Telemetría de la Ley de Ampère (Superior Izquierda - Plegable) */}
+      {showAmpereLoop &&
+        (isAmpereHudOpen ? (
+          <div className="absolute top-3 left-4 z-20 flex flex-wrap items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[#D5CEC6] shadow-md max-w-[calc(100%-2rem)]">
+            <div className="flex items-center gap-2 border-r border-[#E0D8CF] pr-3">
+              <div className="w-7 h-7 rounded-lg bg-purple-100 border border-purple-300/70 flex items-center justify-center text-purple-800 font-bold">
+                ∮
+              </div>
+              <div>
+                <div className="text-xs font-bold text-[#231F1C] tracking-wide">LEY DE AMPÈRE</div>
+                <div className="text-[11px] font-mono text-purple-800 font-semibold">
+                  ∮_C B · dl = μ₀ I_enc
+                </div>
+              </div>
+            </div>
+
+            {viewMode === 'explore' ? (
+              <div className="flex items-center gap-3 text-xs">
+                <span>
+                  <span className="text-[#5C554E]">Corriente encerrada: </span>
+                  <span className="font-bold text-[#231F1C] font-mono">
+                    {ampereStats.enclosedCurrentA > 0 ? '+' : ''}
+                    {ampereStats.enclosedCurrentA.toFixed(1)} A
+                  </span>
+                </span>
+                <span className="border-l border-[#E0D8CF] pl-3 flex items-center gap-1 text-[#2D7A64] font-bold">
+                  <CheckCircle2 className="w-4 h-4" /> Circulación Comprobada
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3.5 text-xs font-mono">
+                <div>
+                  <span className="text-[#5C554E]">I_enc: </span>
+                  <span className="font-bold text-[#231F1C]">
+                    {ampereStats.enclosedCurrentA > 0 ? '+' : ''}
+                    {ampereStats.enclosedCurrentA.toFixed(1)} A
+                  </span>
+                </div>
+                <div className="border-l border-[#E0D8CF] pl-3">
+                  <span className="text-[#5C554E]">μ₀·I_enc: </span>
+                  <span className="font-bold text-purple-800">{theoMicroTm} µT·m</span>
+                </div>
+                <div className="border-l border-[#E0D8CF] pl-3">
+                  <span className="text-[#5C554E]">∮ B·dl: </span>
+                  <span className="font-bold text-[#2D7A64]">{circMicroTm} µT·m</span>
+                </div>
+                <div className="border-l border-[#E0D8CF] pl-3 flex items-center gap-1">
+                  <span className="text-[10px] font-sans text-[#5C554E]">Radio C:</span>
+                  <input
+                    type="range"
+                    min="55"
+                    max="220"
+                    step="5"
+                    value={ampereLoop.radiusPx}
+                    onChange={(e) =>
+                      setAmpereLoop((prev) => ({ ...prev, radiusPx: parseInt(e.target.value, 10) }))
+                    }
+                    className="w-16 accent-purple-700 cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setIsAmpereHudOpen(false)}
+              className="p-1 text-[#6B6560] hover:text-[#231F1C] rounded transition-colors cursor-pointer ml-auto"
+              title="Minimizar Ley de Ampère"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAmpereHudOpen(true)}
+            className="absolute top-3 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#231F1C] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
+          >
+            <span className="font-bold text-purple-800">∮ Ley de Ampère:</span>
+            <span className="font-mono font-semibold">{circMicroTm} µT·m</span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#6B6560]" />
+          </button>
+        ))}
+
+      {/* Barra inferior de controles (Plegable) */}
       {isControlsOpen ? (
         <div className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] flex flex-wrap items-center gap-1.5 md:gap-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] z-10">
           <span className="font-semibold text-[#6B6560] mr-1 flex items-center gap-1">
@@ -478,13 +400,13 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
           </span>
           <button
             onClick={() => addWire(4)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-100 hover:bg-teal-200 text-teal-800 border border-teal-300 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-teal-100 hover:bg-teal-200 text-teal-800 border border-teal-300 rounded-lg transition-colors cursor-pointer font-medium"
           >
             Saliente (⊙)
           </button>
           <button
             onClick={() => addWire(-4)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 rounded-lg transition-colors cursor-pointer font-medium"
           >
             Entrante (⊗)
           </button>
@@ -511,6 +433,16 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
           >
             Líneas
           </button>
+          <button
+            onClick={() => setShowAmpereLoop(!showAmpereLoop)}
+            className={`px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer ${
+              showAmpereLoop
+                ? 'bg-purple-100 border-purple-300 text-purple-800 font-semibold'
+                : 'bg-[#EDE8DF] border-[#D5CEC6] text-[#6B6560]'
+            }`}
+          >
+            Curva Amperiana ∮
+          </button>
 
           <button
             onClick={() => setIsControlsOpen(false)}
@@ -524,13 +456,13 @@ export const MagnetostaticsCanvas: React.FC<MagnetostaticsCanvasProps> = ({
         <button
           onClick={() => setIsControlsOpen(true)}
           className="absolute bottom-4 left-4 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-md text-xs text-[#2D2A26] hover:bg-[#EDE8DF] transition-colors cursor-pointer"
-          title="Añadir conductores y alternar vectores"
         >
           <Plus className="w-3.5 h-3.5 text-teal-600" />
-          <span>Conductores & Vectores</span>
+          <span>Conductores & Ampère</span>
           <ChevronUp className="w-3.5 h-3.5 text-[#6B6560]" />
         </button>
       )}
     </div>
   );
 };
+export default MagnetostaticsCanvas;

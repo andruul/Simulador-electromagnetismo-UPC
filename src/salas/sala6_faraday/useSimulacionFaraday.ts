@@ -13,23 +13,17 @@ import {
   type Viewport
 } from './renderizadorFaraday';
 
-/** Resistance of the connected bulb (Ω). */
 const BULB_RESISTANCE_OHM = 10;
-/** Radial Gauss-Legendre nodes of the flux quadrature (see physics tests: error < 0.5 %). */
 const FLUX_RADIAL_NODES = 32;
-/**
- * Galvanometer full-scale deflection (V). Sized for the real EMF range of the lab
- * (peak ≈ 0.35 V with N = 3 while oscillating), so the needle swings visibly.
- */
 const GALVANOMETER_FULL_SCALE_V = 0.7;
 
 export interface InstantValues {
-  flux: number; // Wb
-  dFluxDt: number; // Wb/s
-  emf: number; // V
-  current: number; // A
-  bulbPower: number; // W
-  bulbBrightness: number; // [0, 1]
+  flux: number;
+  dFluxDt: number;
+  emf: number;
+  current: number;
+  bulbPower: number;
+  bulbBrightness: number;
 }
 
 const INITIAL_VALUES: InstantValues = {
@@ -48,15 +42,15 @@ export interface FaradaySimulationOptions {
   setMagnet: Dispatch<SetStateAction<BarMagnet>>;
   coil: InductionCoil;
   isOscillating: boolean;
-  oscillationFreq: number; // Hz
-  oscillationAmp: number; // m
+  oscillationFreq: number;
+  oscillationAmp: number;
   outputDevice: OutputDevice;
 }
 
 /**
- * Runs the requestAnimationFrame loop of the Faraday laboratory: moves the magnet when
- * oscillating, solves flux / EMF / current, damps the galvanometer needle, records the
- * oscilloscope history and draws every frame. Returns the instantaneous readings for the HUD.
+ * Bucle continuo requestAnimationFrame del laboratorio de Faraday-Lenz.
+ * Mantiene magnet/coil en refs para evitar reiniciar el rAF en cada fotograma,
+ * inicializa Φ previo sin picos espurios y suaviza dΦ/dt ante arrastre manual.
  */
 export function useFaradaySimulation({
   canvasRef,
@@ -71,9 +65,23 @@ export function useFaradaySimulation({
 }: FaradaySimulationOptions): InstantValues {
   const [instantValues, setInstantValues] = useState<InstantValues>(INITIAL_VALUES);
 
-  // Dynamic tracking state that must survive across animation frames
-  const prevFluxRef = useRef(0);
+  const magnetRef = useRef(magnet);
+  const coilRef = useRef(coil);
+  const viewportRef = useRef(viewport);
+  const outputRef = useRef(outputDevice);
+  const oscRef = useRef({ isOscillating, oscillationFreq, oscillationAmp });
+
+  useEffect(() => {
+    magnetRef.current = magnet;
+    coilRef.current = coil;
+    viewportRef.current = viewport;
+    outputRef.current = outputDevice;
+    oscRef.current = { isOscillating, oscillationFreq, oscillationAmp };
+  }, [magnet, coil, viewport, outputDevice, isOscillating, oscillationFreq, oscillationAmp]);
+
+  const prevFluxRef = useRef<number | null>(null);
   const prevTimeRef = useRef<number | null>(null);
+  const smoothedEmfRef = useRef(0);
   const smoothedNeedleRef = useRef(0);
   const animTimeRef = useRef(0);
   const historyRef = useRef<HistorySample[]>([]);
@@ -85,40 +93,60 @@ export function useFaradaySimulation({
       const dt =
         prevTimeRef.current === null
           ? 1 / 60
-          : Math.min(0.05, Math.max(0.002, (now - prevTimeRef.current) / 1000));
+          : Math.min(0.05, Math.max(0.004, (now - prevTimeRef.current) / 1000));
       prevTimeRef.current = now;
       animTimeRef.current += dt;
 
-      // Harmonic auto-oscillation of the magnet
-      const curMagnet = { ...magnet };
-      if (isOscillating) {
-        const omega = 2 * Math.PI * oscillationFreq;
-        curMagnet.x = coil.x - 0.05 + oscillationAmp * Math.sin(omega * animTimeRef.current);
+      const curCoil = coilRef.current;
+      const curOsc = oscRef.current;
+      let curMagnet = magnetRef.current;
+
+      if (curOsc.isOscillating) {
+        const omega = 2 * Math.PI * curOsc.oscillationFreq;
+        curMagnet = {
+          ...curMagnet,
+          x: curCoil.x - 0.05 + curOsc.oscillationAmp * Math.sin(omega * animTimeRef.current)
+        };
+        magnetRef.current = curMagnet;
         setMagnet(curMagnet);
       }
 
-      // 1. Magnetic flux through the coil, 2. induction (Faraday-Lenz)
-      const flux = calculateCoilFlux(coil, curMagnet, FLUX_RADIAL_NODES);
-      const induction = computeFaradayInduction(
-        flux,
-        prevFluxRef.current,
-        dt,
-        coil,
-        BULB_RESISTANCE_OHM
-      );
+      const flux = calculateCoilFlux(curCoil, curMagnet, FLUX_RADIAL_NODES);
+      const prevFlux = prevFluxRef.current ?? flux;
       prevFluxRef.current = flux;
 
-      // 3. Damped galvanometer needle
-      const targetNeedle = Math.max(
-        -1,
-        Math.min(1, induction.inducedEmf / GALVANOMETER_FULL_SCALE_V)
+      const rawInduction = computeFaradayInduction(
+        flux,
+        prevFlux,
+        dt,
+        curCoil,
+        BULB_RESISTANCE_OHM
       );
+
+      // Filtro exponencial ligero en arrastre manual para eliminar ruido de muestreo de puntero
+      const alpha = curOsc.isOscillating ? 1.0 : Math.min(1, dt * 22);
+      smoothedEmfRef.current += (rawInduction.inducedEmf - smoothedEmfRef.current) * alpha;
+      const totalR = curCoil.turns * curCoil.resistancePerTurn + BULB_RESISTANCE_OHM;
+      const emf = smoothedEmfRef.current;
+      const current = totalR > 0 ? emf / totalR : 0;
+      const bulbPower = current * current * BULB_RESISTANCE_OHM;
+      const induction = curOsc.isOscillating
+        ? rawInduction
+        : {
+            ...rawInduction,
+            dFluxDt: curCoil.turns > 0 ? -emf / curCoil.turns : 0,
+            inducedEmf: emf,
+            inducedCurrent: current,
+            bulbPower,
+            bulbBrightness: Math.min(1, Math.sqrt(bulbPower / 0.015))
+          };
+
+      const targetNeedle = Math.max(-1, Math.min(1, induction.inducedEmf / GALVANOMETER_FULL_SCALE_V));
       smoothedNeedleRef.current += (targetNeedle - smoothedNeedleRef.current) * Math.min(1, dt * 14);
 
-      // 4. Rolling oscilloscope history
       historyRef.current.push({
         time: animTimeRef.current,
-        flux: flux * 1000, // milli-Webers
+        flux: flux * 1000,
         emf: induction.inducedEmf
       });
       if (historyRef.current.length > OSCILLOSCOPE_POINTS) {
@@ -134,21 +162,21 @@ export function useFaradaySimulation({
         bulbBrightness: induction.bulbBrightness
       });
 
-      // Draw the frame
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
+      const vp = viewportRef.current;
       if (canvas && ctx) {
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        canvas.width = vp.width;
+        canvas.height = vp.height;
         drawFaradayFrame(ctx, {
-          viewport,
+          viewport: vp,
           magnet: curMagnet,
-          coil,
+          coil: curCoil,
           induction,
           animTime: animTimeRef.current,
           needle: smoothedNeedleRef.current,
           history: historyRef.current,
-          outputDevice
+          outputDevice: outputRef.current
         });
       }
 
@@ -157,17 +185,7 @@ export function useFaradaySimulation({
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [
-    canvasRef,
-    viewport,
-    magnet,
-    setMagnet,
-    coil,
-    isOscillating,
-    oscillationFreq,
-    oscillationAmp,
-    outputDevice
-  ]);
+  }, [canvasRef, setMagnet]);
 
   return instantValues;
 }
