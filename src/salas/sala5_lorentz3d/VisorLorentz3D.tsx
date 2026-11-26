@@ -61,15 +61,15 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   const [isHudExpanded, setIsHudExpanded] = useState(false); // Collapsed by default for clean view
   const [isBottomOpen, setIsBottomOpen] = useState(true);
 
-  // Particles state
+  // Particles state (+q = rojo terracota consistente con todo el simulador, -q = azul cerúleo)
   const [particles, setParticles] = useState<Particle3D[]>([
     {
       id: 'p1',
-      position: { x: 0, y: 0, z: 0 },
-      velocity: { x: 1.5, y: 3.5, z: 1.0 },
+      position: { x: 0, y: 0, z: -6 },
+      velocity: { x: 2.8, y: 1.2, z: 0.9 },
       charge: 1.0,
       mass: 1.0,
-      color: '#38bdf8', // Cyan
+      color: '#D95B5F',
       trail: [],
       maxTrailLength: 350
     }
@@ -144,8 +144,8 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     dirLight.position.set(20, 40, 20);
     scene.add(dirLight);
 
-    // Coordinate Grid & Axes Helper
-    const gridHelper = new THREE.GridHelper(30, 30, 0x334155, 0x1e293b);
+    // Coordinate Grid & Axes Helper (armonizado con paleta marfil-arena)
+    const gridHelper = new THREE.GridHelper(30, 30, 0x9C9286, 0xD5CEC4);
     gridHelper.position.y = -8;
     scene.add(gridHelper);
 
@@ -276,6 +276,21 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
             settings.eField,
             settings.bField
           );
+
+          // Confinamiento de cámara de vacío: si sale del volumen observable (30×20×30 m),
+          // se reinyecta suavemente en la entrada de la cámara para no invadir el lente ni perderse en el infinito.
+          if (
+            Math.abs(updated.position.x) > 16 ||
+            Math.abs(updated.position.y) > 11 ||
+            Math.abs(updated.position.z) > 15
+          ) {
+            updated.position = {
+              x: settings.fieldConfiguration === 'velocity_selector' || settings.fieldConfiguration === 'drift' ? -8 : 0,
+              y: 0,
+              z: settings.fieldConfiguration === 'uniform' ? -8 : 0
+            };
+            updated.trail = [];
+          }
 
           return updated;
         });
@@ -473,7 +488,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
           eField: { x: 0, y: 0, z: 0 }
         },
         particles: [
-          particle('p1', { x: 0, y: 0, z: -6 }, { x: 3.0, y: 0, z: 1.2 }, '#38bdf8', 400)
+          particle('p1', { x: 0, y: 0, z: -6 }, { x: 3.0, y: 0, z: 1.2 }, '#D95B5F', 400)
         ]
       };
     }
@@ -509,7 +524,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
           bField: { x: 0, y: 0, z: 2.0 }
         },
         particles: [
-          particle('p1', { x: 1.2, y: 0, z: 0 }, { x: 0, y: 3.2, z: 1.2 }, '#38bdf8', 500)
+          particle('p1', { x: 1.2, y: 0, z: 0 }, { x: 0, y: 3.2, z: 1.2 }, '#D95B5F', 500)
         ]
       };
     }
@@ -546,36 +561,38 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
 
   const addParticle = (chargeSign: number) => {
     const newId = 'p_' + Math.random().toString(36).substring(2, 7);
+    const angle = Math.random() * Math.PI * 2;
+    const vPerp = 2.6 + Math.random() * 0.8; // Rapidez transversal clara para apreciar el radio de Larmor
     const newP: Particle3D = {
       id: newId,
       position: {
-        x: (Math.random() - 0.5) * 4,
-        y: (Math.random() - 0.5) * 4,
-        z: (Math.random() - 0.5) * 4
+        x: (Math.random() - 0.5) * 3,
+        y: (Math.random() - 0.5) * 2,
+        z: -6 + (Math.random() - 0.5) * 2
       },
       velocity: {
-        x: (Math.random() - 0.5) * 4,
-        y: (Math.random() - 0.5) * 4,
-        z: (Math.random() - 0.5) * 2
+        x: Math.cos(angle) * vPerp,
+        y: Math.sin(angle) * vPerp,
+        z: 0.9 // Avance controlado a lo largo del eje Z dentro de la cámara
       },
       charge: chargeSign,
       mass: 1.0,
-      color: chargeSign > 0 ? '#38bdf8' : '#fb7185',
+      color: chargeSign > 0 ? '#D95B5F' : '#3E82AA', // +q Rojo terracota, -q Azul cerúleo
       trail: [],
       maxTrailLength: 350
     };
-    setParticles((prev) => [...prev, newP]);
+    setParticles((prev) => [...prev.slice(-11), newP]);
   };
 
   const clearParticles = () => {
     setParticles([
       {
         id: 'p_init',
-        position: { x: 0, y: 0, z: 0 },
-        velocity: { x: 2.0, y: 3.0, z: 0.8 },
+        position: { x: 0, y: 0, z: -6 },
+        velocity: { x: 2.8, y: 1.2, z: 0.9 },
         charge: 1.0,
         mass: 1.0,
-        color: '#38bdf8',
+        color: '#D95B5F',
         trail: [],
         maxTrailLength: 350
       }
@@ -609,14 +626,16 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
 
           <button
             onClick={() => addParticle(1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 rounded-lg transition-colors cursor-pointer font-semibold"
+            title="Inyectar partícula con carga positiva (+1 C)"
           >
             <Plus className="w-3.5 h-3.5" /> +q
           </button>
 
           <button
             onClick={() => addParticle(-1)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 border border-sky-300 rounded-lg transition-colors cursor-pointer font-semibold"
+            title="Inyectar partícula con carga negativa (−1 C)"
           >
             <Plus className="w-3.5 h-3.5" /> −q
           </button>
