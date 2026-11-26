@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Particle3D, Lorentz3DSettings, ViewMode } from '../../tipos';
 import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../../fisica/lorentz';
-import { Plus, Play, Pause, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Play, Pause, ChevronDown, ChevronUp, Gauge } from 'lucide-react';
 import { LorentzTelemetryHud } from './TelemetriaLorentz';
 
 interface LorentzViewer3DProps {
@@ -66,7 +66,9 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     {
       id: 'p1',
       position: { x: 0, y: 0, z: -6 },
-      velocity: { x: 2.8, y: 1.2, z: 0.9 },
+      velocity: { x: 2.3, y: 0.9, z: 0.6 },
+      initialPosition: { x: 0, y: 0, z: -6 },
+      initialVelocity: { x: 2.3, y: 0.9, z: 0.6 },
       charge: 1.0,
       mass: 1.0,
       color: '#D95B5F',
@@ -248,15 +250,26 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     }
   }, [bField, eField, showFieldVectors]);
 
-  // Physics simulation step
+  // Physics simulation step (independiente de los Hz del monitor + sub-stepping Boris)
   useEffect(() => {
     if (!isPlaying) return;
 
     let animId: number;
-    const dt = settings.timeStep || 0.04;
+    let lastNow: number | null = null;
+    const maxSubDt = Math.min(0.025, Math.max(0.005, settings.timeStep || 0.02));
+    const simSpeed = settings.simulationSpeed ?? 0.7;
+    const defaultV0 = settings.initialSpeed ?? 2.5;
 
-    const loop = () => {
-      simTimeRef.current += dt;
+    const loop = (now: number) => {
+      const realDt =
+        lastNow === null ? 1 / 60 : Math.min(0.04, Math.max(0.001, (now - lastNow) / 1000));
+      lastNow = now;
+
+      const totalSimDt = realDt * simSpeed;
+      const subSteps = Math.max(1, Math.min(6, Math.ceil(totalSimDt / maxSubDt)));
+      const subDt = totalSimDt / subSteps;
+      const baseTime = simTimeRef.current;
+      simTimeRef.current += totalSimDt;
 
       setParticles((prevParticles) => {
         return prevParticles.map((p) => {
@@ -267,29 +280,44 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
             trail: [...p.trail]
           };
 
-          // Integrate using Boris Symplectic Pusher
-          borisStep(
-            updated,
-            dt,
-            simTimeRef.current,
-            settings.fieldConfiguration,
-            settings.eField,
-            settings.bField
-          );
+          for (let step = 0; step < subSteps; step++) {
+            // Integrate using Boris Symplectic Pusher
+            borisStep(
+              updated,
+              subDt,
+              baseTime + step * subDt,
+              settings.fieldConfiguration,
+              settings.eField,
+              settings.bField
+            );
 
-          // Confinamiento de cámara de vacío: si sale del volumen observable (30×20×30 m),
-          // se reinyecta suavemente en la entrada de la cámara para no invadir el lente ni perderse en el infinito.
-          if (
-            Math.abs(updated.position.x) > 16 ||
-            Math.abs(updated.position.y) > 11 ||
-            Math.abs(updated.position.z) > 15
-          ) {
-            updated.position = {
-              x: settings.fieldConfiguration === 'velocity_selector' || settings.fieldConfiguration === 'drift' ? -8 : 0,
-              y: 0,
-              z: settings.fieldConfiguration === 'uniform' ? -8 : 0
-            };
-            updated.trail = [];
+            // Confinamiento de cámara de vacío: si sale del volumen observable (30×20×30 m),
+            // se reinyecta limpiamente restaurando TANTO su posición COMO su velocidad inicial v₀
+            // para evitar acumulación infinita de energía cinética cuando E ≠ 0.
+            if (
+              Math.abs(updated.position.x) > 15 ||
+              Math.abs(updated.position.y) > 10 ||
+              Math.abs(updated.position.z) > 15
+            ) {
+              const fallbackPos = {
+                x:
+                  settings.fieldConfiguration === 'velocity_selector' ||
+                  settings.fieldConfiguration === 'drift'
+                    ? -8
+                    : 0,
+                y: 0,
+                z: settings.fieldConfiguration === 'uniform' ? -6 : 0
+              };
+              const fallbackVel = {
+                x: defaultV0 * 0.92,
+                y: 0,
+                z: settings.fieldConfiguration === 'uniform' ? defaultV0 * 0.36 : 0
+              };
+              updated.position = p.initialPosition ? { ...p.initialPosition } : fallbackPos;
+              updated.velocity = p.initialVelocity ? { ...p.initialVelocity } : fallbackVel;
+              updated.trail = [];
+              break;
+            }
           }
 
           return updated;
@@ -473,6 +501,8 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       id,
       position,
       velocity,
+      initialPosition: { ...position },
+      initialVelocity: { ...velocity },
       charge: 1.0,
       mass: 1.0,
       color,
@@ -562,19 +592,24 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   const addParticle = (chargeSign: number) => {
     const newId = 'p_' + Math.random().toString(36).substring(2, 7);
     const angle = Math.random() * Math.PI * 2;
-    const vPerp = 2.6 + Math.random() * 0.8; // Rapidez transversal clara para apreciar el radio de Larmor
+    const v0 = settings.initialSpeed ?? 2.5;
+    const vPerp = v0 * 0.92;
+    const pos = {
+      x: (Math.random() - 0.5) * 3,
+      y: (Math.random() - 0.5) * 2,
+      z: -6 + (Math.random() - 0.5) * 2
+    };
+    const vel = {
+      x: Math.cos(angle) * vPerp,
+      y: Math.sin(angle) * vPerp,
+      z: v0 * 0.36
+    };
     const newP: Particle3D = {
       id: newId,
-      position: {
-        x: (Math.random() - 0.5) * 3,
-        y: (Math.random() - 0.5) * 2,
-        z: -6 + (Math.random() - 0.5) * 2
-      },
-      velocity: {
-        x: Math.cos(angle) * vPerp,
-        y: Math.sin(angle) * vPerp,
-        z: 0.9 // Avance controlado a lo largo del eje Z dentro de la cámara
-      },
+      position: pos,
+      velocity: vel,
+      initialPosition: { ...pos },
+      initialVelocity: { ...vel },
       charge: chargeSign,
       mass: 1.0,
       color: chargeSign > 0 ? '#D95B5F' : '#3E82AA', // +q Rojo terracota, -q Azul cerúleo
@@ -584,12 +619,40 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     setParticles((prev) => [...prev.slice(-11), newP]);
   };
 
+  const resetVelocitiesToV0 = () => {
+    const targetV0 = settings.initialSpeed ?? 2.5;
+    setParticles((prev) =>
+      prev.map((p) => {
+        const currentSpeed = vectorLength(p.velocity);
+        const newVel =
+          currentSpeed > 1e-4
+            ? {
+                x: (p.velocity.x / currentSpeed) * targetV0,
+                y: (p.velocity.y / currentSpeed) * targetV0,
+                z: (p.velocity.z / currentSpeed) * targetV0
+              }
+            : { x: targetV0 * 0.92, y: 0, z: targetV0 * 0.36 };
+        return {
+          ...p,
+          velocity: newVel,
+          initialVelocity: { ...newVel }
+        };
+      })
+    );
+  };
+
   const clearParticles = () => {
+    const v0 = settings.initialSpeed ?? 2.5;
+    simTimeRef.current = 0;
+    const initPos = { x: 0, y: 0, z: -6 };
+    const initVel = { x: v0 * 0.88, y: v0 * 0.34, z: v0 * 0.32 };
     setParticles([
       {
         id: 'p_init',
-        position: { x: 0, y: 0, z: -6 },
-        velocity: { x: 2.8, y: 1.2, z: 0.9 },
+        position: initPos,
+        velocity: initVel,
+        initialPosition: { ...initPos },
+        initialVelocity: { ...initVel },
         charge: 1.0,
         mass: 1.0,
         color: '#D95B5F',
@@ -638,6 +701,14 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
             title="Inyectar partícula con carga negativa (−1 C)"
           >
             <Plus className="w-3.5 h-3.5" /> −q
+          </button>
+
+          <button
+            onClick={resetVelocitiesToV0}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg transition-colors cursor-pointer font-medium"
+            title={`Normalizar rapidez de todas las partículas a v₀ (${(settings.initialSpeed ?? 2.5).toFixed(1)} m/s)`}
+          >
+            <Gauge className="w-3.5 h-3.5" /> Frenar (v₀)
           </button>
 
           <button

@@ -53,6 +53,8 @@ export interface Particle3D {
   id: string;
   position: Vector3D;
   velocity: Vector3D;
+  initialPosition?: Vector3D;
+  initialVelocity?: Vector3D;
   charge: number; // in relative elementary units or Coulombs
   mass: number;   // in relative units
   color: string;
@@ -88,6 +90,8 @@ export interface Lorentz3DSettings {
   showFieldVectors: boolean;
   timeStep: number;
   trailLength: number;
+  initialSpeed?: number;    // Rapidez inicial de inyección v0 (m/s)
+  simulationSpeed?: number; // Escala temporal de reproducción (0.15x cámara lenta a 1.5x)
 }
 
 // ==========================================

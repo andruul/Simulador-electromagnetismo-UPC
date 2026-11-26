@@ -424,7 +424,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   type="range"
                   min="-10"
                   max="10"
-                  step="1"
+                  step="0.5"
                   value={lorentzSettings.eField.y}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
@@ -435,6 +435,77 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   }}
                   className="w-full accent-rose-500 cursor-pointer"
                 />
+              </div>
+
+              {/* Velocidad Inicial v0 */}
+              <div className="pt-2 border-t border-[#E2D9CC]">
+                <div className="flex justify-between items-center text-[10px] mb-1">
+                  <span className="font-semibold text-[#2D7A64]">Velocidad Inicial (v₀)</span>
+                  <span className="font-mono text-[#2D2A26] font-bold">
+                    {(lorentzSettings.initialSpeed ?? 2.5).toFixed(1)} m/s
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="5.0"
+                  step="0.5"
+                  value={lorentzSettings.initialSpeed ?? 2.5}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setLorentzSettings((s) => ({
+                      ...s,
+                      initialSpeed: val
+                    }));
+                  }}
+                  className="w-full accent-[#2D7A64] cursor-pointer"
+                />
+              </div>
+
+              {/* Velocidad de Simulación / Cámara Lenta */}
+              <div className="pt-1">
+                <div className="flex justify-between items-center text-[10px] mb-1">
+                  <span className="font-semibold text-amber-700">Ritmo / Cámara Lenta</span>
+                  <span className="font-mono text-[#2D2A26] font-bold">
+                    {(lorentzSettings.simulationSpeed ?? 0.7).toFixed(2)}×
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.15"
+                  max="1.5"
+                  step="0.05"
+                  value={lorentzSettings.simulationSpeed ?? 0.7}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setLorentzSettings((s) => ({
+                      ...s,
+                      simulationSpeed: val
+                    }));
+                  }}
+                  className="w-full accent-amber-600 cursor-pointer"
+                />
+                <div className="grid grid-cols-3 gap-1 mt-1">
+                  {[
+                    { label: '0.25× Lento', val: 0.25 },
+                    { label: '0.6× Suave', val: 0.6 },
+                    { label: '1.0× Real', val: 1.0 }
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      onClick={() =>
+                        setLorentzSettings((s) => ({ ...s, simulationSpeed: opt.val }))
+                      }
+                      className={`py-0.5 px-1 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer ${
+                        Math.abs((lorentzSettings.simulationSpeed ?? 0.7) - opt.val) < 0.06
+                          ? 'bg-[#2D7A64] text-white border-[#2D7A64]'
+                          : 'bg-[#FAF7F2] text-[#5C554E] border-[#DDD5C8] hover:bg-[#EDE8DF]'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </CollapsibleSection>
