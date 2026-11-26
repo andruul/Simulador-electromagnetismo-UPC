@@ -2,10 +2,22 @@ import React, { useRef, useEffect, useState } from 'react';
 import { usePresetRequest } from '../../ganchos/usePeticionPreset';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { Particle3D, Lorentz3DSettings, ViewMode } from '../../tipos';
+import type { Particle3D, Lorentz3DSettings, Vector3D, ViewMode } from '../../tipos';
 import { borisStep, calculateLorentzForce, evaluateFields, vectorLength } from '../../fisica/lorentz';
-import { Plus, Play, Pause, ChevronDown, ChevronUp, Gauge } from 'lucide-react';
+import { Plus, Play, Pause, ChevronDown, ChevronUp, Gauge, MousePointerClick } from 'lucide-react';
 import { LorentzTelemetryHud } from './TelemetriaLorentz';
+import { InspectorParticula } from './InspectorParticula';
+
+/**
+ * Construye un vector velocidad con magnitud EXACTA `speed` en la dirección de `dir`.
+ * Garantiza que |v| coincida exactamente con v₀ (sin desviaciones de normalización).
+ */
+function buildNormalizedVelocity(dir: Vector3D, speed: number): Vector3D {
+  const len = Math.hypot(dir.x, dir.y, dir.z);
+  if (len < 1e-9) return { x: speed, y: 0, z: 0 };
+  const scale = speed / len;
+  return { x: dir.x * scale, y: dir.y * scale, z: dir.z * scale };
+}
 
 interface LorentzViewer3DProps {
   settings: Lorentz3DSettings;
@@ -60,22 +72,36 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [isHudExpanded, setIsHudExpanded] = useState(false); // Collapsed by default for clean view
   const [isBottomOpen, setIsBottomOpen] = useState(true);
+  const [selectedParticleId, setSelectedParticleId] = useState<string | null>(null);
 
   // Particles state (+q = rojo terracota consistente con todo el simulador, -q = azul cerúleo)
-  const [particles, setParticles] = useState<Particle3D[]>([
-    {
-      id: 'p1',
-      position: { x: 0, y: 0, z: -6 },
-      velocity: { x: 2.3, y: 0.9, z: 0.6 },
-      initialPosition: { x: 0, y: 0, z: -6 },
-      initialVelocity: { x: 2.3, y: 0.9, z: 0.6 },
-      charge: 1.0,
-      mass: 1.0,
-      color: '#D95B5F',
-      trail: [],
-      maxTrailLength: 350
-    }
-  ]);
+  const [particles, setParticles] = useState<Particle3D[]>(() => {
+    const v0 = settings.initialSpeed ?? 2.5;
+    const initPos = { x: 0, y: 0, z: -6 };
+    const initVel = buildNormalizedVelocity({ x: 0.88, y: 0.34, z: 0.32 }, v0);
+    return [
+      {
+        id: 'p1',
+        position: initPos,
+        velocity: initVel,
+        initialPosition: { ...initPos },
+        initialVelocity: { ...initVel },
+        charge: 1.0,
+        mass: 1.0,
+        color: '#D95B5F',
+        trail: [],
+        maxTrailLength: 350
+      }
+    ];
+  });
+
+  // Referencia sincronizada para raycasting 3D al hacer clic sobre partículas
+  const particlesRef = useRef<Particle3D[]>(particles);
+  useEffect(() => {
+    particlesRef.current = particles;
+  }, [particles]);
+
+  const selectionHaloRef = useRef<THREE.Mesh | null>(null);
 
   // Telemetry for the active particle
   const [telemetry, setTelemetry] = useState({
@@ -159,6 +185,78 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     scene.add(fieldGroup);
     fieldGroupRef.current = fieldGroup;
 
+    // Halo visual de selección 3D (esfera translúcida dorada alrededor de la partícula seleccionada)
+    const haloGeom = new THREE.SphereGeometry(0.82, 24, 24);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.75
+    });
+    const selectionHalo = new THREE.Mesh(haloGeom, haloMat);
+    selectionHalo.visible = false;
+    scene.add(selectionHalo);
+    selectionHaloRef.current = selectionHalo;
+
+    // Selección individual de partículas mediante clic (Raycaster + tolerancia de pantalla 26px)
+    const raycaster = new THREE.Raycaster();
+    const pointerNdc = new THREE.Vector2();
+    let pointerDownPos: { x: number; y: number } | null = null;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (!pointerDownPos) return;
+      const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+      pointerDownPos = null;
+      if (dist > 6) return; // Fue un arrastre de cámara OrbitControls, no un clic
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      pointerNdc.x = (clickX / rect.width) * 2 - 1;
+      pointerNdc.y = -(clickY / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointerNdc, camera);
+      const meshes: THREE.Mesh[] = [];
+      particleMeshesRef.current.forEach((item) => meshes.push(item.mesh));
+      const hits = raycaster.intersectObjects(meshes, false);
+
+      if (hits.length > 0) {
+        const hitId = hits[0].object.userData.particleId as string | undefined;
+        if (hitId) {
+          setSelectedParticleId(hitId);
+          return;
+        }
+      }
+
+      // Fallback cómodo en pantalla para partículas en movimiento rápido (radio 26 px)
+      let closestId: string | null = null;
+      let minScreenDist = 26;
+      const projected = new THREE.Vector3();
+      for (const p of particlesRef.current) {
+        projected.set(p.position.x, p.position.y, p.position.z).project(camera);
+        if (projected.z > 1) continue;
+        const sx = ((projected.x + 1) / 2) * rect.width;
+        const sy = ((-projected.y + 1) / 2) * rect.height;
+        const d = Math.hypot(sx - clickX, sy - clickY);
+        if (d < minScreenDist) {
+          minScreenDist = d;
+          closestId = p.id;
+        }
+      }
+
+      if (closestId) {
+        setSelectedParticleId(closestId);
+      }
+    };
+
+    renderer.domElement.addEventListener('pointerdown', handlePointerDown);
+    renderer.domElement.addEventListener('pointerup', handlePointerUp);
+
     // Handle Dynamic Container Resize with ResizeObserver
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -182,8 +280,12 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     animate();
 
     return () => {
+      renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
+      renderer.domElement.removeEventListener('pointerup', handlePointerUp);
       ro.disconnect();
       cancelAnimationFrame(animId);
+      haloGeom.dispose();
+      haloMat.dispose();
       controls.dispose();
       renderer.dispose();
       if (renderer.domElement.parentElement) {
@@ -308,11 +410,14 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
                 y: 0,
                 z: settings.fieldConfiguration === 'uniform' ? -6 : 0
               };
-              const fallbackVel = {
-                x: defaultV0 * 0.92,
-                y: 0,
-                z: settings.fieldConfiguration === 'uniform' ? defaultV0 * 0.36 : 0
-              };
+              const fallbackVel = buildNormalizedVelocity(
+                {
+                  x: 0.92,
+                  y: 0,
+                  z: settings.fieldConfiguration === 'uniform' ? 0.36 : 0
+                },
+                defaultV0
+              );
               updated.position = p.initialPosition ? { ...p.initialPosition } : fallbackPos;
               updated.velocity = p.initialVelocity ? { ...p.initialVelocity } : fallbackVel;
               updated.trail = [];
@@ -367,6 +472,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
           metalness: 0.8
         });
         const mesh = new THREE.Mesh(geom, mat);
+        mesh.userData.particleId = p.id;
         scene.add(mesh);
 
         // Create Trail Line
@@ -408,8 +514,13 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         cache.set(p.id, items);
       }
 
-      // Update position of mesh
+      // Update position & dynamic color of mesh (si el usuario cambió el signo de q en el inspector)
       items.mesh.position.set(p.position.x, p.position.y, p.position.z);
+      const meshMat = items.mesh.material as THREE.MeshStandardMaterial;
+      meshMat.color.set(p.color);
+      meshMat.emissive.set(p.color);
+      const trailMat = items.trailLine.material as THREE.LineBasicMaterial;
+      trailMat.color.set(p.color);
 
       // Update trail geometry
       updateTrailGeometry(items.trailLine.geometry, p.trail, p.maxTrailLength);
@@ -449,8 +560,10 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         items.fArrow.visible = false;
       }
 
-      // Update telemetry from particle 0
-      if (idx === 0) {
+      // Update telemetry from selected particle (or particle 0 if none selected)
+      const isTelemetryTarget =
+        selectedParticleId !== null ? p.id === selectedParticleId : idx === 0;
+      if (isTelemetryTarget) {
         const vMag = vectorLength(p.velocity);
         const F = calculateLorentzForce(
           p,
@@ -472,8 +585,14 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         );
         const bMag = vectorLength(B);
         const vPerp = Math.hypot(p.velocity.x, p.velocity.y);
-        const larmor = bMag > 0 ? (p.mass * vPerp) / (Math.abs(p.charge) * bMag) : 0;
-        const cycFreq = bMag > 0 ? (Math.abs(p.charge) * bMag) / (2 * Math.PI * p.mass) : 0;
+        const larmor =
+          bMag > 0 && Math.abs(p.charge) > 1e-6
+            ? (p.mass * vPerp) / (Math.abs(p.charge) * bMag)
+            : 0;
+        const cycFreq =
+          bMag > 0 && Math.abs(p.charge) > 1e-6
+            ? (Math.abs(p.charge) * bMag) / (2 * Math.PI * p.mass)
+            : 0;
 
         setTelemetry({
           speed: vMag,
@@ -485,7 +604,21 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
         });
       }
     });
-  }, [particles, settings.showVectorsOnParticle, settings]);
+
+    // Actualizar halo visual 3D sobre la partícula seleccionada
+    const halo = selectionHaloRef.current;
+    if (halo) {
+      const selected = selectedParticleId
+        ? particles.find((p) => p.id === selectedParticleId)
+        : null;
+      if (selected) {
+        halo.visible = true;
+        halo.position.set(selected.position.x, selected.position.y, selected.position.z);
+      } else {
+        halo.visible = false;
+      }
+    }
+  }, [particles, selectedParticleId, settings.showVectorsOnParticle, settings]);
 
   // Presets: pure description of the settings patch and the initial particles
   const buildPreset = (
@@ -593,17 +726,19 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     const newId = 'p_' + Math.random().toString(36).substring(2, 7);
     const angle = Math.random() * Math.PI * 2;
     const v0 = settings.initialSpeed ?? 2.5;
-    const vPerp = v0 * 0.92;
     const pos = {
       x: (Math.random() - 0.5) * 3,
       y: (Math.random() - 0.5) * 2,
       z: -6 + (Math.random() - 0.5) * 2
     };
-    const vel = {
-      x: Math.cos(angle) * vPerp,
-      y: Math.sin(angle) * vPerp,
-      z: v0 * 0.36
-    };
+    const vel = buildNormalizedVelocity(
+      {
+        x: Math.cos(angle) * 0.92,
+        y: Math.sin(angle) * 0.92,
+        z: 0.36
+      },
+      v0
+    );
     const newP: Particle3D = {
       id: newId,
       position: pos,
@@ -619,19 +754,26 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     setParticles((prev) => [...prev.slice(-11), newP]);
   };
 
+  const updateParticleById = (id: string, updater: (p: Particle3D) => Particle3D) => {
+    setParticles((prev) => prev.map((p) => (p.id === id ? updater(p) : p)));
+  };
+
+  const deleteParticleById = (id: string) => {
+    setParticles((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((p) => p.id !== id);
+      if (selectedParticleId === id) {
+        setSelectedParticleId(next[0]?.id ?? null);
+      }
+      return next;
+    });
+  };
+
   const resetVelocitiesToV0 = () => {
     const targetV0 = settings.initialSpeed ?? 2.5;
     setParticles((prev) =>
       prev.map((p) => {
-        const currentSpeed = vectorLength(p.velocity);
-        const newVel =
-          currentSpeed > 1e-4
-            ? {
-                x: (p.velocity.x / currentSpeed) * targetV0,
-                y: (p.velocity.y / currentSpeed) * targetV0,
-                z: (p.velocity.z / currentSpeed) * targetV0
-              }
-            : { x: targetV0 * 0.92, y: 0, z: targetV0 * 0.36 };
+        const newVel = buildNormalizedVelocity(p.velocity, targetV0);
         return {
           ...p,
           velocity: newVel,
@@ -645,7 +787,8 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     const v0 = settings.initialSpeed ?? 2.5;
     simTimeRef.current = 0;
     const initPos = { x: 0, y: 0, z: -6 };
-    const initVel = { x: v0 * 0.88, y: v0 * 0.34, z: v0 * 0.32 };
+    const initVel = buildNormalizedVelocity({ x: 0.88, y: 0.34, z: 0.32 }, v0);
+    setSelectedParticleId(null);
     setParticles([
       {
         id: 'p_init',
@@ -662,14 +805,45 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
     ]);
   };
 
+  const selectedParticle = selectedParticleId
+    ? particles.find((p) => p.id === selectedParticleId) ?? null
+    : null;
+  const telemetryParticle = selectedParticle ?? particles[0];
+  const telemetryParticleIdx = telemetryParticle
+    ? particles.findIndex((p) => p.id === telemetryParticle.id)
+    : 0;
+
   return (
     <div className="relative w-full h-full select-none bg-[#FAF7F2] overflow-hidden">
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+
+      {selectedParticle ? (
+        <InspectorParticula
+          particles={particles}
+          selectedParticle={selectedParticle}
+          onSelectParticle={setSelectedParticleId}
+          onUpdateParticle={updateParticleById}
+          onDeleteParticle={deleteParticleById}
+          onClose={() => setSelectedParticleId(null)}
+        />
+      ) : (
+        <button
+          onClick={() => particles[0] && setSelectedParticleId(particles[0].id)}
+          className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#D5CEC6] shadow-sm text-[11px] text-[#4A4540] transition-colors cursor-pointer"
+          title="Haz clic en cualquier partícula en 3D o aquí para editar su velocidad, carga y masa"
+        >
+          <MousePointerClick className="w-3.5 h-3.5 text-[#2D7A64]" />
+          <span>Clic en una partícula para inspeccionar / editar</span>
+        </button>
+      )}
 
       <LorentzTelemetryHud
         viewMode={viewMode}
         telemetry={telemetry}
         bFieldZ={settings.bField.z}
+        particleLabel={`Partícula #${telemetryParticleIdx + 1}`}
+        particleCharge={telemetryParticle?.charge ?? 1.0}
+        particleMass={telemetryParticle?.mass ?? 1.0}
         isExpanded={isHudExpanded}
         onToggle={() => setIsHudExpanded(!isHudExpanded)}
       />

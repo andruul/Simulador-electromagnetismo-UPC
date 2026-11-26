@@ -15,21 +15,29 @@ interface LorentzTelemetryProps {
   viewMode: ViewMode;
   telemetry: LorentzTelemetryData;
   bFieldZ: number;
+  particleLabel?: string;
+  particleCharge?: number;
+  particleMass?: number;
   isExpanded: boolean;
   onToggle: () => void;
 }
 
 /**
  * Panel HUD superior derecho de la Sala 5 (Dinámica de Lorentz 3D).
- * Documenta explícitamente el sistema SI normalizado (q/m = ±1.00 C/kg) del integrador de Boris.
+ * Documenta explícitamente el sistema SI (|q|/m) de la partícula seleccionada en el integrador de Boris.
  */
 export const LorentzTelemetryHud: React.FC<LorentzTelemetryProps> = ({
   viewMode,
   telemetry,
   bFieldZ,
+  particleLabel = 'Partícula #1',
+  particleCharge = 1.0,
+  particleMass = 1.0,
   isExpanded,
   onToggle
 }) => {
+  const chargeToMass = particleMass > 0 ? Math.abs(particleCharge) / particleMass : 0;
+  const chargeSign = particleCharge > 0 ? '+' : '';
   return (
     <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md rounded-xl border border-[#D5CEC6] shadow-md text-xs z-10 transition-all max-w-[calc(100%-2rem)]">
       <div
@@ -88,8 +96,11 @@ export const LorentzTelemetryHud: React.FC<LorentzTelemetryProps> = ({
           ) : (
             <div className="space-y-1.5 font-mono text-[11px] text-[#231F1C]">
               <div className="flex justify-between text-[10px] pb-1 border-b border-[#E2D9CC]">
-                <span className="text-[#5C554E]">Escala SI (|q|/m):</span>
-                <span className="text-[#231F1C] font-bold">1.00 C/kg (q=±1C, m=1kg)</span>
+                <span className="text-[#5C554E]">{particleLabel} (|q|/m):</span>
+                <span className="text-[#231F1C] font-bold">
+                  {chargeToMass.toFixed(2)} C/kg ({chargeSign}
+                  {particleCharge.toFixed(1)}C, {particleMass.toFixed(1)}kg)
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#5C554E]">Rapidez |v|:</span>
