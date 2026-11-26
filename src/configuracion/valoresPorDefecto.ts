@@ -38,8 +38,7 @@ export function createDefaultLorentzSettings(): Lorentz3DSettings {
     showVectorsOnParticle: true,
     showFieldVectors: true,
     timeStep: 0.02,
-    trailLength: 750,
-    lorentzViewVariant: 'simple'
+    trailLength: 750
   };
 }
 

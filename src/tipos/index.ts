@@ -90,7 +90,6 @@ export interface Lorentz3DSettings {
   showFieldVectors: boolean;
   timeStep: number;
   trailLength: number;
-  lorentzViewVariant?: 'simple' | 'studio'; // Modo Sencillo vs Estudio 3D (estilo Unity/Unreal)
 }
 
 // ==========================================

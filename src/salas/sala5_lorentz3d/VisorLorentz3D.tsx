@@ -11,8 +11,6 @@ import {
   ChevronDown,
   ChevronUp,
   MousePointerClick,
-  Box,
-  Sparkles,
   RotateCcw
 } from 'lucide-react';
 import { LorentzTelemetryHud } from './TelemetriaLorentz';
@@ -107,7 +105,7 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
   onPresetHandled,
   viewMode = 'explore'
 }) => {
-  const isStudio = settings.lorentzViewVariant === 'studio';
+  const isStudio = false;
 
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [isHudExpanded, setIsHudExpanded] = useState(false);
@@ -909,41 +907,6 @@ export const LorentzViewer3D: React.FC<LorentzViewer3DProps> = ({
       }`}
     >
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
-
-      {/* Selector superior central: Modo Sencillo vs Estudio 3D (Unity / Unreal Engine) */}
-      <div
-        className={`absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1 rounded-xl border backdrop-blur-md shadow-md ${
-          isStudio
-            ? 'bg-[#0F1624]/88 border-white/15 text-slate-200'
-            : 'bg-white/92 border-[#D5CEC6] text-[#231F1C]'
-        }`}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setSettings((s) => ({ ...s, lorentzViewVariant: 'simple' }))}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-            !isStudio
-              ? 'bg-[#2D7A64] text-white shadow-sm'
-              : 'text-slate-300 hover:bg-white/10'
-          }`}
-          title="Interfaz didáctica limpia con control de ángulo respecto a las líneas de flujo"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Modo Sencillo
-        </button>
-        <button
-          onClick={() => setSettings((s) => ({ ...s, lorentzViewVariant: 'studio' }))}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-            isStudio
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'text-[#5C554E] hover:bg-[#EDE8DF]'
-          }`}
-          title="Entorno 3D profesional estilo Unity / Unreal Engine con cámara de vacío 60×44×60 m"
-        >
-          <Box className="w-3.5 h-3.5" />
-          Estudio 3D
-        </button>
-      </div>
 
       {/* Inspector de partícula seleccionada o botón de acceso rápido */}
       {selectedParticle ? (
