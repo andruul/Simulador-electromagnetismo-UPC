@@ -436,77 +436,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   className="w-full accent-rose-500 cursor-pointer"
                 />
               </div>
-
-              {/* Velocidad Inicial v0 */}
-              <div className="pt-2 border-t border-[#E2D9CC]">
-                <div className="flex justify-between items-center text-[10px] mb-1">
-                  <span className="font-semibold text-[#2D7A64]">Velocidad Inicial (v₀)</span>
-                  <span className="font-mono text-[#2D2A26] font-bold">
-                    {(lorentzSettings.initialSpeed ?? 2.5).toFixed(1)} m/s
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="5.0"
-                  step="0.5"
-                  value={lorentzSettings.initialSpeed ?? 2.5}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setLorentzSettings((s) => ({
-                      ...s,
-                      initialSpeed: val
-                    }));
-                  }}
-                  className="w-full accent-[#2D7A64] cursor-pointer"
-                />
-              </div>
-
-              {/* Velocidad de Simulación / Cámara Lenta */}
-              <div className="pt-1">
-                <div className="flex justify-between items-center text-[10px] mb-1">
-                  <span className="font-semibold text-amber-700">Ritmo / Cámara Lenta</span>
-                  <span className="font-mono text-[#2D2A26] font-bold">
-                    {(lorentzSettings.simulationSpeed ?? 0.7).toFixed(2)}×
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0.15"
-                  max="1.5"
-                  step="0.05"
-                  value={lorentzSettings.simulationSpeed ?? 0.7}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setLorentzSettings((s) => ({
-                      ...s,
-                      simulationSpeed: val
-                    }));
-                  }}
-                  className="w-full accent-amber-600 cursor-pointer"
-                />
-                <div className="grid grid-cols-3 gap-1 mt-1">
-                  {[
-                    { label: '0.25× Lento', val: 0.25 },
-                    { label: '0.6× Suave', val: 0.6 },
-                    { label: '1.0× Real', val: 1.0 }
-                  ].map((opt) => (
-                    <button
-                      key={opt.val}
-                      onClick={() =>
-                        setLorentzSettings((s) => ({ ...s, simulationSpeed: opt.val }))
-                      }
-                      className={`py-0.5 px-1 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer ${
-                        Math.abs((lorentzSettings.simulationSpeed ?? 0.7) - opt.val) < 0.06
-                          ? 'bg-[#2D7A64] text-white border-[#2D7A64]'
-                          : 'bg-[#FAF7F2] text-[#5C554E] border-[#DDD5C8] hover:bg-[#EDE8DF]'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </CollapsibleSection>
 
@@ -562,24 +491,31 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </div>
           </CollapsibleSection>
 
-          {/* 3. Boris Pusher dt (Collapsed by default) */}
+          {/* 3. Boris Pusher dt (Funcional: controla el paso fijo real del integrador) */}
           <CollapsibleSection
             title="Precisión Boris Pusher"
-            subtitle={`Paso temporal dt: ${lorentzSettings.timeStep}`}
+            subtitle={`Paso fijo Δt: ${lorentzSettings.timeStep.toFixed(3)} s`}
             icon={<Settings2 className="w-3.5 h-3.5 text-amber-500" />}
+            badge={
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono border border-amber-200">
+                {Math.round(1 / Math.max(0.005, lorentzSettings.timeStep))} pasos/s
+              </span>
+            }
             isOpen={openSection3}
             onToggle={() => setOpenSection3((prev) => !prev)}
           >
-            <div className="pt-0.5 space-y-1">
+            <div className="pt-0.5 space-y-2">
               <div className="flex justify-between text-[#4A4540] text-[10px]">
-                <span>Paso de Tiempo (dt):</span>
-                <span className="font-mono text-sky-600 font-bold">{lorentzSettings.timeStep}</span>
+                <span>Paso de Tiempo (Δt):</span>
+                <span className="font-mono text-sky-700 font-bold">
+                  {lorentzSettings.timeStep.toFixed(3)} s
+                </span>
               </div>
               <input
                 type="range"
-                min="0.01"
-                max="0.08"
-                step="0.01"
+                min="0.005"
+                max="0.15"
+                step="0.005"
                 value={lorentzSettings.timeStep}
                 onChange={(e) =>
                   setLorentzSettings((s) => ({
@@ -587,8 +523,45 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     timeStep: parseFloat(e.target.value)
                   }))
                 }
-                className="w-full accent-sky-500 cursor-pointer"
+                className="w-full accent-sky-600 cursor-pointer"
               />
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { label: '0.005s Fino', val: 0.005 },
+                  { label: '0.02s Normal', val: 0.02 },
+                  { label: '0.12s Grueso', val: 0.12 }
+                ].map((opt) => (
+                  <button
+                    key={opt.val}
+                    onClick={() => setLorentzSettings((s) => ({ ...s, timeStep: opt.val }))}
+                    className={`py-0.5 px-1 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer ${
+                      Math.abs(lorentzSettings.timeStep - opt.val) < 0.004
+                        ? 'bg-[#2D7A64] text-white border-[#2D7A64]'
+                        : 'bg-[#FAF7F2] text-[#5C554E] border-[#DDD5C8] hover:bg-[#EDE8DF]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div className="p-2 rounded-lg bg-[#FAF7F2] border border-[#DDD5C8] text-[10px] space-y-0.5 font-mono text-[#4A4540]">
+                <div className="flex justify-between">
+                  <span>Resolución:</span>
+                  <span className="font-semibold text-[#231F1C]">
+                    {lorentzSettings.timeStep <= 0.01
+                      ? 'Ultra Fina (curva exacta)'
+                      : lorentzSettings.timeStep <= 0.04
+                      ? 'Estándar (suave)'
+                      : 'Gruesa (órbita poligonal)'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Giro/paso (ω·Δt):</span>
+                  <span className="font-semibold text-amber-700">
+                    {((Math.abs(lorentzSettings.bField.z) * lorentzSettings.timeStep * 180) / Math.PI).toFixed(1)}°
+                  </span>
+                </div>
+              </div>
             </div>
           </CollapsibleSection>
         </div>

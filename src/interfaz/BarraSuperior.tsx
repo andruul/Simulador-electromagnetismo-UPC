@@ -19,7 +19,9 @@ import {
   FlaskConical,
   Eye,
   FileDown,
-  Share2
+  Share2,
+  Undo2,
+  Redo2
 } from 'lucide-react';
 import { UpcLogo } from './InsigniaUPC';
 
@@ -31,6 +33,10 @@ interface TopNavbarProps {
   isPlaying: boolean;
   setIsPlaying: (playing: boolean) => void;
   onReset: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
   onOpenTheory: () => void;
   onTakeScreenshot: () => void;
   onGenerateReport?: () => void;
@@ -51,6 +57,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   isPlaying,
   setIsPlaying,
   onReset,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
   onOpenTheory,
   onTakeScreenshot,
   onGenerateReport,
@@ -260,6 +270,30 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           >
             {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           </button>
+        )}
+
+        {/* Undo / Redo — disponible en todas las salas */}
+        {onUndo && onRedo && (
+          <div className="flex items-center gap-0.5 bg-[#EDE8DF] p-0.5 rounded-lg border border-[#D5CEC6]">
+            <button
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="p-1 text-[#4A4540] hover:text-[#231F1C] hover:bg-white rounded transition-colors cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+              title="Deshacer último cambio [Ctrl+Z]"
+              aria-label="Deshacer"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="p-1 text-[#4A4540] hover:text-[#231F1C] hover:bg-white rounded transition-colors cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+              title="Rehacer cambio [Ctrl+Y]"
+              aria-label="Rehacer"
+            >
+              <Redo2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
 
         {/* Reset */}

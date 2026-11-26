@@ -16,6 +16,7 @@ import { WelcomeScreen } from './interfaz/PantallaBienvenida';
 import { BottomStatusBar } from './interfaz/BarraEstado';
 import { useExportActions } from './ganchos/useAccionesExportar';
 import { useGlobalShortcuts } from './ganchos/useAtajosTeclado';
+import { useGlobalHistory } from './ganchos/useHistorialGlobal';
 import { isPresetRoom, useRoomPresets, type PresetRoom } from './ganchos/usePresetsSalas';
 import {
   buildShareableUrl,
@@ -93,6 +94,30 @@ export const App: React.FC = () => {
     [mode, viewMode, charges, electroSettings, lorentzSettings, gaussDimMode]
   );
   usePersistedSimulatorSync(persistedPayload, isWelcomeOpen);
+
+  const history = useGlobalHistory(persistedPayload);
+
+  const handleUndo = useCallback(() => {
+    const prev = history.undo();
+    if (!prev) return;
+    setMode(prev.mode);
+    setViewMode(prev.viewMode);
+    setCharges(prev.charges);
+    setElectroSettings(prev.electroSettings);
+    setLorentzSettings(prev.lorentzSettings);
+    setGaussDimMode(prev.gaussDimMode);
+  }, [history]);
+
+  const handleRedo = useCallback(() => {
+    const next = history.redo();
+    if (!next) return;
+    setMode(next.mode);
+    setViewMode(next.viewMode);
+    setCharges(next.charges);
+    setElectroSettings(next.electroSettings);
+    setLorentzSettings(next.lorentzSettings);
+    setGaussDimMode(next.gaussDimMode);
+  }, [history]);
 
   const { notice, dismissNotice, takeScreenshot, generateReport } = useExportActions(mode, viewMode);
 
@@ -182,7 +207,9 @@ export const App: React.FC = () => {
     onToggleTheory: toggleTheory,
     onTogglePlay: togglePlay,
     onReset: handleReset,
-    onToggleViewMode: toggleViewMode
+    onToggleViewMode: toggleViewMode,
+    onUndo: handleUndo,
+    onRedo: handleRedo
   });
 
   return (
@@ -195,6 +222,10 @@ export const App: React.FC = () => {
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
         onReset={handleReset}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
         onOpenTheory={() => setIsTheoryOpen(true)}
         onTakeScreenshot={takeScreenshot}
         onGenerateReport={generateReport}

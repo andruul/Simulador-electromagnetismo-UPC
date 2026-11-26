@@ -7,6 +7,8 @@ export interface GlobalShortcutHandlers {
   onReset: () => void; // R
   onToggleViewMode: () => void; // M
   onToggleZenMode?: () => void; // Z (Modo Enfoque / Lienzo Limpio)
+  onUndo?: () => void; // Ctrl+Z / Cmd+Z
+  onRedo?: () => void; // Ctrl+Y / Ctrl+Shift+Z
 }
 
 function isTypingTarget(target: HTMLElement | null): boolean {
@@ -36,29 +38,40 @@ export function useGlobalShortcuts(handlers: GlobalShortcutHandlers): void {
     onTogglePlay,
     onReset,
     onToggleViewMode,
-    onToggleZenMode
+    onToggleZenMode,
+    onUndo,
+    onRedo
   } = handlers;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target as HTMLElement | null)) return;
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const key = e.key.toLowerCase();
+      const hasMod = e.ctrlKey || e.metaKey;
+
+      if (hasMod && key === 'k') {
         e.preventDefault();
         onToggleSearch();
+      } else if (hasMod && key === 'z' && !e.shiftKey && onUndo) {
+        e.preventDefault();
+        onUndo();
+      } else if (hasMod && (key === 'y' || (key === 'z' && e.shiftKey)) && onRedo) {
+        e.preventDefault();
+        onRedo();
       } else if (e.key === 'F1') {
         e.preventDefault();
         onToggleTheory();
       } else if (e.code === 'Space') {
         e.preventDefault();
         onTogglePlay();
-      } else if (e.key.toLowerCase() === 'r') {
+      } else if (!hasMod && key === 'r') {
         e.preventDefault();
         onReset();
-      } else if (e.key.toLowerCase() === 'm') {
+      } else if (!hasMod && key === 'm') {
         e.preventDefault();
         onToggleViewMode();
-      } else if (e.key.toLowerCase() === 'z' && onToggleZenMode) {
+      } else if (!hasMod && key === 'z' && onToggleZenMode) {
         e.preventDefault();
         onToggleZenMode();
       }
@@ -72,6 +85,8 @@ export function useGlobalShortcuts(handlers: GlobalShortcutHandlers): void {
     onTogglePlay,
     onReset,
     onToggleViewMode,
-    onToggleZenMode
+    onToggleZenMode,
+    onUndo,
+    onRedo
   ]);
 }

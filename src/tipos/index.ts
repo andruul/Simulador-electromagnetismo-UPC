@@ -90,8 +90,7 @@ export interface Lorentz3DSettings {
   showFieldVectors: boolean;
   timeStep: number;
   trailLength: number;
-  initialSpeed?: number;    // Rapidez inicial de inyección v0 (m/s)
-  simulationSpeed?: number; // Escala temporal de reproducción (0.15x cámara lenta a 1.5x)
+  lorentzViewVariant?: 'simple' | 'studio'; // Modo Sencillo vs Estudio 3D (estilo Unity/Unreal)
 }
 
 // ==========================================
