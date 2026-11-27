@@ -71,7 +71,9 @@ src/
 │   │   ├── LienzoMagnetostatica.tsx    # Conductores, brújula y HUD de la Ley de Ampère
 │   │   └── renderizadorMagnetostatica.ts # Dibujo de campo B, hilos ⊙/⊗ y Curva Amperiana C
 │   ├── sala5_lorentz3d/
-│   │   ├── VisorLorentz3D.tsx          # Escena 3D WebGL (Three.js) y bucle de partículas
+│   │   ├── VisorLorentz3D.tsx          # Escena 3D WebGL (60×44×60 m), Boris de paso fijo y atajos
+│   │   ├── InspectorParticula.tsx      # Inspector individual por clic (|v|, ángulos θ/φ, q, m y Aplicar)
+│   │   ├── GizmoOrientacion3D.tsx      # Cruz 3D de orientación (X, Y, Z / î, ĵ, k̂)
 │   │   └── TelemetriaLorentz.tsx       # HUD con rapidez, fuerza, radio de Larmor y ciclotrón
 │   └── sala6_faraday/
 │       ├── LienzoFaraday.tsx           # Interacción con el imán de barra y bobina
@@ -109,7 +111,8 @@ src/
 │   ├── useEstadoPersistente.ts         # Guarda sesión en localStorage y sincroniza URL (?sala=...)
 │   ├── useDimensionElemento.ts         # Ajusta el lienzo automáticamente al redimensionar
 │   ├── useAccionesExportar.ts          # Descarga Ficha de Evidencia PNG + TXT con membrete UPC
-│   ├── useAtajosTeclado.ts             # Atajos globales: Espacio, R, M, F1, Ctrl+K
+│   ├── useAtajosTeclado.ts             # Atajos globales: Espacio, R, M, F1, Ctrl+K, Ctrl+Z, Ctrl+Y
+│   ├── useHistorialGlobal.ts           # Historial global de Deshacer y Rehacer en todas las salas
 │   ├── usePeticionPreset.ts            # Conecta los botones de experimentos con cada sala
 │   └── usePresetsSalas.ts              # Cola de experimentos preconfigurados
 │
@@ -174,7 +177,8 @@ Si van a exponer en grupo, pueden dividirse fácilmente las salas así:
 - **Ecuación que resuelve:**
   $$\mathbf{F} = q(\mathbf{E} + \mathbf{v}\times\mathbf{B}), \qquad r_L = \frac{m v_\perp}{|q|B}, \qquad f_c = \frac{|q|B}{2\pi m}$$
 - **Puntos clave para explicar:**
-  - Si usáramos el método de Euler común, la órbita espiral crecería artificialmente ganando energía falsa. Por eso implementamos el **Integrador Simpléctico de Boris (`borisStep`)**, que separa medio impulso eléctrico, una rotación magnética exacta (conservando $|\mathbf{v}|$ y la energía cinética) y otro medio impulso eléctrico.
+  - Si usáramos el método de Euler común, la órbita espiral crecería artificialmente ganando energía falsa. Por eso implementamos el **Integrador Simpléctico de Boris (`borisStep`)** con acumulador de paso fijo real ($\Delta t$ configurable de `0.005 s` a `0.150 s`) dentro de una cámara de vacío ampliada (`60×44×60 m`).
+  - Permite hacer **clic individual** sobre cualquier partícula 3D para abrir su **Inspector** y ajustar su rapidez $|\mathbf{v}|$, los ángulos $(\theta, \phi)$ respecto a las líneas de flujo, su carga $q$ y masa $m$ con botón **Aplicar cambios**, además de incluir un **Gizmo 3D (`X, Y, Z / î, ĵ, k̂`)** y **Deshacer/Rehacer (`Ctrl+Z` / `Ctrl+Y`)** en todas las salas.
   - Demuestra Hélice magnética, Filtro de velocidades de Wien ($v = E/B$), Deriva $\mathbf{E}\times\mathbf{B}$ y Botella Magnética (espejo magnético).
 
 ### 🔹 Sala 6: Inducción Electromagnética de Faraday y Ley de Lenz

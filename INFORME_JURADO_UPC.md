@@ -41,7 +41,8 @@ $$\vec{B}(\vec{r}) = \frac{\mu_0 I}{2\pi r}\hat{\theta}, \qquad \oint_{\mathcal{
 
 ### 2.5. Sala 5 — Dinámica Tridimensional de Lorentz (`sala5_lorentz3d/`)
 $$\frac{d\vec{v}}{dt} = \frac{q}{m}\left(\vec{E} + \vec{v}\times\vec{B}\right)$$
-- Implementa el **Integrador Simpléctico de Boris (`borisStep`)** en sistema SI normalizado ($|q|/m = 1.00\ \text{C/kg}$), conservando la energía cinética a precisión de máquina ($\Delta v / v \approx 1.1 \times 10^{-13}$ tras $201\,000$ pasos).
+- Implementa el **Integrador Simpléctico de Boris (`borisStep`)** con acumulador de paso fijo real ($\Delta t \in [0.005, 0.150]\ \text{s}$) en una cámara de vacío `60×44×60 m`, conservando la energía cinética a precisión de máquina ($\Delta v / v \approx 1.1 \times 10^{-13}$ tras $201\,000$ pasos).
+- Incluye selección individual 3D por *Raycasting* con **Inspector de Partícula** (rapidez exacta $|\vec{v}|$, ángulos $(\theta, \phi)$ respecto al flujo, carga, masa y botón de aplicación), **Gizmo 3D (`X, Y, Z` / `î, ĵ, k̂`)** y sistema global de **Deshacer/Rehacer (`Ctrl+Z` / `Ctrl+Y`)** transversal a las 6 salas.
 
 ### 2.6. Sala 6 — Inducción Electromagnética de Faraday-Lenz (`sala6_faraday/`)
 $$\mathcal{E} = -N \frac{d\Phi_B}{dt}, \qquad I = \frac{\mathcal{E}}{R_{\text{total}}}, \qquad P = I^2 R_{\text{carga}}$$

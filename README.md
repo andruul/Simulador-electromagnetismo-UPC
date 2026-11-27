@@ -74,7 +74,7 @@ El simulador cuenta con un interruptor en la barra superior (o tecla `[M]`):
 | **Sala 2** | Ley de Gauss (2D y 3D Volumétrico) | Cuadratura de Fibonacci en esfera, cubo, cilindro y tetraedro + Teorema de la Divergencia | Superficies gaussianas 2D/3D, vectores normales $\hat{n}$ y balance cara por cara |
 | **Sala 3** | Capacitancia, Dieléctricos y Redes | $C=\kappa\varepsilon_0 A/d$, factor de borde de **Kirchhoff** y solucionador de redes **Serie / Paralelo** | Dieléctrico deslizable, batería conectada/aislada, voltímetro de 2 puntas y analizador de red |
 | **Sala 4** | Magnetostática, Biot-Savart y Ampère | $\vec{B}=\frac{\mu_0 I}{2\pi r}\hat{\theta}$ en SI + integración cerrada $\oint_C \vec{B}\cdot d\vec{l}=\mu_0 I_{\text{enc}}$ (256 nodos) | Brújula/magnetómetro SI, hilos paralelos/solenoide y **Curva Amperiana arrastrable** |
-| **Sala 5** | Dinámica 3D y Fuerza de Lorentz | Integrador simpléctico **Boris Pusher** en WebGL (Three.js) que conserva la energía cinética | Selector de Wien, Ciclotrón, Deriva $\vec{E}\times\vec{B}$ y Botella Magnética |
+| **Sala 5** | Dinámica 3D y Fuerza de Lorentz | Integrador simpléctico **Boris Pusher** con acumulador de paso fijo real ($\Delta t$: `0.005`–`0.150 s`) en cámara `60×44×60 m` | Inspector individual 3D (rapidez, ángulos $\theta, \phi$, carga, masa), Gizmo `X,Y,Z` (`î,ĵ,k̂`), Selector de Wien, Ciclotrón y Botella Magnética |
 | **Sala 6** | Inducción de Faraday y Ley de Lenz | Cuadratura radial de **Gauss-Legendre (32 nodos)** sobre disco 3D y $\mathcal{E}=-N\,d\Phi_B/dt$ | Imán arrastrable/oscilante, galvanómetro amortiguado, bombilla y osciloscopio accesible |
 
 ---
@@ -95,11 +95,11 @@ Proyecto Simulador/
 │   │   ├── sala2_gauss/                 # LienzoGauss2D.tsx + renderizadorGauss2D.ts + VisorGauss3D.tsx
 │   │   ├── sala3_capacitancia/          # LienzoCapacitor.tsx, Controles, Telemetría, diseño y renderizador
 │   │   ├── sala4_magnetostatica/        # LienzoMagnetostatica.tsx + renderizadorMagnetostatica.ts
-│   │   ├── sala5_lorentz3d/             # VisorLorentz3D.tsx + TelemetriaLorentz.tsx
+│   │   ├── sala5_lorentz3d/             # VisorLorentz3D.tsx, InspectorParticula.tsx, GizmoOrientacion3D.tsx y TelemetriaLorentz.tsx
 │   │   └── sala6_faraday/               # LienzoFaraday.tsx, Controles, Telemetría, renderizador y hook
 │   │
 │   ├── interfaz/                        # 🖥️ Componentes de Interfaz y Navegación
-│   │   ├── BarraSuperior.tsx            # Selector de salas, modo SI, Ficha Evidencia y Compartir Enlace
+│   │   ├── BarraSuperior.tsx            # Selector de salas, Deshacer/Rehacer (Ctrl+Z/Y), modo SI, Ficha Evidencia y Compartir Enlace
 │   │   ├── BarraEstado.tsx              # Barra inferior de estado y FPS
 │   │   ├── PanelGuia.tsx                # Guía pedagógica lateral con experimentos de 1 clic
 │   │   ├── PanelControles.tsx           # Inspector contextual (solo en salas que lo requieren)
